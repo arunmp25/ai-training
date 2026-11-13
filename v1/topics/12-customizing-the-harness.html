@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Topic 12 · Customizing the harness</title>
+<link rel="stylesheet" href="../assets/style.css">
+<link rel="stylesheet" href="../assets/widgets.css">
+<style>
+  .explorer { display: grid; grid-template-columns: 300px 1fr; gap: 18px; align-items: start; }
+  .tree { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 12px 8px; color: var(--muted); }
+  .skillctx { display: grid; gap: 5px; }
+  .sk { padding: 7px 10px; border-radius: 8px; font-size: 13px; background: var(--card); border: 1px solid var(--line); transition: all .3s; }
+  .sk.loaded { border-color: var(--c-knowledge); background: color-mix(in srgb, var(--c-knowledge) 14%, var(--card)); }
+  .sk .body { display: none; margin-top: 6px; font-family: ui-monospace, Menlo, monospace; font-size: 12px; color: var(--muted); white-space: pre-wrap; }
+  .sk.loaded .body { display: block; animation: slideIn .35s ease; }
+  .tokbig { font-size: 30px; font-weight: 800; }
+  .ctxbar { height: 26px; border-radius: 8px; background: var(--card2); overflow: hidden; border: 1px solid var(--line); }
+  .ctxbar i { display: block; height: 100%; width: 0; transition: width 1.2s ease; }
+  .agentbox { padding: 12px; border-radius: 12px; border: 1px solid var(--line); background: var(--card); }
+  .agentbox .label { margin-bottom: 6px; }
+  .subs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .cmdbtns { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+  .cmdbtns button { font-family: ui-monospace, Menlo, monospace; }
+  .gate { display: grid; gap: 8px; }
+  .gate div { padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line); background: var(--card); font-size: 14px; animation: slideIn .3s ease both; }
+  .gate .ok { border-color: var(--good); } .gate .stop { border-color: var(--bad); background: color-mix(in srgb, var(--bad) 10%, var(--card)); } .gate .ask { border-color: var(--warn); }
+</style>
+</head>
+<body class="deck" data-id="12">
+
+<section class="slide title-slide" data-title="Welcome">
+  <div class="big-emoji">🛠️</div>
+  <div class="eyebrow">Topic 12</div>
+  <h1>Make the harness yours</h1>
+  <p class="sub">Instruction files, slash commands, skills, subagents, hooks, MCP servers, permissions and plugins: how teams turn a generic agent into <b>their</b> agent.</p>
+  <aside class="notes"><span class="tag time">⏱ 30 sec</span><ul><li>Examples use Claude Code because it exposes all of these. Most other harnesses have similar features with different names (see the comparison slide).</li></ul></aside>
+</section>
+
+<section class="slide" data-title="The toolkit">
+  <div class="eyebrow">The toolkit</div>
+  <h2>Eight ways to customise an agent harness</h2>
+  <p class="sub">Roughly from lightest to heaviest. Click each one.</p>
+  <div id="kit"></div>
+  <aside class="notes"><span class="tag time">⏱ 4 min</span><ul><li>The two questions to ask for each: <b>When is it loaded?</b> (always, on demand, on an event) and <b>Is it guaranteed?</b> (only hooks and permissions are deterministic; the rest is guidance the model follows).</li></ul></aside>
+</section>
+
+<section class="slide" data-title="Where it lives">
+  <div class="eyebrow">Where it lives</div>
+  <h2>It’s all just files in your project</h2>
+  <p class="sub">Click a file to see an example and what it does. Commit these to git and the whole team shares the same agent setup.</p>
+  <div class="explorer">
+    <div class="tree" id="tree"></div>
+    <div class="stack-v"><div id="fileExpl" class="callout"></div><pre class="code" id="fileBody" style="max-height:360px"></pre></div>
+  </div>
+  <aside class="notes"><span class="tag time">⏱ 3 min</span><ul><li>Point out that these are plain text and markdown. Non-developers can write skills and instruction files too.</li><li>There are also personal versions in your home folder (<code>~/.claude/</code>) that apply to all your projects.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="Skills up close">
+  <div class="eyebrow">Skills up close</div>
+  <h2>Skills load only when they’re needed</h2>
+  <p class="sub">The harness keeps just a one-line description of each skill on the desk. When a task matches, the full instructions (and any files) are loaded. Pick a task.</p>
+  <div class="split wide-left">
+    <div><div class="row" style="margin-bottom:10px" id="skTasks"></div><div class="skillctx" id="skCtx"></div></div>
+    <div class="card stack-v">
+      <div><div class="label">Tokens on the desk for skills</div><div class="tokbig" id="skTok"></div></div>
+      <div class="muted" id="skNote" style="font-size:14px"></div>
+      <div class="callout" style="font-size:14px">This is called <b>progressive disclosure</b>. You can install dozens of skills without filling the context window.</div>
+    </div>
+  </div>
+  <aside class="notes"><span class="tag time">⏱ 3 min</span><ul><li>Contrast with putting everything in CLAUDE.md, which is loaded every time whether needed or not.</li><li>Good skills: a clear description of <i>when</i> to use them, step-by-step instructions, templates and scripts alongside.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="Subagents up close">
+  <div class="eyebrow">Subagents up close</div>
+  <h2>Subagents keep the main desk clean</h2>
+  <p class="sub">Task: <b>“Research three competitors’ pricing and write a summary.”</b> Compare.</p>
+  <div id="subTabs"></div>
+  <aside class="notes"><span class="tag time">⏱ 3 min</span><ul><li>Subagents = the “isolate” move from Topic 06.</li><li>Also useful for <b>specialists</b>: a security reviewer with read-only tools and a strict checklist, or a test writer.</li><li>Trade-off: more total tokens, and they can’t see each other’s work.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="Hooks and permissions">
+  <div class="eyebrow">Hooks & permissions</div>
+  <h2>Guaranteed rules: hooks and permissions</h2>
+  <p class="sub">Instructions are <i>requests</i>; hooks and permissions are <i>enforced</i>. The agent tries to run each command below. Click one and see what happens.</p>
+  <div class="cmdbtns" id="cmds"></div>
+  <div class="split">
+    <div class="gate" id="gate"><div class="muted">Pick a command above.</div></div>
+    <div class="stack-v">
+      <div class="label">The rules in this project</div>
+      <pre class="code">// .claude/settings.json
+"permissions": {
+  "allow": ["Bash(pnpm test:*)", "Bash(git status)"],
+  "deny":  ["Read(./.env)"]
+},
+"hooks": {
+  "PreToolUse":  [ block dangerous commands ],
+  "PostToolUse": [ run formatter after edits ]
+}</pre>
+    </div>
+  </div>
+  <aside class="notes"><span class="tag time">⏱ 3 min</span><ul><li>Order: permission rules decide allow / ask / deny; a PreToolUse hook can still block; after the tool runs, PostToolUse hooks fire.</li><li>Other hook events include session start, prompt submitted, agent stopping, and before compaction.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="Which one?">
+  <div class="eyebrow">Your turn</div>
+  <h2>Which customisation fits?</h2>
+  <div id="which"></div>
+  <aside class="notes"><span class="tag time">⏱ 4 min</span><ul><li>The hardest pair is skill vs subagent. Skill = <i>knowledge/procedure</i> loaded into the current agent. Subagent = <i>a separate worker</i> with its own context.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="Side by side">
+  <div class="eyebrow">Cheat sheet</div>
+  <h2>Side by side</h2>
+  <table class="cmp">
+    <tr><th></th><th>Loaded when</th><th>Guaranteed?</th><th>Best for</th><th>Example</th></tr>
+    <tr><td><b>📌 Instruction file</b></td><td>Every session, always</td><td>No (guidance)</td><td>Short, always-true project facts</td><td>“Use pnpm. Tests: pnpm test:unit”</td></tr>
+    <tr><td><b>⚡ Slash command</b></td><td>When you type it</td><td>No</td><td>Prompts you repeat often</td><td><code>/release-notes</code></td></tr>
+    <tr><td><b>📚 Skill</b></td><td>When the task matches</td><td>No</td><td>Procedures, templates, domain know-how</td><td>Brand-voice writing, building decks</td></tr>
+    <tr><td><b>👥 Subagent</b></td><td>When delegated</td><td>No</td><td>Isolated research, specialists, parallel work</td><td>Security reviewer, researcher</td></tr>
+    <tr><td><b>🪝 Hook</b></td><td>On an event, every time</td><td><b>Yes</b></td><td>Must-always-happen rules and automation</td><td>Format after edit; block <code>rm -rf</code></td></tr>
+    <tr><td><b>🔐 Permissions</b></td><td>Before every tool call</td><td><b>Yes</b></td><td>What may run without asking</td><td>Deny reading <code>.env</code></td></tr>
+    <tr><td><b>🔌 MCP server</b></td><td>Session start (tools listed)</td><td>n/a</td><td>Connecting external systems</td><td>Jira, GitHub, a database</td></tr>
+    <tr><td><b>📦 Plugin</b></td><td>When installed</td><td>n/a</td><td>Sharing a bundle with a team</td><td>“Our team’s dev kit”</td></tr>
+  </table>
+  <aside class="notes"><span class="tag time">⏱ 2 min</span><ul><li>Hand this out as the reference card for the topic.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="Other harnesses">
+  <div class="eyebrow">Same ideas, different names</div>
+  <h2>These concepts exist across harnesses</h2>
+  <p class="sub">Names and details vary by tool and change often. Check your tool’s documentation.</p>
+  <table class="cmp">
+    <tr><th>Concept</th><th>Claude Code</th><th>Elsewhere (examples)</th></tr>
+    <tr><td>Instruction file</td><td><code>CLAUDE.md</code></td><td><code>AGENTS.md</code> (an open convention read by Codex, Cursor and others), Cursor rules, <code>.github/copilot-instructions.md</code></td></tr>
+    <tr><td>Reusable prompts</td><td>Slash commands</td><td>Prompt files, custom commands, MCP prompts</td></tr>
+    <tr><td>On-demand expertise</td><td>Skills (<code>SKILL.md</code>)</td><td>Skills are also in Claude apps and the API; other tools offer similar packaged instructions</td></tr>
+    <tr><td>Helper agents</td><td>Subagents</td><td>Handoffs and sub-agents in agent SDKs and frameworks</td></tr>
+    <tr><td>Event rules</td><td>Hooks</td><td>Hooks or lifecycle callbacks in some tools and SDKs; CI checks as a fallback</td></tr>
+    <tr><td>External systems</td><td>MCP servers</td><td>MCP is widely supported across IDEs, chat apps and SDKs</td></tr>
+  </table>
+  <aside class="notes"><span class="tag time">⏱ 1 min</span></aside>
+</section>
+
+<section class="slide" data-title="Quick check">
+  <div class="eyebrow">Quick check</div>
+  <h2>Did it click?</h2>
+  <div id="quiz"></div>
+  <aside class="notes"><span class="tag time">⏱ 1 min</span></aside>
+</section>
+
+<section class="slide" data-title="Takeaways">
+  <div class="eyebrow">Takeaways</div>
+  <h2>What to remember</h2>
+  <div class="cols-3" style="margin:10px 0 24px">
+    <div class="card"><b>📌 Always vs on demand</b><p>Instruction files are always loaded; skills load when relevant; subagents work in their own context.</p></div>
+    <div class="card"><b>🪝 Requests vs rules</b><p>If it <i>must</i> happen, use a hook or a permission, not a sentence in a prompt.</p></div>
+    <div class="card"><b>📦 Share it</b><p>It’s all files: commit them, or bundle them as a plugin so the whole team gets the same agent.</p></div>
+  </div>
+  <div class="row"><a class="btn primary" data-nexttopic>Next →</a></div>
+  <aside class="notes"><span class="tag time">⏱ 30 sec</span></aside>
+</section>
+
+<script src="../assets/course.js"></script>
+<script src="../assets/widgets.js"></script>
+<script>
+const { $, $$, cv } = W;
+
+W.clickInfo($("#kit"), [
+  { icon: "📌", title: "Instruction file", sub: "CLAUDE.md / AGENTS.md", c: "autonomy", html: "<p>A markdown file loaded into <b>every</b> session: project overview, commands, conventions, do’s and don’ts.</p><p><b>Use for:</b> short, always-relevant facts. <b>Avoid:</b> long manuals, because they eat context every time.</p>" },
+  { icon: "⚡", title: "Slash commands", sub: "/review, /release-notes", c: "context", html: "<p>A saved prompt you trigger by name, optionally with arguments.</p><p><b>Use for:</b> prompts you type often. You decide when it runs.</p>" },
+  { icon: "📚", title: "Skills", sub: "SKILL.md + files", c: "knowledge", html: "<p>A folder with instructions, templates and scripts. Only its <b>description</b> sits in context; the rest loads when a task matches.</p><p><b>Use for:</b> procedures and know-how: “how we write release notes”, “how to build our decks”.</p>" },
+  { icon: "👥", title: "Subagents", sub: "specialist helpers", c: "model", html: "<p>A separate agent with its own instructions, tools and <b>fresh context</b>. The main agent delegates and gets back a summary.</p><p><b>Use for:</b> research that would flood the context, specialists (reviewer, tester), parallel work.</p>" },
+  { icon: "🪝", title: "Hooks", sub: "run on events, always", c: "warn", html: "<p>Your scripts, run by the harness at set moments: before or after a tool, at session start, when the agent stops…</p><p><b>Use for:</b> things that <b>must</b> happen: format code, block dangerous commands, notify you, log activity.</p>" },
+  { icon: "🔌", title: "MCP servers", sub: "connect systems", c: "action", html: "<p>Add external tools and data: Jira, GitHub, databases, docs (Topic 09).</p><p><b>Use for:</b> letting the agent reach systems beyond your files.</p>" },
+  { icon: "🔐", title: "Permissions", sub: "allow / ask / deny", c: "trust", html: "<p>Rules for which tools and commands may run without asking, need approval, or are forbidden.</p><p><b>Use for:</b> less approval-clicking on safe commands, and hard blocks on dangerous ones.</p>" },
+  { icon: "📦", title: "Plugins", sub: "bundle & share", c: "accent", html: "<p>A package of commands, skills, subagents, hooks and MCP servers installed in one step, often from a team or company marketplace.</p><p><b>Use for:</b> rolling out a standard setup to many people.</p>" },
+], { cols: 4 });
+
+/* ---- file explorer ---- */
+const FILES = [
+  { p: "my-project/", d: 0, dir: 1 },
+  { p: "CLAUDE.md", d: 1, x: "📌 <b>Instruction file.</b> Loaded at the start of every session. Keep it short and always-true.",
+    b: "# Acme Billing Service\n\n## Commands\n- Install: pnpm install\n- Test: pnpm test:unit\n- Lint: pnpm lint\n\n## Conventions\n- TypeScript strict mode; no `any`\n- Never edit files in /generated\n- Money is stored in cents (integers)\n\n## Before finishing\n- Run tests and lint; both must pass" },
+  { p: ".mcp.json", d: 1, x: "🔌 <b>MCP servers</b> shared with the team: which external systems this project’s agent can reach.",
+    b: "{\n  \"mcpServers\": {\n    \"jira\":   { \"type\": \"http\", \"url\": \"https://mcp.example.com/jira\" },\n    \"db\":     { \"command\": \"npx\", \"args\": [\"-y\", \"some-postgres-mcp\", \"--read-only\"] }\n  }\n}" },
+  { p: ".claude/", d: 1, dir: 1 },
+  { p: "settings.json", d: 2, x: "🔐🪝 <b>Permissions and hooks.</b> Enforced by the harness, not left to the model.",
+    b: "{\n  \"permissions\": {\n    \"allow\": [\"Bash(pnpm test:*)\", \"Bash(pnpm lint)\"],\n    \"deny\":  [\"Read(./.env)\", \"Bash(rm -rf:*)\"]\n  },\n  \"hooks\": {\n    \"PostToolUse\": [{\n      \"matcher\": \"Edit|Write\",\n      \"hooks\": [{ \"type\": \"command\", \"command\": \".claude/hooks/format.sh\" }]\n    }]\n  }\n}" },
+  { p: "commands/", d: 2, dir: 1 },
+  { p: "release-notes.md", d: 3, x: "⚡ <b>Slash command.</b> Type <code>/release-notes v2.4</code> and this prompt runs.",
+    b: "Write release notes for version $ARGUMENTS.\n\n1. List merged PRs since the last tag (use git log).\n2. Group into Features, Fixes, Internal.\n3. Plain English, one line each, customer-facing tone.\n4. Save to CHANGELOG.md under a new heading." },
+  { p: "skills/", d: 2, dir: 1 },
+  { p: "brand-voice/", d: 3, dir: 1 },
+  { p: "SKILL.md", d: 4, x: "📚 <b>Skill.</b> Only the name and description sit in context. The body (and the template next to it) load when someone asks for customer-facing copy.",
+    b: "---\nname: brand-voice\ndescription: Write customer-facing copy (emails, release\n  notes, web text) in Acme's brand voice. Use whenever\n  text will be read by customers.\n---\n\n# Acme brand voice\n- Warm, direct, no jargon; short sentences\n- Say \"we\", never \"the company\"\n- Never promise dates we haven't confirmed\n\nFor press releases, start from templates/press-release.md" },
+  { p: "templates/press-release.md", d: 4, x: "📄 A <b>supporting file</b> inside the skill folder, loaded only if the skill needs it.", b: "# [Headline: what's new, in plain words]\n\n**[City, date]**: [One-sentence summary]\n\n[Why it matters to customers: 2-3 sentences]\n\n> \"[Quote from a named person]\"\n\n[Availability and how to get it]" },
+  { p: "agents/", d: 2, dir: 1 },
+  { p: "security-reviewer.md", d: 3, x: "👥 <b>Subagent.</b> A specialist with its own instructions, a restricted set of tools (read-only here) and a fresh context.",
+    b: "---\nname: security-reviewer\ndescription: Reviews code changes for security issues.\n  Use after significant changes to auth, payments or\n  user data.\ntools: Read, Grep, Glob\n---\n\nYou are a meticulous application-security reviewer.\nCheck for: injection, secrets in code, missing auth\nchecks, unsafe deserialisation, logging of personal data.\nReport findings by severity with file:line references.\nDo not modify files." },
+];
+$("#tree").innerHTML = FILES.map((f, i) => `<div data-i="${i}" style="padding-left:${8 + f.d * 18}px">${f.dir ? "📁" : "📄"} ${f.p}</div>`).join("");
+function showFile(i) {
+  const f = FILES[i]; if (f.dir) return;
+  $$("#tree div").forEach((d) => d.classList.toggle("on", +d.dataset.i === i));
+  $("#fileExpl").innerHTML = f.x; $("#fileBody").textContent = f.b;
+}
+$$("#tree div").forEach((d) => (d.onclick = () => showFile(+d.dataset.i)));
+showFile(1);
+
+/* ---- skills progressive disclosure ---- */
+const SKILLS = [
+  { n: "brand-voice", d: "Write customer-facing copy in Acme’s voice.", body: "# Acme brand voice\n- Warm, direct, no jargon…\n- Template: press-release.md (loaded)", full: 2400 },
+  { n: "quarterly-deck", d: "Build quarterly business review slides in our template.", body: "# QBR deck\n1. Pull metrics from the BI export…\n2. Use template qbr.pptx…", full: 3100 },
+  { n: "incident-report", d: "Write post-incident reports in our standard format.", body: "# Incident report\nSections: Summary, Timeline, Impact, Root cause…", full: 1800 },
+  { n: "sql-style", d: "Write SQL following our warehouse conventions.", body: "# SQL style\n- snake_case, CTEs over subqueries…", full: 1500 },
+  { n: "contract-review", d: "First-pass review of vendor contracts against our checklist.", body: "# Contract checklist\n- Liability cap, termination, data processing…", full: 4200 },
+];
+const TASKS = [["✍️ Write a launch announcement", "brand-voice"], ["📊 Make the Q3 review deck", "quarterly-deck"], ["🐛 Fix a failing unit test", null], ["📝 Write up last night’s outage", "incident-report"]];
+$("#skTasks").innerHTML = TASKS.map(([t], i) => `<button class="btn" data-i="${i}">${t}</button>`).join("");
+function renderSkills(ti) {
+  const want = TASKS[ti][1];
+  $$("#skTasks .btn").forEach((b) => b.classList.toggle("primary", +b.dataset.i === ti));
+  $("#skCtx").innerHTML = '<div class="label">On the desk (skill descriptions)</div>' + SKILLS.map((s) => `<div class="sk ${s.n === want ? "loaded" : ""}"><b>${s.n}</b>: <span class="muted">${s.d}</span><div class="body">${s.body}</div></div>`).join("");
+  const base = SKILLS.length * 40, extra = want ? SKILLS.find((s) => s.n === want).full : 0;
+  const all = SKILLS.reduce((a, s) => a + s.full, 0);
+  $("#skTok").textContent = (base + extra).toLocaleString() + " tokens";
+  $("#skNote").innerHTML = want ? `Loaded <b>${want}</b> in full because the task matched its description. If every skill were always loaded, it would be ${all.toLocaleString()} tokens.` : `No skill matches a bug fix, so only the short descriptions are on the desk (${base} tokens).`;
+}
+$("#skTasks").onclick = (e) => { const b = e.target.closest("button"); if (b) renderSkills(+b.dataset.i); };
+renderSkills(0);
+
+/* ---- subagents ---- */
+const bar = (pct, c, lbl) => `<div class="label">${lbl}</div><div class="ctxbar"><i data-w="${pct}" style="background:${c}"></i></div>`;
+W.tabs($("#subTabs"), [
+  { label: "😵 Without subagents", html: `<div class="split"><div class="agentbox">${bar(94, "var(--bad)", "🧠 Main agent’s context")}
+      <p style="font-size:14px">Reads three full competitor pricing pages (~30K tokens each), plus notes, plus your conversation…</p>
+      <p style="color:var(--bad);font-size:14px">⚠ The desk is nearly full. Earlier instructions get compacted away, attention is diluted, and the summary quality drops.</p></div>
+      <div class="callout" style="--c:var(--bad)">Everything the agent reads stays on its desk, including all the irrelevant parts of each web page.</div></div>` },
+  { label: "👥 With subagents", html: `<div class="stack-v"><div class="subs">
+      <div class="agentbox">${bar(70, "var(--c-model)", "🔎 Subagent: Competitor A")}<p class="muted" style="font-size:13px">Reads A’s pages in its own context → returns 1 paragraph</p></div>
+      <div class="agentbox">${bar(65, "var(--c-model)", "🔎 Subagent: Competitor B")}<p class="muted" style="font-size:13px">Reads B’s pages → returns 1 paragraph</p></div>
+      <div class="agentbox">${bar(75, "var(--c-model)", "🔎 Subagent: Competitor C")}<p class="muted" style="font-size:13px">Reads C’s pages → returns 1 paragraph</p></div></div>
+      <div class="agentbox">${bar(16, "var(--good)", "🧠 Main agent’s context: receives three short summaries")}<p style="color:var(--good);font-size:14px">✅ Clean desk, focused summary, and the three researchers ran in parallel.</p></div></div>` },
+], { onChange: (i, body) => requestAnimationFrame(() => setTimeout(() => $$("i[data-w]", body).forEach((x) => (x.style.width = x.dataset.w + "%")), 60)) });
+
+/* ---- hooks & permissions simulator ---- */
+const CMDS = [
+  { c: "pnpm test:unit", steps: [["ok", "🔐 Permissions: matches allow rule <code>Bash(pnpm test:*)</code>, so it runs without asking"], ["ok", "🪝 PreToolUse hook: no dangerous pattern, allowed"], ["ok", "▶️ Runs: 48 tests passed"]] },
+  { c: "rm -rf ./build", steps: [["stop", "🔐 Permissions: matches deny rule <code>Bash(rm -rf:*)</code>"], ["stop", "⛔ Blocked. The model is told the command was denied and must find another way."]] },
+  { c: "cat .env", steps: [["stop", "🔐 Permissions: deny rule <code>Read(./.env)</code> covers reading the secrets file"], ["stop", "⛔ Blocked. Secrets stay secret, even if a prompt injection asks for them."]] },
+  { c: "git push --force origin main", steps: [["ask", "🔐 Permissions: no rule, so the user would normally be asked…"], ["stop", "🪝 PreToolUse hook <code>block-dangerous.sh</code>: force-push to main detected → exit code 2 (block)"], ["stop", "⛔ Blocked by the hook, even if the user clicks yes. Guaranteed."]] },
+  { c: "Edit src/auth.ts", steps: [["ask", "🔐 Permissions: edits need approval in this mode. User approves ✅"], ["ok", "▶️ File edited"], ["ok", "🪝 PostToolUse hook: <code>format.sh</code> runs the formatter on the file automatically"]] },
+];
+$("#cmds").innerHTML = CMDS.map((c, i) => `<button class="btn" data-i="${i}">${c.c}</button>`).join("");
+$("#cmds").onclick = (e) => {
+  const b = e.target.closest("button"); if (!b) return;
+  $$("#cmds .btn").forEach((x) => x.classList.toggle("primary", x === b));
+  const c = CMDS[+b.dataset.i];
+  $("#gate").innerHTML = `<div class="muted">🤖 Agent wants to run: <code>${c.c}</code></div>` + c.steps.map(([k, t], i) => `<div class="${k}" style="animation-delay:${(i + 1) * 0.35}s">${t}</div>`).join("");
+};
+
+const OPT = [{ label: "📌 Instruction file", c: "autonomy" }, { label: "⚡ Slash command", c: "context" }, { label: "📚 Skill", c: "knowledge" }, { label: "👥 Subagent", c: "model" }, { label: "🪝 Hook", c: "warn" }, { label: "🔌 MCP server", c: "action" }, { label: "🔐 Permissions", c: "trust" }, { label: "📦 Plugin", c: "accent" }];
+W.classify($("#which"), [
+  { text: "Every session should know we use pnpm and that tests run with <code>pnpm test:unit</code>.", a: 0, why: "Short, always-true project facts go in the instruction file." },
+  { text: "Code must <b>always</b> be formatted after every edit, with no exceptions.", a: 4, why: "“Always, no exceptions” means a hook. A prompt can be forgotten." },
+  { text: "A detailed procedure with templates for writing our quarterly business review.", a: 2, why: "Procedure + templates, needed only sometimes: a skill." },
+  { text: "A thorough security review of a big change, without flooding the main conversation.", a: 3, why: "A specialist in its own fresh context: a subagent." },
+  { text: "Let the agent read and create Jira tickets.", a: 5, why: "Connecting an external system: an MCP server." },
+  { text: "Never allow the agent to read <code>.env</code> files.", a: 6, why: "A hard deny rule in permissions (or a hook)." },
+  { text: "I type the same “review this PR for style issues” prompt 10 times a day.", a: 1, why: "A prompt you trigger yourself: a slash command." },
+  { text: "Give 40 engineers the same skills, hooks and MCP setup in one install.", a: 7, why: "Bundle it as a plugin." },
+], OPT, { cols: 2 });
+
+W.quiz($("#quiz"), [
+  { q: "Which customisation is loaded into every single session?", o: ["Skill", "Instruction file (CLAUDE.md)", "Subagent", "Plugin"], a: 1, e: "Instruction files are always loaded, so keep them short." },
+  { q: "Why can you install many skills without filling the context?", o: ["They’re compressed", "Only their short descriptions are loaded until needed", "They run in the cloud", "They don’t use tokens"], a: 1, e: "Progressive disclosure: the full content loads only when relevant." },
+  { q: "“The agent must never push to main” is best enforced with…", o: ["A sentence in CLAUDE.md", "A skill", "A hook or a permission rule", "A subagent"], a: 2, e: "If it must be guaranteed, use deterministic enforcement: hooks or permissions." },
+]);
+</script>
+<script src="../assets/deck.js"></script>
+</body>
+</html>

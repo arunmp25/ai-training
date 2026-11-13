@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Topic 08b · Tools deep dive</title>
+<link rel="stylesheet" href="../assets/style.css">
+<link rel="stylesheet" href="../assets/widgets.css">
+<style>
+  .def { font-family: ui-monospace, Menlo, monospace; font-size: 13px; line-height: 1.45; background: var(--card2); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; white-space: pre; overflow-x: auto; }
+  .def .part { --c: var(--accent); border-radius: 5px; padding: 1px 2px; cursor: pointer; transition: background .2s; outline: 1px dashed color-mix(in srgb, var(--c) 50%, transparent); }
+  .def .part:hover { background: color-mix(in srgb, var(--c) 18%, transparent); }
+  .def .part.on { background: color-mix(in srgb, var(--c) 30%, transparent); outline: 2px solid var(--c); }
+  .msgs { display: grid; gap: 8px; max-height: 56vh; overflow-y: auto; }
+  .msg { --c: var(--accent); border: 1px solid var(--line); border-left: 4px solid var(--c); border-radius: 10px; background: var(--card); padding: 8px 12px; font-size: 13px; animation: slideIn .35s ease; }
+  .msg .role { font-size: 11px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: var(--c); }
+  .msg pre { margin: 4px 0 0; font: 12.5px/1.5 ui-monospace, Menlo, monospace; white-space: pre-wrap; }
+  .msg.new { box-shadow: 0 0 0 2px var(--c); }
+  .gantt { display: grid; gap: 8px; }
+  .g-row { display: grid; grid-template-columns: 170px 1fr; gap: 10px; align-items: center; font-size: 13.5px; }
+  .g-track { position: relative; height: 26px; background: var(--card2); border-radius: 6px; }
+  .g-bar { position: absolute; top: 3px; height: 20px; border-radius: 5px; font-size: 11.5px; font-weight: 700; color: #fff; display: flex; align-items: center; padding: 0 6px; white-space: nowrap; overflow: hidden; transition: left .5s, width .5s; }
+  .tc-out { min-height: 200px; }
+  .slider-out { font-size: 34px; font-weight: 800; font-variant-numeric: tabular-nums; }
+  .meter { height: 14px; border-radius: 99px; background: var(--card2); overflow: hidden; }
+  #fix .cl-item { padding: 8px 12px; } #fix .cl-text { font-size: 14px; margin-bottom: 6px; } #fix .cl-btns button { padding: 4px 9px; font-size: 12px; }
+  .meter i { display: block; height: 100%; transition: width .4s, background .4s; }
+</style>
+</head>
+<body class="deck" data-id="08b">
+
+<section class="slide title-slide" data-title="Welcome">
+  <div class="big-emoji">🛠️</div>
+  <div class="eyebrow">Topic 08b · Tools deep dive</div>
+  <h1>How tool use really works</h1>
+  <p class="sub">What a tool definition looks like, the exact messages that go back and forth, parallel calls, tool choice, errors, and how to design tools a model can use well.</p>
+  <aside class="notes"><span class="tag time">⏱ 30 sec</span><ul><li>Still no coding required. The JSON is shown so people can <i>recognise</i> it when they see it in logs or vendor docs.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="Anatomy of a tool definition">
+  <div class="eyebrow">The contract</div>
+  <h2>Anatomy of a tool definition</h2>
+  <p class="sub">Every tool is described with a <b>name</b>, a <b>description</b> and an <b>input schema</b> (JSON Schema). Click each highlighted part.</p>
+  <div class="split wide-left">
+    <div class="def" id="def"></div>
+    <div class="card ci-detail" id="defInfo" style="min-height:220px"></div>
+  </div>
+  <aside class="notes"><span class="tag time">⏱ 3 min</span><ul><li>Everything here goes into the context on every request, so it costs tokens and it’s read like a prompt.</li><li>Enums and “required” are guard rails: the model can’t invent a status like “sorta shipped”.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="The message exchange">
+  <div class="eyebrow">Under the hood</div>
+  <h2>The exact messages, step by step</h2>
+  <p class="sub">The model is <b>stateless</b>: every request re-sends the whole conversation. Watch the message list grow. Question: <b>“Is order 4512 delayed? If so, email the customer.”</b></p>
+  <div class="split wide-right">
+    <div class="stack-v"><div id="mxCtrl"></div><div id="mxLog" style="max-height:44vh"></div></div>
+    <div><div class="label">The conversation sent to the model (messages)</div><div class="msgs" id="msgs"></div></div>
+  </div>
+  <aside class="notes"><span class="tag time">⏱ 4 min</span><ul><li>Key details: the model ends its turn with <code>stop_reason: "tool_use"</code>, meaning “I’m waiting for a result”. Each call has an <b>id</b>, and the result must quote the same id.</li><li>Two round trips here: look up the order, then send the email. That’s already a small agent loop (Topic 10).</li><li>Field names differ slightly between vendors; the shape is the same everywhere.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="Parallel vs sequential">
+  <div class="eyebrow">Many tools at once</div>
+  <h2>Parallel or one after another?</h2>
+  <p class="sub">If calls don’t depend on each other, the model can ask for several in <b>one turn</b>. If one needs another’s result, they must run in sequence. Pick a request.</p>
+  <div id="parTabs"></div>
+  <aside class="notes"><span class="tag time">⏱ 2 min</span><ul><li>Parallel calls save round trips, which means less waiting and fewer tokens re-sent.</li><li>The harness decides whether to actually run them in parallel. Writes are often run one at a time on purpose.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="Tool choice">
+  <div class="eyebrow">Steering</div>
+  <h2>Tool choice: who decides whether a tool is used?</h2>
+  <p class="sub">Your app can tell the model how to use tools on each request. Request: <b>“Hi! What can you help me with?”</b> with the tool <code>get_order_status</code> available.</p>
+  <div id="choiceTabs"></div>
+  <aside class="notes"><span class="tag time">⏱ 2 min</span><ul><li><b>auto</b> is the default and right most of the time.</li><li>Forcing a specific tool is a neat trick for <b>structured output</b>: force <code>record_invoice</code> and you always get JSON in that shape (two slides on).</li></ul></aside>
+</section>
+
+<section class="slide" data-title="When tools fail">
+  <div class="eyebrow">Errors</div>
+  <h2>When a tool fails, the error message is a prompt</h2>
+  <p class="sub">The customer typed their order number as “45-12”. The tool call fails. Compare what the model can do with each error message.</p>
+  <div id="errTabs"></div>
+  <aside class="notes"><span class="tag time">⏱ 2 min</span><ul><li>Return errors <i>to the model</i> (marked as an error) instead of crashing. A clear message lets it fix its own input or ask the user.</li><li>Also: set timeouts, cap retries, and never put secrets or stack traces in error text.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="Structured output">
+  <div class="eyebrow">A handy trick</div>
+  <h2>Tools as a form to fill in: structured output</h2>
+  <p class="sub">Need clean data, not prose? Define a tool whose schema is the shape you want and ask the model to call it. Your app just reads the input. Toggle the schema fields.</p>
+  <div class="split">
+    <div class="stack-v">
+      <div class="card" style="font-size:14px;line-height:1.5"><div class="label">Input: an email</div>“Hi, please find attached invoice INV-2209 from Northwind Traders for €4,180.50, due 30 Nov 2026. PO number 7781. Thanks, Sam”</div>
+      <div class="pill-row" id="soFields"></div>
+    </div>
+    <div class="stack-v"><div class="label">Model’s tool call: record_invoice(…)</div><pre class="code" id="soOut"></pre></div>
+  </div>
+  <aside class="notes"><span class="tag time">⏱ 2 min</span><ul><li>Great for extraction: invoices, CVs, support tickets, meeting notes into tasks.</li><li>Many APIs also offer a dedicated “structured output” or “JSON schema” mode that does the same thing.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="Where tools run">
+  <div class="eyebrow">Three kinds</div>
+  <h2>Who runs the tool?</h2>
+  <p class="sub">Click each kind.</p>
+  <div id="kinds"></div>
+  <aside class="notes"><span class="tag time">⏱ 2 min</span><ul><li>From the model’s point of view they all look the same: a name, a description, a schema. The difference is who executes and who is responsible.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="Designing good tools">
+  <div class="eyebrow">Tool design</div>
+  <h2>Designing tools a model can use well</h2>
+  <p class="sub">Tools are a user interface for the model. Flip each card.</p>
+  <div id="design"></div>
+  <aside class="notes"><span class="tag time">⏱ 3 min</span><ul><li>The biggest anti-pattern: wrapping every API endpoint as a tool. Design around <b>tasks</b> the model needs to do, not around your API.</li><li>Return what helps the next step: names and IDs, not 5 MB of raw JSON.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="How many tools?">
+  <div class="eyebrow">Too much of a good thing</div>
+  <h2>How many tools is too many?</h2>
+  <p class="sub">Every tool definition sits in the context on every request. Drag the slider.</p>
+  <div class="split wide-left">
+    <div class="stack-v">
+      <div><div class="label">Tools connected</div><input type="range" id="nTools" min="3" max="150" value="10"></div>
+      <div class="row" style="gap:30px"><div><div class="label">Tools</div><div class="slider-out" id="ntOut"></div></div><div><div class="label">Tokens of definitions</div><div class="slider-out" id="tokOut"></div></div></div>
+      <div><div class="label">Share of a 200K context window used before anyone types</div><div class="meter"><i id="ctxM"></i></div></div>
+      <div><div class="label">Chance of picking the right tool (illustrative)</div><div class="meter"><i id="accM"></i></div></div>
+      <div class="callout" id="ntNote" style="font-size:14.5px"></div>
+    </div>
+    <div class="stack-v"><div class="label">What teams do about it</div><div id="fixes"></div></div>
+  </div>
+  <aside class="notes"><span class="tag time">⏱ 2 min</span><ul><li>Rough figure: 200–800 tokens per tool definition. Plugging in five MCP servers can easily add 100+ tools.</li><li>The accuracy curve is illustrative, not a benchmark, but the trend is real: more similar-looking tools, more confusion.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="Fix the tool">
+  <div class="eyebrow">Your turn</div>
+  <h2>What’s wrong with this tool?</h2>
+  <p class="sub">For each definition, pick the main problem.</p>
+  <div id="fix"></div>
+  <aside class="notes"><span class="tag time">⏱ 3 min</span></aside>
+</section>
+
+<section class="slide" data-title="Quick check">
+  <div class="eyebrow">Quick check</div>
+  <h2>Did it click?</h2>
+  <div id="quiz"></div>
+  <aside class="notes"><span class="tag time">⏱ 1 min</span></aside>
+</section>
+
+<section class="slide" data-title="Takeaways">
+  <div class="eyebrow">Takeaways</div>
+  <h2>What to remember</h2>
+  <div class="cols-3" style="margin:10px 0 24px">
+    <div class="card"><b>📜 Name + description + schema</b><p>That’s all the model knows about a tool. Write it like a prompt; use enums and required fields as guard rails.</p></div>
+    <div class="card"><b>🔁 Request → result, by id</b><p>The model stops with a tool_use; your app runs it and returns a tool_result with the same id. Repeat until done.</p></div>
+    <div class="card"><b>🧰 Few, task-shaped tools</b><p>Clear errors, concise results, and only the tools the task needs.</p></div>
+  </div>
+  <div class="row"><a class="btn primary" data-nexttopic>Next →</a></div>
+  <aside class="notes"><span class="tag time">⏱ 30 sec</span><ul><li>Bridge: “Every company wiring tools into every AI app separately is a mess. That’s the problem MCP solves.”</li></ul></aside>
+</section>
+
+<script src="../assets/course.js"></script>
+<script src="../assets/widgets.js"></script>
+<script>
+const { $, $$, cv } = W;
+
+/* ---- anatomy ---- */
+const PARTS = {
+  name: { c: "model", t: "name", h: "<p>A short, unique, descriptive identifier in <code>snake_case</code>. The model writes it back to call the tool.</p><p>✅ <code>get_order_status</code> &nbsp; ❌ <code>tool1</code>, <code>doStuff</code></p><p>With many tools, a prefix helps: <code>shop_get_order</code>, <code>crm_find_customer</code>.</p>" },
+  desc: { c: "context", t: "description", h: "<p>The most important part. Say <b>what it does, when to use it, when not to, and what it returns</b>. The model chooses tools almost entirely from this text.</p><p>Write it for a new colleague: 3–4 clear sentences beat one vague line.</p>" },
+  schema: { c: "knowledge", t: "input_schema", h: "<p>A <b>JSON Schema</b> describing the inputs: their names, types and rules. The model’s request must fit it, and your app should validate it again.</p>" },
+  prop: { c: "action", t: "a property", h: "<p>Each input has a <b>type</b> (string, number, boolean, array, object) and its own <b>description</b>, with format hints and an example.</p><p>“4-digit order number, e.g. 4512” is far better than just “id”.</p>" },
+  enumv: { c: "autonomy", t: "enum", h: "<p>A fixed list of allowed values. The model can’t make up a value outside it. Use enums whenever the options are known.</p>" },
+  req: { c: "trust", t: "required", h: "<p>Which inputs must always be given. Leave genuinely optional ones out of this list, and say what the default is in their description.</p>" },
+};
+const p = (k, txt) => `<span class="part" data-k="${k}" style="--c:${cv(PARTS[k].c)}">${txt}</span>`;
+$("#def").innerHTML = `{
+  "name": ${p("name", '"get_order_status"')},
+  "description": ${p("desc", `"Look up the live shipping status of ONE
+    customer order. Use when the user asks where an order
+    is or when it will arrive. Not for refunds. Returns
+    status, carrier and estimated delivery date."`)},
+  ${p("schema", '"input_schema"')}: {
+    "type": "object",
+    "properties": {
+      ${p("prop", `"order_id": {
+        "type": "string",
+        "description": "4-digit order number, e.g. 4512"
+      }`)},
+      "detail": {
+        "type": "string",
+        ${p("enumv", '"enum": ["summary", "full_tracking"]')},
+        "description": "How much detail. Default: summary"
+      }
+    },
+    ${p("req", '"required": ["order_id"]')}
+  }
+}`;
+function showPart(k) {
+  $$("#def .part").forEach((x) => x.classList.toggle("on", x.dataset.k === k));
+  const P = PARTS[k];
+  $("#defInfo").style.setProperty("--c", cv(P.c));
+  $("#defInfo").innerHTML = `<h3><code>${P.t}</code></h3>${P.h}`;
+}
+$("#def").onclick = (e) => { const x = e.target.closest(".part"); if (x) showPart(x.dataset.k); };
+showPart("desc");
+
+/* ---- message exchange ---- */
+const M = [
+  { r: "user", c: "accent", b: `"Is order 4512 delayed? If so, email the customer."` },
+  { r: "assistant", c: "model", b: `text: "Let me check that order."
+tool_use { id: "call_01", name: "get_order_status",
+           input: { "order_id": "4512" } }
+stop_reason: "tool_use"` },
+  { r: "user · tool_result", c: "action", b: `tool_result { tool_use_id: "call_01",
+  content: { "status": "delayed", "carrier": "BlueDart",
+             "new_eta": "2026-11-18", "email": "dana@example.com" } }` },
+  { r: "assistant", c: "model", b: `tool_use { id: "call_02", name: "send_email",
+  input: { "to": "dana@example.com",
+           "subject": "Update on your order 4512",
+           "body": "Sorry, your order is delayed… new ETA 18 Nov." } }
+stop_reason: "tool_use"` },
+  { r: "user · tool_result", c: "action", b: `tool_result { tool_use_id: "call_02",
+  content: { "sent": true, "message_id": "m-77" } }` },
+  { r: "assistant", c: "good", b: `text: "Yes: order 4512 is delayed (new ETA 18 Nov). I've emailed
+       dana@example.com to let them know."
+stop_reason: "end_turn"` },
+];
+let shown = 0;
+const renderMsgs = () => {
+  $("#msgs").innerHTML = `<div class="msg" style="--c:var(--muted)"><div class="role">system + tools (sent every time)</div><pre>tools: [get_order_status, send_email, …]</pre></div>` +
+    M.slice(0, shown).map((m, i) => `<div class="msg ${i === shown - 1 ? "new" : ""}" style="--c:${cv(m.c)}"><div class="role">${m.r}</div><pre>${m.b.replace(/</g, "&lt;")}</pre></div>`).join("");
+  $("#msgs").scrollTop = $("#msgs").scrollHeight;
+};
+const setShown = (n) => () => { shown = n; renderMsgs(); };
+W.stepper({
+  ctrl: $("#mxCtrl"), log: $("#mxLog"), interval: 3200, onReset: setShown(0),
+  steps: [
+    { who: "App → model (request 1)", c: "autonomy", html: "Sends the tool definitions + the user’s message.", onEnter: setShown(1) },
+    { who: "Model → app", c: "model", html: "Replies with a <b>tool_use</b> block and stops. It hasn’t looked anything up; it’s asking.", onEnter: setShown(2) },
+    { who: "App runs the tool", c: "action", html: "Validates the input, calls the order system, then appends a <b>tool_result</b> with the same id.", onEnter: setShown(3) },
+    { who: "App → model (request 2)", c: "autonomy", html: "Sends the <b>whole</b> conversation again. The model sees “delayed” and asks for the next tool.", onEnter: setShown(4) },
+    { who: "App: approval check", c: "trust", html: "<code>send_email</code> is irreversible, so the harness can ask a human to approve first. Approved → runs it → appends the result.", onEnter: setShown(5) },
+    { who: "Model → user (request 3)", c: "good", html: "With both results in context, it writes the final answer and ends its turn with <code>end_turn</code>.", onEnter: setShown(6) },
+  ],
+});
+
+/* ---- parallel vs sequential ---- */
+const bar = (l, w, c, txt) => `<div class="g-bar" style="left:${l}%;width:${w}%;background:${cv(c)}">${txt}</div>`;
+const gantt = (rows) => `<div class="gantt">${rows.map(([lbl, bars]) => `<div class="g-row"><span>${lbl}</span><div class="g-track">${bars}</div></div>`).join("")}</div>`;
+W.tabs($("#parTabs"), [
+  { label: "🌦️ “Weather in Pune, Delhi and Mumbai?”", html: `<div class="split"><div class="stack-v">
+      <div class="callout" style="--c:var(--good)">✅ <b>Independent</b>: three tool_use blocks in <b>one</b> model turn.</div>
+      <pre class="code">tool_use { id: "a", name: "get_weather", input: { city: "Pune" } }
+tool_use { id: "b", name: "get_weather", input: { city: "Delhi" } }
+tool_use { id: "c", name: "get_weather", input: { city: "Mumbai" } }</pre>
+      <p class="muted">All three results go back together, in one message.</p></div>
+      <div>${gantt([["🧠 Model", bar(0, 18, "model", "plan") + bar(78, 22, "model", "answer")], ["☁️ Pune", bar(20, 50, "action", "get_weather")], ["☁️ Delhi", bar(20, 56, "action", "get_weather")], ["☁️ Mumbai", bar(20, 44, "action", "get_weather")]])}
+      <p class="muted" style="margin-top:10px">2 model calls in total, tools overlap in time.</p></div></div>` },
+  { label: "🔗 “Find Dana’s last order and its status”", html: `<div class="split"><div class="stack-v">
+      <div class="callout" style="--c:var(--warn)">🔗 <b>Dependent</b>: the second call needs an ID from the first.</div>
+      <pre class="code">turn 1 → find_customer({ name: "Dana Lee" })
+          ← { customer_id: "C-88", last_order: "4512" }
+turn 2 → get_order_status({ order_id: "4512" })
+          ← { status: "in transit" }</pre>
+      <p class="muted">The model can’t guess “4512” before it sees the first result.</p></div>
+      <div>${gantt([["🧠 Model", bar(0, 14, "model", "plan") + bar(38, 14, "model", "next") + bar(80, 20, "model", "answer")], ["👤 find_customer", bar(15, 22, "action", "lookup")], ["📦 get_order_status", bar(53, 26, "action", "lookup")]])}
+      <p class="muted" style="margin-top:10px">3 model calls, strictly one after another.</p></div></div>` },
+]);
+
+/* ---- tool choice ---- */
+const choice = (mode, code, out, note, c) => `<div class="split"><div class="stack-v"><pre class="code">tool_choice: ${code}</pre><p>${mode}</p></div>
+  <div class="stack-v"><div class="bubble user" style="max-width:100%">Hi! What can you help me with?</div><div class="bubble ai" style="max-width:100%;border-color:${cv(c)}">${out}</div><div class="callout" style="--c:${cv(c)};font-size:14.5px">${note}</div></div></div>`;
+W.tabs($("#choiceTabs"), [
+  { label: "🤖 auto", html: choice("The model decides whether to call a tool. <b>The default.</b>", `{ type: "auto" }`, "Hi! I can check where your orders are, when they’ll arrive, and answer questions about delivery. What’s your order number?", "✅ Just a greeting, so no tool needed. Sensible.", "good") },
+  { label: "☝️ any", html: choice("The model <b>must</b> call some tool, but picks which.", `{ type: "any" }`, "<code>get_order_status({ order_id: \"???\" })</code>", "❌ Forced to call a tool with nothing to look up, so it invents an input. Use only when a tool call is always appropriate.", "bad") },
+  { label: "🎯 specific tool", html: choice("The model <b>must</b> call this exact tool.", `{ type: "tool", name: "get_order_status" }`, "<code>get_order_status({ order_id: \"\" })</code>", "🟡 Wrong for chat, but perfect for pipelines: e.g. always call <code>record_invoice</code> to extract data.", "warn") },
+  { label: "🚫 none", html: choice("Tools are visible but may <b>not</b> be called.", `{ type: "none" }`, "Hi! I can help with questions about your orders and deliveries.", "✅ Useful for a “just summarise” step where you don’t want side effects.", "good") },
+]);
+
+/* ---- errors ---- */
+const errView = (res, model, note, c) => `<div class="split"><div class="stack-v"><div class="label">Tool result returned to the model</div><pre class="code">${res}</pre></div>
+  <div class="stack-v"><div class="label">What the model does next</div><div class="bubble ai" style="max-width:100%;border-color:${cv(c)}">${model}</div><div class="callout" style="--c:${cv(c)};font-size:14.5px">${note}</div></div></div>`;
+W.tabs($("#errTabs"), [
+  { label: "😵 Unhelpful error", html: errView(`tool_result {\n  tool_use_id: "call_01",\n  is_error: true,\n  content: "Error 500"\n}`, "Sorry, something went wrong on our side. Please try again later.", "❌ It can’t tell whether to retry, fix the input, or give up, so it gives up. The customer leaves frustrated.", "bad") },
+  { label: "✨ Helpful error", html: errView(`tool_result {\n  tool_use_id: "call_01",\n  is_error: true,\n  content: "order_id must be exactly 4 digits.\n   Received '45-12'. Did you mean '4512'?"\n}`, "<code>get_order_status({ order_id: \"4512\" })</code> → in transit, arriving Thursday. 📦", "✅ The error explains what was wrong and how to fix it, so the model corrects itself.", "good") },
+  { label: "💥 Crash", html: errView(`(no tool_result at all:\n the app threw an exception\n and the conversation ended)`, "—", "❌ Never let a tool error crash the loop. Catch it and return it as a tool_result with <code>is_error: true</code>.", "bad") },
+]);
+
+/* ---- structured output ---- */
+const SO = [["vendor", '"Northwind Traders"'], ["invoice_number", '"INV-2209"'], ["amount", "4180.50"], ["currency", '"EUR"'], ["due_date", '"2026-11-30"'], ["po_number", '"7781"'], ["approver", "null"]];
+const soOn = new Set([0, 1, 2, 3, 4]);
+function renderSO() {
+  $("#soFields").innerHTML = SO.map(([k], i) => `<button class="btn ${soOn.has(i) ? "primary" : ""}" data-i="${i}">${soOn.has(i) ? "✓ " : "+ "}${k}</button>`).join("");
+  const keys = SO.filter((_, i) => soOn.has(i));
+  $("#soOut").innerHTML = `{\n${keys.map(([k, v]) => `  "${k}": ${v}${k === "approver" ? '  <span class="muted">// not in the email: null, not invented</span>' : ""}`).join(",\n")}\n}`;
+}
+$("#soFields").onclick = (e) => { const b = e.target.closest("button"); if (!b) return; const i = +b.dataset.i; soOn.has(i) ? soOn.delete(i) : soOn.add(i); renderSO(); };
+renderSO();
+
+/* ---- kinds ---- */
+W.clickInfo($("#kinds"), [
+  { icon: "🖥️", title: "Your tools (client tools)", sub: "you write and run them", c: "action", html: "<p>Functions in your own app: look up an order, create a ticket, query your database. <b>Your code executes them</b>, so you control permissions, logging and approvals.</p>" },
+  { icon: "☁️", title: "Provider tools (server tools)", sub: "the AI vendor runs them", c: "model", html: "<p>Built-in tools the model provider runs for you, such as <b>web search</b>, <b>web fetch</b> or <b>code execution</b> in a sandbox. You just switch them on; results come back already inside the response.</p><p>Less work, less control: check data handling for your use case.</p>" },
+  { icon: "🔌", title: "MCP tools", sub: "plugged in from an MCP server", c: "autonomy", html: "<p>Tools offered by an <b>MCP server</b> (GitHub, Slack, your CRM…). The harness discovers them and passes them to the model like any other tool. Write once, use in any MCP-compatible app. Next topic.</p>" },
+], { cols: 3 });
+
+/* ---- design ---- */
+W.flips($("#design"), [
+  { front: "🎯 Task-shaped, not API-shaped", back: "One <code>schedule_meeting</code> beats <code>list_users</code> + <code>get_calendar</code> + <code>find_slot</code> + <code>create_event</code>. Fewer steps, fewer mistakes." },
+  { front: "📝 Say when NOT to use it", back: "“Not for refunds; use <code>issue_refund</code>.” Disambiguation between similar tools prevents most wrong picks." },
+  { front: "✂️ Return concise results", back: "Return the 5 fields that matter, not a 5 MB JSON dump. Big results eat the context window. Offer a <code>detail</code> option or pagination." },
+  { front: "🆔 Return useful IDs and names", back: "Include IDs the next call needs, plus human-readable names so the model can talk about them." },
+  { front: "🧯 Helpful errors", back: "Say what was wrong and how to fix it. The model will usually correct itself." },
+  { front: "🔁 Safe to retry", back: "Make writes idempotent (e.g. a request ID), so a retry doesn’t send two emails or issue two refunds." },
+], 3);
+
+/* ---- how many tools ---- */
+function renderNT() {
+  const n = +$("#nTools").value, tok = n * 450, pct = tok / 200000 * 100, acc = Math.max(55, 98 - Math.max(0, n - 12) * 0.32);
+  $("#ntOut").textContent = n; $("#tokOut").textContent = tok.toLocaleString();
+  $("#ctxM").style.width = Math.min(100, pct) + "%"; $("#ctxM").style.background = pct > 20 ? "var(--bad)" : pct > 8 ? "var(--warn)" : "var(--good)";
+  $("#accM").style.width = acc + "%"; $("#accM").style.background = acc < 75 ? "var(--bad)" : acc < 90 ? "var(--warn)" : "var(--good)";
+  const nn = $("#ntNote");
+  if (n <= 15) { nn.style.setProperty("--c", "var(--good)"); nn.innerHTML = `✅ ~${pct.toFixed(1)}% of the window. Easy for the model to choose.`; }
+  else if (n <= 50) { nn.style.setProperty("--c", "var(--warn)"); nn.innerHTML = `🟡 ${pct.toFixed(0)}% of the window spent on tool menus, and similar tools start to get confused.`; }
+  else { nn.style.setProperty("--c", "var(--bad)"); nn.innerHTML = `❌ ${pct.toFixed(0)}% of the window gone before any work, plus slower, costlier, more wrong picks.`; }
+}
+$("#nTools").oninput = renderNT; renderNT();
+W.clickInfo($("#fixes"), [
+  { icon: "🔎", title: "Tool search", c: "knowledge", html: "<p>Load only a search tool at first; the model looks up the tools it needs and they get loaded on demand.</p>" },
+  { icon: "🧩", title: "Subagents", c: "autonomy", html: "<p>Give each specialised subagent only its own small toolset (Topic 12).</p>" },
+  { icon: "✂️", title: "Prune and merge", c: "action", html: "<p>Remove unused tools; merge near-duplicates into one task-shaped tool.</p>" },
+], { cols: 3 });
+
+/* ---- fix the tool ---- */
+W.classify($("#fix"), [
+  { text: `<code>{ name: "search", description: "Searches." }</code>`, a: 0, why: "Search what? When? Returns what? The model has to guess." },
+  { text: `<code>update_ticket</code> with input <code>priority: string</code> described as “the priority”`, a: 1, why: "Use an <code>enum</code>: [\"low\", \"normal\", \"high\", \"urgent\"]. Otherwise you’ll get “kinda urgent”." },
+  { text: `<code>get_customer</code> returns the full CRM record: 340 fields, 60 KB`, a: 2, why: "Return the handful of fields that matter; offer more on request." },
+  { text: `<code>delete_all_records</code> available to a public support chatbot`, a: 3, why: "No support bot needs it. Don’t give the tool at all, or require human approval." },
+  { text: `<code>api_v2_post_users_id_prefs</code>, <code>api_v2_get_users_id_prefs</code>, … (40 endpoint tools)`, a: 4, why: "Wrap tasks, not endpoints: e.g. one <code>update_notification_settings</code>." },
+], [{ label: "📝 Vague description", c: "context" }, { label: "🔒 Needs an enum", c: "autonomy" }, { label: "🐘 Returns too much", c: "action" }, { label: "⚠️ Too dangerous", c: "bad" }, { label: "🧩 API-shaped", c: "model" }], { cols: 2 });
+
+W.quiz($("#quiz"), [
+  { q: "What does the model return when it wants a tool?", o: ["The tool’s result", "A tool_use block with a name, an id and inputs, then it stops", "An HTTP request it sends itself", "Nothing until the user approves"], a: 1, e: "It asks; your app runs the tool and replies with a tool_result carrying the same id." },
+  { q: "Why does the conversation get re-sent on every request?", o: ["For security", "The model is stateless: it only knows what’s in the current request", "To save tokens", "It isn’t re-sent"], a: 1, e: "Everything the model needs, including earlier tool results, must be in the context each time." },
+  { q: "“Compare the weather in three cities.” Best behaviour?", o: ["Three sequential turns", "Three tool calls in parallel in one turn", "Guess the weather", "One call with all three cities in the name"], a: 1, e: "The calls are independent, so they can be requested together." },
+  { q: "A tool fails because of bad input. Best tool_result?", o: ["“Error 500”", "Crash the app", "A clear is_error message saying what was wrong and how to fix it", "Return an empty success"], a: 2, e: "Helpful errors let the model correct itself." },
+  { q: "You want guaranteed JSON with fields vendor, amount, due_date. Simplest approach?", o: ["Ask nicely in the prompt", "Define a record_invoice tool with that schema and force tool_choice to it", "Fine-tune a model", "Use a higher temperature"], a: 1, e: "Forcing a specific tool gives you structured output in your schema." },
+]);
+</script>
+<script src="../assets/deck.js"></script>
+</body>
+</html>

@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Topic 5 · The context window</title>
+<link rel="stylesheet" href="../assets/style.css?v=3.2">
+<link rel="stylesheet" href="../assets/widgets.css?v=3.2">
+<link rel="stylesheet" href="../assets/story.css?v=3.2">
+<style>
+  .win { display: flex; gap: 4px; padding: 8px; border: 2px solid var(--text); border-radius: 12px; height: 70px; position: relative; }
+  .win .m { height: 100%; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; overflow: hidden;
+            white-space: nowrap; animation: pop .35s ease; padding: 0 4px; }
+  .win .m.user { background: color-mix(in srgb, var(--accent) 45%, transparent); }
+  .win .m.ai { background: color-mix(in srgb, var(--good) 35%, transparent); }
+  .win .m.sum { background: repeating-linear-gradient(45deg, color-mix(in srgb, var(--c-context) 45%, transparent) 0 8px, color-mix(in srgb, var(--c-context) 25%, transparent) 8px 16px); }
+  .win .m.fact { box-shadow: inset 0 0 0 2px var(--warn); }
+  .fell { margin-top: 10px; font-size: 13px; color: var(--muted); min-height: 20px; }
+  .fell s { color: var(--bad); }
+  .calc { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px 16px; }
+  .calc label { font-size: 13px; color: var(--muted); font-weight: 700; display: block; }
+  .calc input { width: 100%; padding: 9px 12px; border-radius: 10px; border: 1px solid var(--line); background: var(--card); color: var(--text); font: 600 16px var(--font); }
+  .money { font-size: 34px; font-weight: 800; }
+  .chatpane { display: flex; flex-direction: column; gap: 8px; padding: 14px; border-radius: 12px; background: var(--card2); min-height: 200px; }
+</style>
+</head>
+<body class="deck" data-id="04">
+
+<section class="slide title-slide" data-title="Welcome">
+  <div class="big-emoji">🗂️</div>
+  <div class="eyebrow">Session 1 · Topic 5</div>
+  <h1>The context window: the AI’s desk</h1>
+  <p class="sub">Everything the model uses must be on its desk at the moment it answers. How big is the desk, what’s on it, and what falls off?</p>
+  <aside class="notes"><span class="tag time">⏱ 30 sec</span><p class="say"><b>🎤 Say</b> Think of the context window as the AI’s desk. It can only use what is on the desk when it answers. Today: how big the desk is, what is on it, and what falls off.</p><ul><li>Analogy for the whole topic: a desk. The model can only use papers on the desk. It can’t open drawers by itself (unless it has tools).</li></ul></aside>
+</section>
+
+<section class="slide" data-title="The forgetful chat">
+  <div class="eyebrow">Example</div>
+  <h2>Why did it forget what I said this morning?</h2>
+  
+  <div class="stack-v" style="max-width:900px"><div class="bubble sys">9:00 am · message 1</div><div class="bubble user">Hi! I run Home Insurance. Today we’re planning the Q3 renewal campaign.</div><div class="bubble sys">5:45 pm · message 313</div><div class="bubble user">Now draft the summary for my team, like we discussed.</div><div class="bubble ai">Happy to! Could you tell me your name, your team, and what we discussed? 😊</div></div><div class="callout" style="--c:var(--accent);margin-top:16px;max-width:900px">The model has the memory of a goldfish: none at all. The app re-sends the conversation every time, and when it no longer fits, the oldest messages fall off.</div><div class="row" style="margin-top:14px"><button class="btn bts-btn" data-bts="stateless">🎬 Behind the scenes</button></div>
+  <aside class="notes"><span class="tag time">⏱ 2 min</span><p class="say"><b>🎤 Say</b> Everyone has had a long chat forget something from the morning. Nothing broke: the early messages simply fell off the desk.</p><ul><li>Almost everyone has had this happen in a long chat. Open Behind the scenes: message 1 was the first thing dropped.</li></ul></aside>
+</section>
+
+
+<section class="slide" data-title="What’s on the desk">
+  <div class="eyebrow">What fills it</div>
+  <h2>Your message is only a small part of what the model sees</h2>
+  <p class="sub">Tick and untick what goes into a request. Then try different window sizes.</p>
+  <div id="sizeTabs"></div>
+  <aside class="notes"><span class="tag time">⏱ 3 min</span><p class="say"><b>🎤 Say</b> Your message is a small part of what the model sees. Instructions, history, documents and tool results are all on the desk too.</p>
+    <ul><li>Point out how small “your message” is compared with the rest.</li>
+    <li>Turn on the 300-page manual with the small window: it overflows. Switch to large: it fits, but it costs more and adds noise (Topic 4).</li>
+    <li>Sizes are illustrative. Real limits vary by model and change often.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="When the desk is full">
+  <div class="eyebrow">Long conversations</div>
+  <h2>When the desk is full, something has to go</h2>
+  <p class="sub">Watch a long chat fill the window. Choose what happens when it overflows, then step through. The last question tests what the AI still “remembers”.</p>
+  <div class="row" style="margin-bottom:12px"><span class="label" style="margin:0">When full:</span><div id="strategy"></div></div>
+  <div class="win" id="win"></div>
+  <div class="fell" id="fell"></div>
+  <div class="split wide-right" style="margin-top:12px">
+    <div id="ovCtrl"></div>
+    <div id="ovLog" style="max-height:250px"></div>
+  </div>
+  <aside class="notes"><span class="tag time">⏱ 3 min</span><p class="say"><b>🎤 Say</b> When the desk is full, something has to go. Dropping the oldest messages loses facts. Summarising keeps the gist, and that is called compaction.</p>
+    <ul><li>Run it with “Drop oldest” first: the AI forgets Sam’s name, because that message fell off the desk.</li>
+    <li>Then with “Summarise”: the old messages are compressed into a note (called <b>compaction</b>), so the key facts survive.</li>
+    <li>Agent harnesses do compaction automatically on long tasks (Topic 15).</li></ul></aside>
+</section>
+
+<section class="slide" data-title="Every chat starts blank">
+  <div style="position:absolute;right:clamp(24px,5vw,72px);top:40px"><button class="btn bts-btn" data-bts="stateless">🎬 Behind the scenes</button></div>
+  <div class="eyebrow">Memory</div>
+  <h2>The model remembers nothing between chats</h2>
+  <p class="sub">“Memory” features work by <b>saving notes</b> and <b>putting them back on the desk</b> in the next chat. Flip the switch.</p>
+  <div class="toggle-row" style="margin-bottom:14px"><span class="switch" id="memSw"></span><b id="memLbl">Memory: off</b></div>
+  <div class="split">
+    <div><div class="label">Monday’s chat</div><div class="chatpane">
+      <div class="bubble user">I’m vegetarian, by the way.</div><div class="bubble ai">Noted! I’ll keep that in mind.</div></div></div>
+    <div><div class="label">Tuesday’s chat (new conversation)</div><div class="chatpane" id="tue"></div></div>
+  </div>
+  <aside class="notes"><span class="tag time">⏱ 2 min</span><p class="say"><b>🎤 Say</b> The model remembers nothing between chats. Memory features save notes and put them back on the desk next time. The app remembers, not the model.</p>
+    <ul><li>Key point: the <b>model</b> never learns from your chat. The <b>app</b> around it (the harness) saves a note and adds it to the context next time.</li>
+    <li>Same idea as instruction files like CLAUDE.md (Topic 16).</li></ul></aside>
+</section>
+
+<section class="slide seq-slide" data-title="Sequence: Every turn re-sends the whole conversati">
+  <div class="eyebrow">Sequence diagram</div>
+  <h2>Every turn re-sends the whole conversation</h2>
+  <p class="sub">Three turns of one chat. Watch the request get bigger each time.</p>
+  <div id="seqResend"></div>
+  <aside class="notes"><span class="tag time">⏱ 3 min</span><p class="say"><b>🎤 Say</b> This diagram shows why: every turn re-sends the whole conversation. Watch the request grow, until the oldest message, with the policy number, is dropped.</p><ul><li>Step through with → or the clicker. Each step shows the real message on the right.</li><li>The cost of a long chat grows every turn, because every turn pays for all earlier turns again.</li><li>Prompt caching reduces this cost; the idea stays the same.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="Bigger isn’t free">
+  <div class="eyebrow">Trade-offs</div>
+  <h2>A bigger desk isn’t free</h2>
+  <p class="sub">Flip each card.</p>
+  <div id="trade"></div>
+  <aside class="notes"><span class="tag time">⏱ 1 min</span><p class="say"><b>🎤 Say</b> A bigger desk is not free. It costs more, it is slower, and it adds noise that dilutes attention.</p><ul><li>Most important: <b>the whole conversation is re-sent every turn</b>. Turn 30 of a chat costs far more than turn 1.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="Cost calculator">
+  <div class="eyebrow">Tokens = money</div>
+  <h2>What does a request cost?</h2>
+  <p class="sub">Play with the numbers. Prices are <b>examples only</b>; check your provider. Notice what long chats do.</p>
+  <div class="split wide-left">
+    <div class="card calc">
+      <div><label>Tokens in per request</label><input type="number" id="cIn" value="3000"></div>
+      <div><label>Tokens out per request</label><input type="number" id="cOut" value="500"></div>
+      <div><label>Price per 1M input tokens ($)</label><input type="number" id="pIn" value="3" step="0.1"></div>
+      <div><label>Price per 1M output tokens ($)</label><input type="number" id="pOut" value="15" step="0.1"></div>
+      <div><label>Requests per day</label><input type="number" id="cReq" value="2000"></div>
+      <div><label>Turns per conversation (history re-sent)</label><input type="number" id="cTurns" value="1" min="1"></div>
+    </div>
+    <div class="card stack-v">
+      <div><div class="label">Per request</div><div class="money" id="mReq">—</div></div>
+      <div><div class="label">Per month (30 days)</div><div class="money" id="mMonth" style="color:var(--accent)">—</div></div>
+      <div class="muted" id="mNote" style="font-size:14px"></div>
+    </div>
+  </div>
+  <aside class="notes"><span class="tag time">⏱ 2 min</span><p class="say"><b>🎤 Say</b> Play with the numbers. The jump comes from long chats, because every turn pays again for all earlier turns.</p><ul><li>Set turns to 10 and watch the cost jump. Each turn re-sends all previous turns.</li><li>Output tokens usually cost several times more than input tokens.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="Quick check">
+  <div class="eyebrow">Quick check</div>
+  <h2>Did it click?</h2>
+  <div id="quiz"></div>
+  <aside class="notes"><span class="tag time">⏱ 1 min</span><p class="say"><b>🎤 Say</b> Quick check.</p></aside>
+</section>
+
+<section class="slide" data-title="Takeaways">
+  <div class="eyebrow">Takeaways</div>
+  <h2>What to remember</h2>
+  <div class="cols-3" style="margin:10px 0 24px">
+    <div class="card"><b>🗂️ The desk</b><p>The context window is everything the model can see right now: instructions, history, documents, tool results, your message.</p></div>
+    <div class="card"><b>🫥 No real memory</b><p>Memory is the app putting notes back on the desk. Overflow means dropping or summarising.</p></div>
+    <div class="card"><b>💸 Every token counts</b><p>Bigger context = more cost, slower answers and more noise. Put on the desk only what’s needed.</p></div>
+  </div>
+  <div class="row"><a class="btn primary" data-nexttopic>Next →</a></div>
+  <aside class="notes"><span class="tag time">⏱ 30 sec</span><p class="say"><b>🎤 Say</b> The desk is limited and shared. The most important thing on it is your prompt, so let us take a prompt apart.</p><ul><li>Bridge: “The most important thing on the desk is your prompt. Let’s take it apart.”</li></ul></aside>
+</section>
+
+<script src="../assets/course.js?v=3.2"></script>
+<script src="../assets/widgets.js?v=3.2"></script>
+<script>
+const { $, $$ } = W;
+
+/* ---- context bar with window sizes ---- */
+const PARTS = () => [
+  { label: "⚙️ System prompt", tokens: 1500, c: "context", on: true },
+  { label: "📌 Memory / instruction file", tokens: 2000, c: "autonomy", on: true },
+  { label: "🛠️ Tool definitions", tokens: 3000, c: "action", on: true },
+  { label: "💬 Conversation history", tokens: 9000, c: "model", on: true },
+  { label: "📄 Relevant policy section", tokens: 2500, c: "knowledge", on: true },
+  { label: "📚 Entire 300-page manual", tokens: 150000, c: "warn", on: false },
+  { label: "🔧 Tool results", tokens: 4000, c: "trust", on: false },
+  { label: "✉️ Your message", tokens: 120, c: "accent", on: true },
+  { label: "✍️ Room for the answer", tokens: 4000, c: "good", on: true },
+];
+W.tabs($("#sizeTabs"), [
+  { label: "Small window · 32K", html: '<div class="cb"></div>' },
+  { label: "Large window · 200K", html: '<div class="cb"></div>' },
+  { label: "Huge window · 1M", html: '<div class="cb"></div>' },
+], { start: 1, onChange: (i, body) => W.contextBar(body.querySelector(".cb"), PARTS(), { capacity: [32000, 200000, 1000000][i] }) });
+
+/* ---- overflow simulation ---- */
+const CAP = 10;
+const MSGS = [
+  { who: "user", text: "Hi! I’m Sam from Finance. Please keep answers short.", size: 1, fact: 1, tag: "Sam, short" },
+  { who: "ai", text: "Got it, Sam. Short answers it is.", size: 1, tag: "ok" },
+  { who: "user", text: "Here’s our 5-page budget doc. Summarise it.", size: 3, tag: "budget doc" },
+  { who: "ai", text: "Spend up 4%. Travel 18% over budget. Software under.", size: 1, tag: "summary" },
+  { who: "user", text: "Draft an email to the CFO about travel.", size: 1, tag: "ask" },
+  { who: "ai", text: "Draft: “Dear Elena, travel spend is…” (long)", size: 2, tag: "draft" },
+  { who: "user", text: "Make it more formal.", size: 1, tag: "ask" },
+  { who: "ai", text: "Revised draft… (long)", size: 2, tag: "draft 2" },
+  { who: "user", text: "Thanks! Remind me: what’s my name and how do I like answers?", size: 1, tag: "question" },
+];
+let strategy = 0, inWin = [], fell = [], ov = null;
+W.tabs($("#strategy"), [{ label: "🗑️ Drop oldest" }, { label: "🗜️ Summarise (compaction)" }], { onChange: (i) => { strategy = i; ov && ov.reset(); } });
+function renderWin() {
+  $("#win").innerHTML = inWin.map((m) => `<div class="m ${m.sum ? "sum" : m.who} ${m.fact ? "fact" : ""}" style="width:${(m.size / CAP) * 100}%" title="${m.text}">${m.tag}</div>`).join("");
+  $("#fell").innerHTML = fell.length ? "Fell off the desk: " + fell.map((m) => `<s>${m.tag}</s>`).join(", ") : "Window: 10 units. Yellow outline = the message with Sam’s name and preference.";
+}
+function addMsg(m) {
+  inWin.push(m);
+  let used = inWin.reduce((a, x) => a + x.size, 0);
+  if (used <= CAP) return;
+  if (strategy === 0) {
+    while (used > CAP) { const x = inWin.shift(); fell.push(x); used -= x.size; }
+  } else {
+    // compaction: summarise everything except the newest 2 messages into one note
+    const keep = inWin.slice(-2), old = inWin.slice(0, -2);
+    const hadFact = old.some((x) => x.fact);
+    inWin = [{ sum: 1, size: 1, fact: hadFact, tag: "📝 summary", text: "Summary: Sam (Finance) wants short answers. Budget summarised. Drafted CFO email about travel." }, ...keep];
+  }
+}
+ov = W.stepper({
+  ctrl: $("#ovCtrl"), log: $("#ovLog"), interval: 1600,
+  steps: [...MSGS.map((m) => ({ raw: 1, html: `<div class="bubble ${m.who}">${m.text}</div>`, onEnter: () => { addMsg(m); renderWin(); } })),
+    { raw: 1, html: `<div class="bubble ai" data-final></div>`, onEnter: () => {
+      const remembers = inWin.some((x) => x.fact);
+      const el = $$("#ovLog [data-final]").pop();
+      el.innerHTML = remembers ? "You’re <b>Sam from Finance</b>, and you like <b>short answers</b>. ✅" : "Sorry, I don’t see your name anywhere in our conversation. ❌";
+      el.style.borderColor = remembers ? "var(--good)" : "var(--bad)";
+    } }],
+  onReset: () => { inWin = []; fell = []; renderWin(); },
+});
+
+/* ---- memory switch ---- */
+function renderTue(on) {
+  $("#memLbl").textContent = "Memory: " + (on ? "on" : "off");
+  $("#tue").innerHTML = (on ? `<div class="bubble sys">📌 Added by the app: “User is vegetarian.”</div>` : "") +
+    `<div class="bubble user">Suggest a quick dinner recipe.</div>` +
+    (on ? `<div class="bubble ai">How about a <b>paneer and spinach curry</b>? Ready in 20 minutes, fully vegetarian. 🌱</div>`
+        : `<div class="bubble ai">How about <b>garlic butter chicken</b>? Ready in 20 minutes! 🍗</div>`);
+}
+W.switch($("#memSw"), false, renderTue); renderTue(false);
+
+W.flips($("#trade"), [
+  { front: "💸 Cost", back: "You pay for every token, <b>every time</b>. A long chat re-sends its whole history on each turn." },
+  { front: "🐢 Speed", back: "More to read means slower answers, especially the wait before the first word appears." },
+  { front: "🎯 Focus", back: "More text competes for attention (Topic 4). Irrelevant pages can make answers <b>worse</b>." },
+  { front: "🕳️ Lost in the middle", back: "Details buried deep in a huge context are easier to miss." },
+  { front: "🔁 Stale history", back: "Old, abandoned instructions linger and confuse. Starting a <b>fresh chat</b> is often the best fix." },
+  { front: "🧹 Fix: curate", back: "Give it what it needs, summarise the rest, start fresh when changing topic. That’s <b>context engineering</b> (Topic 7).", c: "good" },
+], 3);
+
+/* ---- cost calculator ---- */
+function calc() {
+  const v = (id) => Math.max(0, +$("#" + id).value || 0);
+  const turns = Math.max(1, v("cTurns"));
+  // average input grows with history: turn k re-sends k-1 previous exchanges
+  const avgIn = v("cIn") + ((turns - 1) / 2) * (v("cIn") * 0.3 + v("cOut"));
+  const per = (avgIn * v("pIn") + v("cOut") * v("pOut")) / 1e6;
+  $("#mReq").textContent = "$" + per.toFixed(4);
+  $("#mMonth").textContent = "$" + (per * v("cReq") * 30).toLocaleString(undefined, { maximumFractionDigits: 0 });
+  $("#mNote").innerHTML = turns > 1 ? `With ${turns}-turn conversations, the average request carries <b>${Math.round(avgIn).toLocaleString()}</b> input tokens because history is re-sent.` : "Single-turn requests. Try 10 turns.";
+}
+$$(".calc input").forEach((i) => (i.oninput = calc)); calc();
+
+W.quiz($("#quiz"), [
+  { q: "Why does an AI “forget” something you said at the start of a very long chat?", o: ["It got bored", "The message was dropped or summarised to fit the context window", "It was deleted for privacy", "Temperature was too high"], a: 1, e: "When the window is full, older content is dropped or compressed." },
+  { q: "How does a “memory” feature actually work?", o: ["The model retrains on your chats overnight", "The app saves notes and adds them to future contexts", "The model has a hard drive", "It doesn’t; it’s marketing"], a: 1, e: "The model doesn’t change. The app around it puts saved notes back on the desk." },
+  { q: "Turn 20 of a chat usually costs more than turn 1 because…", o: ["Prices rise during the day", "The whole history is sent again with each turn", "Later answers are longer", "It doesn’t"], a: 1, e: "Each request includes the conversation so far, so input tokens keep growing." },
+]);
+
+/* ===== v3 story ===== */
+W.BTS.stateless = {
+  title: "The model is stateless: the app re-sends everything, every time",
+  sub: "Message 313 of a long day. The model has never seen this user before; it only sees this array.",
+  parts: [
+    { label: "Request #313", c: "accent", json: `{
+  "model": "claude-sonnet-5-5",
+  "system": "You are HarborShield's helpful assistant.",
+  "messages": [
+    // messages 1-190 were dropped: the desk was full 🗑️
+    // (including #1: "Hi! I run Home Insurance, and today we're planning...")
+    { "role": "user",      "content": "Can you add the hail-damage numbers?" },
+    { "role": "assistant", "content": "Here's the updated table..." },
+    // ... 120 more messages ...
+    { "role": "user",      "content": "Great. Now draft the summary for my team, like we discussed." }
+  ]
+}`, note: "Each request costs the whole array in input tokens. Message 313 is far more expensive than message 1, even though the user only typed one line." },
+    { label: "How apps fake “memory”", c: "context", json: `"system": "You are HarborShield's helpful assistant...\\n
+<memory>
+  User: Head of Home Insurance.
+  Today: planning Q3 renewal campaign.
+  Decided: 6% average increase, email first, SMS reminder at day 7.
+</memory>"`, note: "Instead of keeping all 312 messages, a good app summarises the important facts and puts that short note back on the desk. That is all “memory” is." },
+  ],
+};
+</script>
+<script>W.seq(document.getElementById("seqResend"), {"actors": [{"id": "user", "name": "You", "icon": "🙋", "c": "accent"}, {"id": "app", "name": "Chat app", "icon": "💬", "c": "autonomy"}, {"id": "model", "name": "Model API", "icon": "🧠", "c": "model"}], "steps": [{"sep": "Turn 1"}, {"from": "user", "to": "app", "label": "“My policy is MTR-55120”"}, {"from": "app", "to": "model", "label": "messages: [1 message]", "note": "Small request: system prompt plus one message.", "code": "\"messages\": [\n  { \"role\": \"user\", \"content\": \"My policy is MTR-55120\" }\n]   // ≈ 300 tokens with the system prompt"}, {"from": "model", "to": "app", "label": "“Thanks, how can I help?”", "ret": true}, {"sep": "Turn 2"}, {"from": "user", "to": "app", "label": "“Add my son as a driver”"}, {"from": "app", "to": "model", "label": "messages: [3 messages]", "note": "The app sends turn 1 again, plus the new message. The model has no memory of turn 1 otherwise.", "code": "\"messages\": [\n  { \"role\": \"user\", \"content\": \"My policy is MTR-55120\" },\n  { \"role\": \"assistant\", \"content\": \"Thanks, how can I help?\" },\n  { \"role\": \"user\", \"content\": \"Add my son as a driver\" }\n]   // ≈ 450 tokens"}, {"from": "model", "to": "app", "label": "“How old is he?”", "ret": true}, {"sep": "Turn 313"}, {"from": "app", "to": "app", "label": "Window full: drop oldest", "note": "Hundreds of turns later the history no longer fits. The app (not the model) trims the oldest messages, including the policy number.", "code": "// 214,000 tokens > 200,000 limit\n\"messages\": [\n  // messages 1-190 dropped, including \"My policy is MTR-55120\"\n  { \"role\": \"user\", \"content\": \"So what was my policy number again?\" }\n]"}, {"from": "model", "to": "app", "label": "“Could you tell me your policy number?”", "note": "This is the forgetful chat. Nothing broke: message 1 was simply not in the request any more.", "ret": true}], "frames": []});</script>
+<script src="../assets/deck.js?v=3.2"></script>
+</body>
+</html>

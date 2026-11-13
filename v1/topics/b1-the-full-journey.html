@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Day 1 overview · The full journey</title>
+<link rel="stylesheet" href="../assets/style.css">
+<link rel="stylesheet" href="../assets/widgets.css">
+<style>
+  .deep { display: inline-block; font-size: 12px; font-weight: 800; color: var(--muted); border: 1px dashed var(--line); padding: 3px 10px; border-radius: 99px; margin-left: 8px; vertical-align: middle; }
+  .journey-bar { display: flex; gap: 4px; margin-bottom: 14px; }
+  .journey-bar span { --c: var(--accent); flex: 1; height: 6px; border-radius: 99px; background: color-mix(in srgb, var(--c) 25%, var(--card2)); }
+  .journey-bar span.on { background: var(--c); }
+  .stack { display: flex; flex-direction: column-reverse; gap: 8px; min-height: 380px; padding: 14px; border-radius: var(--radius); border: 1px dashed var(--line); }
+  .stack-layer { --c: var(--accent); display: flex; align-items: center; gap: 14px; padding: 12px 16px; border-radius: 12px;
+                 background: color-mix(in srgb, var(--c) 16%, var(--card)); border: 1px solid var(--c); animation: slideIn .4s ease; }
+  .stack-layer .ico { font-size: 24px; } .stack-layer small { display: block; color: var(--muted); }
+  .caps { list-style: none; padding: 0; margin: 14px 0 0; display: grid; gap: 8px; }
+  .caps li { padding: 10px 14px; border-radius: 10px; background: var(--card); border: 1px solid var(--line); color: var(--muted); }
+  .caps li.yes { color: var(--text); border-color: var(--good); background: color-mix(in srgb, var(--good) 10%, var(--card)); }
+  .tri { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  .tri .card { text-align: center; } .tri .e { font-size: 34px; }
+  .verdict { font-size: 18px; font-weight: 800; padding: 14px; border-radius: 14px; text-align: center; margin-top: 12px; }
+</style>
+</head>
+<body class="deck" data-id="B1">
+
+<section class="slide title-slide" data-title="Welcome">
+  <div class="big-emoji">🗺️</div>
+  <div class="eyebrow">Day 1 · The full journey</div>
+  <h1>From chat to agent in one hour</h1>
+  <p class="sub">Today we take a quick tour of <b>every</b> idea: how to talk to AI, what happens inside, prompts, context, RAG, tools, MCP, the agentic loop and agent harnesses. Days 2 and 3 go deep.</p>
+  <aside class="notes"><span class="tag time">⏱ 1 min</span><ul><li>Set expectations: “Today is the map. Breadth, not depth. Every slide has a ‘deep dive’ tag showing where we come back to it.”</li></ul></aside>
+</section>
+
+<section class="slide" data-title="The map">
+  <div class="journey-bar" data-step="0"></div>
+  <div class="eyebrow">The map</div>
+  <h2>All the AI jargon fits into six layers</h2>
+  <p class="sub">An AI system is like a car. The model is only the engine. Click a layer to see which buzzwords live there.</p>
+  <div id="map"></div>
+  <aside class="notes"><span class="tag time">⏱ 4 min</span><ul><li>This is the one jargon slide. Today’s tour climbs through these layers from bottom to top.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="Talking to AI">
+  <div class="journey-bar" data-step="1"></div>
+  <div class="eyebrow">1 · Talking to AI <span class="deep">Practice throughout</span></div>
+  <h2>Treat it like a brilliant new colleague who started today</h2>
+  <p class="sub">It knows a lot, but nothing about <i>you</i>. Compare these two requests.</p>
+  <div id="vague"></div>
+  <aside class="notes"><span class="tag time">⏱ 4 min</span><ul><li>Habits: be specific, give context, show an example, ask for a format, iterate, verify.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="Inside the engine">
+  <div class="journey-bar" data-step="2"></div>
+  <div class="eyebrow">2 · Inside the engine <span class="deep">Deep dive: Day 2</span></div>
+  <h2>It predicts the next token, one at a time</h2>
+  <p class="sub">Text is cut into <b>tokens</b> (≈ ¾ word). The model scores what comes next, picks one, adds it, and repeats. Press auto-play.</p>
+  <div id="gen"></div>
+  <aside class="notes"><span class="tag time">⏱ 5 min</span><ul><li>Key consequence: it predicts what’s <b>plausible</b>, not what’s <b>true</b>. That’s why it hallucinates.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="Attention">
+  <div class="journey-bar" data-step="2"></div>
+  <div class="eyebrow">3 · Attention <span class="deep">Deep dive: Day 2</span></div>
+  <h2>Attention: every word looks at every other word</h2>
+  <p class="sub">The transformer’s key trick. What does “it” mean? Click words, and switch sentences.</p>
+  <div id="att"></div>
+  <aside class="notes"><span class="tag time">⏱ 4 min</span><ul><li>Prompt lesson: be explicit, cut the noise, put key instructions first or last.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="The context window">
+  <div class="journey-bar" data-step="3"></div>
+  <div class="eyebrow">4 · The context window <span class="deep">Deep dive: Day 2</span></div>
+  <h2>The AI’s desk: it only sees what’s on it</h2>
+  <p class="sub">No real memory. Everything it uses must fit in the window. Tick items on and off.</p>
+  <div id="ctx"></div>
+  <aside class="notes"><span class="tag time">⏱ 3 min</span><ul><li>Memory features just put saved notes back on the desk. Long chats get summarised (compaction).</li></ul></aside>
+</section>
+
+<section class="slide" data-title="Anatomy of a prompt">
+  <div class="journey-bar" data-step="3"></div>
+  <div class="eyebrow">5 · Anatomy of a prompt <span class="deep">Deep dive: Day 2</span></div>
+  <h2>Prompt components each remove one guess</h2>
+  <p class="sub">Switch components on and watch the reply improve.</p>
+  <div id="pb"></div>
+  <aside class="notes"><span class="tag time">⏱ 5 min</span><ul><li>Role, Task, Context, Examples, Format, Constraints, Tone.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="RAG">
+  <div class="journey-bar" data-step="4"></div>
+  <div class="eyebrow">6 · RAG <span class="deep">Deep dive: Day 2</span></div>
+  <h2>RAG: an open-book exam on your documents</h2>
+  <p class="sub">Search your documents for the relevant chunks, add them to the prompt, then answer with citations.</p>
+  <div id="rag"></div>
+  <div id="ragFlow" style="margin-top:16px"></div>
+  <aside class="notes"><span class="tag time">⏱ 5 min</span><ul><li>Choosing the right information for the desk in general is <b>context engineering</b>. RAG is its main technique.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="Tools">
+  <div class="journey-bar" data-step="5"></div>
+  <div class="eyebrow">7 · Tools <span class="deep">Deep dive: Day 3</span></div>
+  <h2>Tools give AI hands. It asks, your software acts.</h2>
+  <p class="sub">Step through a tool call.</p>
+  <div class="split wide-right"><div id="tcCtrl"></div><div id="tcLog" style="max-height:380px"></div></div>
+  <aside class="notes"><span class="tag time">⏱ 4 min</span></aside>
+</section>
+
+<section class="slide" data-title="MCP">
+  <div class="journey-bar" data-step="5"></div>
+  <div class="eyebrow">8 · MCP <span class="deep">Deep dive: Day 3</span></div>
+  <h2>MCP: USB-C for AI</h2>
+  <p class="sub">One open standard for plugging systems into any AI app. Build a connector (server) once, use it everywhere.</p>
+  <div id="mcp"></div>
+  <aside class="notes"><span class="tag time">⏱ 3 min</span><ul><li>Without a standard: N apps × M systems integrations. With MCP: N + M.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="The agentic loop">
+  <div class="journey-bar" data-step="6"></div>
+  <div class="eyebrow">9 · The agentic loop <span class="deep">Deep dive: Day 3</span></div>
+  <h2>An agent = a model using tools in a loop</h2>
+  <p class="sub">Plan → act → observe → done? Repeat. Press auto-play.</p>
+  <div id="loop"></div>
+  <aside class="notes"><span class="tag time">⏱ 5 min</span></aside>
+</section>
+
+<section class="slide" data-title="The agent harness">
+  <div class="journey-bar" data-step="6"></div>
+  <div class="eyebrow">10 · The agent harness <span class="deep">Deep dive: Day 3</span></div>
+  <h2>The harness is the car around the engine</h2>
+  <p class="sub">It runs the loop, executes tools, manages context and memory, and enforces permissions. Examples: Claude Code, Codex, Cursor, Copilot. Click each part.</p>
+  <div id="anat"></div>
+  <aside class="notes"><span class="tag time">⏱ 5 min</span><ul><li>Same model + better harness = better results. If possible, show a 2-minute live demo of a harness here.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="Customising the harness">
+  <div class="journey-bar" data-step="6"></div>
+  <div class="eyebrow">11 · Customising the harness <span class="deep">Deep dive: Day 3</span></div>
+  <h2>Make it yours: instructions, skills, subagents, hooks</h2>
+  <p class="sub">Click each one. On Day 3 we build each of these.</p>
+  <div id="kit"></div>
+  <aside class="notes"><span class="tag time">⏱ 4 min</span><ul><li>Key distinction: instructions and skills are <i>guidance</i>; hooks and permissions are <i>guaranteed</i>.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="Safety">
+  <div class="journey-bar" data-step="7"></div>
+  <div class="eyebrow">12 · Safety <span class="deep">Deep dive: Day 3</span></div>
+  <h2>The lethal trifecta</h2>
+  <p class="sub">An agent with all three of these can be tricked into leaking data by hidden instructions in what it reads (prompt injection). Switch them on.</p>
+  <div class="tri" id="tri"></div>
+  <div class="verdict" id="triV"></div>
+  <aside class="notes"><span class="tag time">⏱ 3 min</span><ul><li>Term coined by Simon Willison. Fix: remove a leg, or require approval to send data out.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="Put it together">
+  <div class="journey-bar" data-step="8"></div>
+  <div class="eyebrow">Recap</div>
+  <h2>Build the whole car</h2>
+  <p class="sub">Add the layers in order and watch what an HR assistant can do.</p>
+  <div class="split">
+    <div class="stack" id="stack"></div>
+    <div><div class="row" style="margin-bottom:12px"><button class="btn primary" id="sAdd">＋ Add layer</button><button class="btn ghost" id="sReset">↺ Reset</button></div>
+      <ul class="caps" id="caps"></ul></div>
+  </div>
+  <aside class="notes"><span class="tag time">⏱ 3 min</span></aside>
+</section>
+
+<section class="slide" data-title="What’s next">
+  <div class="eyebrow">Coming up</div>
+  <h2>Days 2 and 3: going deep</h2>
+  <div class="split" style="margin:10px 0 22px">
+    <div class="card"><h3>📅 Day 2: inside the model and the prompt</h3><p class="muted">Tokens and the transformer · Attention · The context window · Anatomy of a prompt · Context engineering · RAG</p></div>
+    <div class="card"><h3>📅 Day 3: tools, agents and harnesses</h3><p class="muted">Tools · MCP · The agentic loop · Agent harnesses · Customising the harness (skills, subagents, hooks…) · Safety and evals</p></div>
+  </div>
+  <div class="row"><a class="btn" href="00-decoding-ai-jargon.html#2">✅ Take the jargon self-check</a><a class="btn primary" data-nexttopic>Next →</a></div>
+  <aside class="notes"><span class="tag time">⏱ 1 min</span></aside>
+</section>
+
+<script src="../assets/course.js"></script>
+<script src="../assets/widgets.js"></script>
+<script>
+const { $, $$, cv } = W;
+
+/* journey progress bars */
+$$(".journey-bar").forEach((b) => { const s = +b.dataset.step; b.innerHTML = ["model", "context", "model", "context", "knowledge", "action", "autonomy", "trust"].map((c, i) => `<span class="${i < s ? "on" : ""}" style="--c:${cv(c)}"></span>`).join(""); });
+
+W.layerMap($("#map"));
+
+W.tabs($("#vague"), [
+  { label: "😐 Vague", html: `<div class="split"><div class="bubble user" style="max-width:100%">Write an email about the meeting.</div>
+     <div><div class="bubble ai" style="max-width:100%">Subject: Upcoming Meeting<br>Dear Team, I hope this email finds you well. I wanted to reach out regarding our upcoming meeting… Best regards, [Your Name]</div><div class="callout" style="--c:var(--bad);margin-top:8px">❌ Generic, no facts. It had to guess everything.</div></div></div>` },
+  { label: "🤩 Specific", html: `<div class="split"><div class="bubble user" style="max-width:100%">Write a short, friendly email to my 6-person design team: Thursday’s review moves to <b>Friday 2pm</b> because the client needs an extra day. Agenda unchanged. Under 80 words. Sign it “Maya”.</div>
+     <div><div class="bubble ai" style="max-width:100%">Subject: Review moved to Friday 2pm 🗓️<br>Hi all, our review is moving to <b>Friday at 2pm</b>. The client asked for an extra day to send feedback. Agenda unchanged, nothing else to do. Thanks! Maya</div><div class="callout" style="--c:var(--good);margin-top:8px">✅ Nothing left to guess.</div></div></div>` },
+]);
+
+W.generate($("#gen"), "The best way to learn a new skill is", [
+  [[" to", 0.58], [" by", 0.22], [" practice", 0.12], [" through", 0.05]],
+  [[" practice", 0.47], [" start", 0.21], [" teach", 0.14], [" break", 0.09]],
+  [[" a", 0.36], [" it", 0.29], [" every", 0.18], [" regularly", 0.11]],
+  [[" little", 0.52], [" bit", 0.25], [" lot", 0.13], [" few", 0.06]],
+  [[" every", 0.61], [" each", 0.24], [" bit", 0.06], [" and", 0.05]],
+  [[" day", 0.83], [" morning", 0.09], [" week", 0.05], [" single", 0.02]],
+  [[".", 0.71], [",", 0.17], [" and", 0.08], ["!", 0.03]],
+]);
+
+W.attention($("#att"), [
+  { label: "…too tired", focus: 7, tokens: ["The", "animal", "didn’t", "cross", "the", "street", "because", "it", "was", "too", "tired"],
+    weights: { 7: { 1: 0.62, 5: 0.07, 7: 0.1, 10: 0.12 } }, note: (s) => (s === 7 ? "“it” = <b>the animal</b>" : "Click <b>it</b>.") },
+  { label: "…too wide", focus: 7, tokens: ["The", "animal", "didn’t", "cross", "the", "street", "because", "it", "was", "too", "wide"],
+    weights: { 7: { 5: 0.6, 1: 0.08, 7: 0.1, 10: 0.14 } }, note: (s) => (s === 7 ? "“it” = <b>the street</b>" : "Click <b>it</b>.") },
+]);
+
+W.contextBar($("#ctx"), [
+  { label: "⚙️ System prompt", tokens: 1500, c: "context", on: true },
+  { label: "💬 Conversation history", tokens: 9000, c: "model", on: true },
+  { label: "📄 Relevant policy section", tokens: 2500, c: "knowledge", on: true },
+  { label: "📚 Entire 300-page manual", tokens: 150000, c: "warn", on: false },
+  { label: "✉️ Your message", tokens: 120, c: "accent", on: true },
+  { label: "✍️ Room for the answer", tokens: 4000, c: "good", on: true },
+], { capacity: 32000 });
+
+W.promptBuilder($("#pb"), [
+  { id: "task", label: "🎯 Task", c: "model", text: "Write a reply to the customer email below.", on: true },
+  { id: "ctx", label: "🧳 Context", c: "knowledge", text: "Customer: Dana. Charged twice in October due to our billing bug (fixed). Refund within 5 business days." },
+  { id: "fmt", label: "📐 Format", c: "action", text: "2 short paragraphs, sign as “Alex, Acme Support”. Under 100 words." },
+  { id: "con", label: "🚧 Constraints", c: "trust", text: "No discounts. Don’t blame the payment provider." },
+  { id: "tone", label: "🎨 Tone", c: "autonomy", text: "Warm, accountable, plain English." },
+], (on) => {
+  const iss = [];
+  const g = on.has("ctx") ? "Hi Dana," : (iss.push("Generic greeting"), "Dear Valued Customer,");
+  const p1 = on.has("tone") ? "You’re right, and I’m sorry. Being charged twice is frustrating." : (iss.push("Stiff tone"), "We apologize for any inconvenience.");
+  const p2 = on.has("ctx") ? "It was a billing bug on our side, now fixed. Your refund arrives within 5 business days." : on.has("con") ? (iss.push("No real resolution"), "We are looking into it.") : (iss.push("Blames the bank"), "This may be an issue with your bank.");
+  const p3 = on.has("con") ? "" : (iss.push("Unapproved discount"), "<p>Enjoy 20% off your next three months!</p>");
+  const s = on.has("fmt") ? "Alex, Acme Support" : (iss.push("Placeholder signature"), "Best regards, [Your Name]");
+  return `<p>${g}</p><p>${p1} ${p2}</p>${p3}<p>${s}</p><div style="font-size:13px">${iss.length ? iss.map((i) => `<div style="color:var(--bad)">⚠ ${i}</div>`).join("") : '<div style="color:var(--good)">✅ Ready to send</div>'}</div>`;
+});
+
+W.tabs($("#rag"), [
+  { label: "❌ Without RAG", html: `<div class="split"><div class="bubble user" style="max-width:100%">How many days a week can I work from home?</div><div class="bubble ai" style="max-width:100%;border-color:var(--bad)">Most companies allow 2–3 days, often Fridays… <span style="color:var(--bad)">⚠ a generic guess</span></div></div>` },
+  { label: "✅ With RAG", html: `<div class="split"><div class="stack-v"><div class="bubble user" style="max-width:100%">How many days a week can I work from home?</div><div class="bubble sys" style="max-width:100%;text-align:left">📎 Retrieved: “Employees may work from home up to 2 days per week, Tuesday or Thursday.” (Remote Work Policy §2)</div></div><div class="bubble ai" style="max-width:100%">Up to <b>2 days a week</b>, on <b>Tuesday or Thursday</b>. <span class="muted">[Remote Work Policy §2]</span></div></div>` },
+]);
+W.clickInfo($("#ragFlow"), [
+  { icon: "✂️", title: "Chunk", c: "knowledge", html: "<p>Cut documents into paragraph-sized pieces.</p>" },
+  { icon: "📍", title: "Embed", c: "knowledge", html: "<p>Turn each chunk into numbers that capture its <b>meaning</b>, and store them in a vector database.</p>" },
+  { icon: "🔎", title: "Retrieve", c: "model", html: "<p>Find the chunks closest in meaning to the question, even with different words (“sofa” finds “work from home”).</p>" },
+  { icon: "🧳", title: "Augment", c: "context", html: "<p>Add those chunks to the prompt.</p>" },
+  { icon: "💬", title: "Generate", c: "good", html: "<p>Answer from the sources, with citations.</p>" },
+], { layout: "flow" });
+
+W.stepper({
+  ctrl: $("#tcCtrl"), log: $("#tcLog"), interval: 2400,
+  steps: [
+    { raw: 1, html: `<div class="bubble user">Where is my order #4512?</div>` },
+    { who: "App → model", c: "autonomy", html: "Sends the question plus the tool list: <code>get_order_status(order_id)</code>" },
+    { who: "Model → app", c: "model", html: "Requests: <div class='json'>get_order_status({ \"order_id\": \"4512\" })</div>" },
+    { who: "App runs it", c: "action", html: "Calls the shipping system → <code>{ status: in transit, eta: Thursday }</code>" },
+    { raw: 1, html: `<div class="bubble ai">Your order is in transit and should arrive <b>Thursday</b>. 📦</div>` },
+  ],
+});
+
+W.clickInfo($("#mcp"), [
+  { icon: "🖥️", title: "Host", sub: "the AI app", c: "autonomy", html: "<p>Claude Desktop, Claude Code, an IDE, your own assistant.</p>" },
+  { icon: "🔌", title: "MCP server", sub: "the connector", c: "action", html: "<p>Wraps a system and exposes its <b>tools</b>, <b>resources</b> and <b>prompts</b> in the standard format.</p>" },
+  { icon: "🏢", title: "Systems", sub: "GitHub, Jira, DB, Drive…", c: "knowledge", html: "<p>Plug in a Jira server and every MCP-compatible app can now create tickets. No custom integration needed.</p>" },
+], { layout: "flow" });
+
+W.loop($("#loop"), "Find out why the nightly sales report is empty, and fix it.", [
+  { plan: "Check the job logs.", act: "<code>read_logs(sales-report)</code>", observe: "❗ table 'orders_2026' not found", check: "Not done. Loop again." },
+  { plan: "See which tables exist.", act: "<code>list_tables(orders*)</code>", observe: "Found <code>orders_v2</code> (renamed)", check: "Not done. Fix the query." },
+  { plan: "Update the query and re-run.", act: "<code>edit_file</code> 🔐 approved → <code>run_job</code>", observe: "✅ 1,284 rows", check: "<b>Done</b>, fixed and verified.", done: true },
+], { interval: 1800 });
+
+W.clickInfo($("#anat"), [
+  { icon: "🔁", title: "Agent loop", c: "autonomy", html: "<p>Keeps calling the model and running tools until the task is done.</p>" },
+  { icon: "🔧", title: "Tools", c: "action", html: "<p>Read and edit files, run commands, search, browse, plus MCP servers.</p>" },
+  { icon: "🗜️", title: "Context manager", c: "context", html: "<p>Compacts long sessions and trims tool output so the desk doesn’t overflow.</p>" },
+  { icon: "📌", title: "Instructions & memory", c: "autonomy", html: "<p>Loads project rules every session (<code>CLAUDE.md</code>, <code>AGENTS.md</code>).</p>" },
+  { icon: "🔐", title: "Permissions", c: "trust", html: "<p>Asks before risky actions; blocks forbidden ones; sandboxing.</p>" },
+  { icon: "🖥️", title: "Interface", c: "accent", html: "<p>Terminal, IDE, desktop, web, or an SDK for building your own.</p>" },
+], { cols: 3, side: true });
+
+W.clickInfo($("#kit"), [
+  { icon: "📌", title: "Instruction file", sub: "always loaded", c: "autonomy", html: "<p><code>CLAUDE.md</code> / <code>AGENTS.md</code>: short project facts the agent always sees.</p>" },
+  { icon: "📚", title: "Skills", sub: "loaded when relevant", c: "knowledge", html: "<p>Packaged procedures and templates. Only a one-line description sits in context until a task needs it.</p>" },
+  { icon: "👥", title: "Subagents", sub: "own fresh context", c: "model", html: "<p>Helper agents for research or specialist work; only their summary comes back.</p>" },
+  { icon: "🪝", title: "Hooks", sub: "always run on events", c: "warn", html: "<p>Guaranteed rules: format after every edit, block dangerous commands.</p>" },
+  { icon: "⚡", title: "Slash commands", sub: "saved prompts", c: "context", html: "<p><code>/release-notes</code>: a prompt you trigger by name.</p>" },
+  { icon: "📦", title: "Plugins", sub: "share it all", c: "accent", html: "<p>Bundle skills, hooks, commands and MCP servers for the whole team.</p>" },
+], { cols: 3 });
+
+const TRI = [["🔐", "Private data"], ["🌐", "Untrusted content"], ["📤", "A way to send data out"]];
+const triOn = new Set();
+$("#tri").innerHTML = TRI.map(([e, t], i) => `<div class="card"><div class="e">${e}</div><b>${t}</b><div style="margin-top:8px"><span class="sw" data-i="${i}"></span></div></div>`).join("");
+const renderTri = () => { const S = [["✅ Low risk", "good"], ["🟢 One leg: manageable", "good"], ["🟡 Two legs: careful", "warn"], ["🚨 All three: data can be stolen via prompt injection", "bad"]][triOn.size]; const v = $("#triV"); v.textContent = S[0]; v.style.background = `color-mix(in srgb, ${cv(S[1])} 18%, var(--card))`; v.style.border = `2px solid ${cv(S[1])}`; };
+$$("#tri .sw").forEach((el) => W.switch(el, false, (on) => { on ? triOn.add(el.dataset.i) : triOn.delete(el.dataset.i); renderTri(); }));
+renderTri();
+
+const CAPS = ["Chat and write", "Follow your instructions", "Answer from your documents", "Take real actions", "Complete multi-step goals", "Safe enough for real users"];
+const SUB = { model: "tokens, prediction, attention", context: "prompts, context window", knowledge: "RAG, embeddings", action: "tools, MCP", autonomy: "agent loop, harness, skills", trust: "guardrails, evals" };
+let n = 0;
+function renderStack() {
+  $("#stack").innerHTML = W.ORDER.slice(0, n).map((l) => `<div class="stack-layer" style="--c:${cv(l)}"><span class="ico">${W.LAYERS[l].icon}</span><div><b>${W.LAYERS[l].name}</b><small>${SUB[l]}</small></div></div>`).join("") || '<div class="muted" style="margin:auto">Click <b>＋ Add layer</b></div>';
+  $("#caps").innerHTML = CAPS.map((c, i) => `<li class="${i < n ? "yes" : ""}">${i < n ? "✅" : "⬜"} ${c}</li>`).join("");
+  $("#sAdd").disabled = n >= 6;
+}
+$("#sAdd").onclick = () => { n++; renderStack(); };
+$("#sReset").onclick = () => { n = 0; renderStack(); };
+renderStack();
+</script>
+<script src="../assets/deck.js"></script>
+</body>
+</html>

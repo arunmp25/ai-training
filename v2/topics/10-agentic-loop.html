@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Topic 10 · The agentic loop</title>
+<link rel="stylesheet" href="../assets/style.css">
+<link rel="stylesheet" href="../assets/widgets.css">
+<style>
+  .flow { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin: 10px 0; }
+  .flow span.b { padding: 10px 14px; border-radius: 10px; background: var(--card); border: 1px solid var(--line); font-weight: 700; font-size: 14px; }
+  .dial-level { font-size: 26px; font-weight: 800; }
+  .risk { height: 14px; border-radius: 99px; background: var(--card2); overflow: hidden; }
+  .risk i { display: block; height: 100%; transition: width .4s, background .4s; }
+  .ticks { display: flex; justify-content: space-between; font-size: 12px; color: var(--muted); margin-top: 4px; }
+</style>
+</head>
+<body class="deck" data-id="10">
+
+<section class="slide title-slide" data-title="Welcome">
+  <div class="big-emoji">🔁</div>
+  <div class="eyebrow">Topic 10</div>
+  <h1>The agentic loop</h1>
+  <p class="sub">An <b>agent</b> is a model using tools <b>in a loop</b>, deciding its own next step, until the goal is done. That’s the whole idea.</p>
+  <aside class="notes"><span class="tag time">⏱ 30 sec</span><ul><li>A common definition: “an LLM using tools in a loop”. Everything else is detail.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="Workflow vs agent">
+  <div class="eyebrow">Two patterns</div>
+  <h2>Workflow or agent?</h2>
+  <p class="sub">Both use AI and tools. The difference is <b>who decides the next step</b>.</p>
+  <div id="wa"></div>
+  <aside class="notes"><span class="tag time">⏱ 2 min</span><ul><li>Many “agents” in production are really workflows, and that’s fine. Predictable is good.</li><li>Use an agent when you can’t write the steps down in advance.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="The loop in action">
+  <div class="eyebrow">Watch it think</div>
+  <h2>Plan → Act → Observe → Done? → repeat</h2>
+  <p class="sub">An agent investigates a broken report. Step through or auto-play and watch the loop go round.</p>
+  <div id="loop"></div>
+  <aside class="notes"><span class="tag time">⏱ 4 min</span><ul><li>Notice it <b>didn’t know the plan in advance</b>. Each observation changed the next step.</li><li>Loop 3 needed approval to edit a file. The harness enforces that (Topic 11).</li><li>Loop 4 is verification. Good agents check their work instead of claiming success.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="You are the agent">
+  <div class="eyebrow">Your turn</div>
+  <h2>You’re the agent: what’s your next move?</h2>
+  <p class="sub">Goal: <b>“Book a meeting room for 8 people tomorrow at 10:00.”</b> Tools: <code>search_rooms</code>, <code>book_room</code>, <code>send_invite</code>. Answer in order.</p>
+  <div id="you"></div>
+  <aside class="notes"><span class="tag time">⏱ 3 min</span><ul><li>The last question is the important one: handle errors honestly. Blind retrying causes infinite loops; claiming success is a “fake success” failure.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="When loops go wrong">
+  <div class="eyebrow">Failure modes</div>
+  <h2>When loops go wrong</h2>
+  <p class="sub">Flip each card for the fix. Most fixes live in the harness, the next topic.</p>
+  <div id="fails"></div>
+  <aside class="notes"><span class="tag time">⏱ 2 min</span></aside>
+</section>
+
+<section class="slide" data-title="The autonomy dial">
+  <div class="eyebrow">How much freedom?</div>
+  <h2>The autonomy dial</h2>
+  <p class="sub">Autonomy isn’t on or off. Slide it to see each level, an example, and the risk.</p>
+  <input type="range" id="dial" min="0" max="4" value="2">
+  <div class="ticks"><span>Chat</span><span>Assistant + tools</span><span>Workflow</span><span>Agent + checkpoints</span><span>Fully autonomous</span></div>
+  <div class="split" style="margin-top:18px">
+    <div class="card"><div class="dial-level" id="dLevel"></div><p id="dDesc"></p><p class="muted" id="dEx"></p></div>
+    <div class="card stack-v">
+      <div><div class="label">Speed / leverage</div><div class="risk"><i id="dGain" style="background:var(--good)"></i></div></div>
+      <div><div class="label">Risk if it goes wrong</div><div class="risk"><i id="dRisk"></i></div></div>
+      <div class="callout" id="dWhen" style="font-size:14.5px"></div>
+    </div>
+  </div>
+  <aside class="notes"><span class="tag time">⏱ 2 min</span><ul><li>Start low and move up as trust (and evals) grow. Most business use today sits at “agent with checkpoints”.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="Quick check">
+  <div class="eyebrow">Quick check</div>
+  <h2>Did it click?</h2>
+  <div id="quiz"></div>
+  <aside class="notes"><span class="tag time">⏱ 1 min</span></aside>
+</section>
+
+<section class="slide" data-title="Takeaways">
+  <div class="eyebrow">Takeaways</div>
+  <h2>What to remember</h2>
+  <div class="cols-3" style="margin:10px 0 24px">
+    <div class="card"><b>🔁 The loop</b><p>Plan → act (tool) → observe the result → done? If not, go round again.</p></div>
+    <div class="card"><b>🛤️ Workflow vs agent</b><p>Fixed steps when you know them; an agent when you don’t. Pick the simplest that works.</p></div>
+    <div class="card"><b>🎚️ Dial up gradually</b><p>Limits, checkpoints and verification make loops safe.</p></div>
+  </div>
+  <div class="row"><a class="btn primary" data-nexttopic>Next →</a></div>
+  <aside class="notes"><span class="tag time">⏱ 30 sec</span><ul><li>Bridge: “Who runs this loop, executes the tools, asks for approval and manages memory? Not the model. The <b>harness</b>.”</li></ul></aside>
+</section>
+
+<script src="../assets/course.js"></script>
+<script src="../assets/widgets.js"></script>
+<script>
+const { $ } = W;
+
+W.tabs($("#wa"), [
+  { label: "🛤️ Workflow", html: `<div class="split"><div>
+      <div class="label">Example: process an invoice</div>
+      <div class="flow"><span class="b">📥 Receive PDF</span>→<span class="b">🧠 Extract fields</span>→<span class="b">✔️ Validate</span>→<span class="b">📤 Post to ERP</span></div>
+      <p>A <b>person designed the steps</b>. The AI fills in one or two of them (e.g. extraction). The same path every time.</p></div>
+    <div class="card"><b>✅ Predictable, testable, cheap</b><br><b>❌ Breaks on anything unexpected</b><p class="muted">Use when the steps are known and stable.</p></div></div>` },
+  { label: "🤖 Agent", html: `<div class="split"><div>
+      <div class="label">Example: “Find out why churn rose last month”</div>
+      <div class="flow"><span class="b">🧠 Plan</span>→<span class="b">🔧 Act</span>→<span class="b">👀 Observe</span>→<span class="b">✅ Done?</span>→ <span class="muted">↩ repeat</span></div>
+      <p>The <b>model decides</b> what to look at next based on what it found. The path differs every time.</p></div>
+    <div class="card"><b>✅ Flexible, handles the unexpected</b><br><b>❌ Less predictable, costs more, needs guardrails</b><p class="muted">Use when you can’t write the steps down in advance.</p></div></div>` },
+]);
+
+W.loop($("#loop"), "Find out why the nightly sales report came out empty, and fix it.", [
+  { plan: "Start with the report job’s logs.", act: "<code>read_logs(job: \"sales-report\", last: 1)</code>", observe: "❗ <code>Error: table 'orders_2026' not found</code>", check: "Not done. I know the error, not the cause. Loop again." },
+  { plan: "Check which order tables exist.", act: "<code>list_tables(pattern: \"orders*\")</code>", observe: "Found <code>orders_v2</code>. The table was renamed last week.", check: "Not done. The query needs updating. Loop again." },
+  { plan: "Update the report query to use <code>orders_v2</code>.", act: "<code>edit_file(\"report.sql\")</code> 🔐 <i>harness asks for approval; user approves</i>", observe: "File updated.", check: "Not done. I haven’t verified it works. Loop again." },
+  { plan: "Re-run the report to verify the fix.", act: "<code>run_job(\"sales-report\")</code>", observe: "✅ Report generated: 1,284 rows.", check: "<b>Done!</b> Root cause: table renamed. Fixed and verified.", done: true },
+]);
+
+W.classify($("#you"), [
+  { text: "1️⃣ What do you do first?", a: 1, why: "Gather information before acting. Booking blind might pick a room that’s too small or already taken." },
+  { text: "2️⃣ <code>search_rooms</code> returns: “Everest (10 seats), free” and “K2 (6 seats), free”. Next?", a: 2, why: "Everest fits 8 people; K2 doesn’t. Use the observation to decide." },
+  { text: "3️⃣ <code>book_room(Everest)</code> returns: “Error: Everest requires manager approval.” Next?", a: 5, why: "Report honestly and offer options. Retrying blindly is an infinite loop; claiming success is a fake success." },
+], [{ label: "book_room right away", c: "bad" }, { label: "search_rooms (8+ seats, 10:00)", c: "good" }, { label: "Book Everest", c: "good" }, { label: "Book K2", c: "warn" }, { label: "Retry book_room until it works", c: "bad" }, { label: "Tell the user and offer alternatives", c: "good" }], { cols: 1 });
+
+W.flips($("#fails"), [
+  { front: "♾️ Infinite loop", back: "Keeps retrying the same failing action. <b>Fix:</b> a maximum number of iterations, and noticing repeated errors." },
+  { front: "🧭 Drift", back: "Wanders off the goal into side quests. <b>Fix:</b> a clear goal, a to-do list it re-reads, checkpoints." },
+  { front: "🗂️ Context overflow", back: "Long tasks fill the desk with tool output. <b>Fix:</b> compaction, subagents, trimming tool results." },
+  { front: "🧱 Compounding errors", back: "A small early mistake snowballs through later steps. <b>Fix:</b> verify at each step, tests, human review." },
+  { front: "🎭 Fake success", back: "Says “Done!” when it isn’t. <b>Fix:</b> require verification (run the test, check the result)." },
+  { front: "💸 Runaway cost", back: "Each loop re-sends a growing context. <b>Fix:</b> budgets, timeouts, smaller models for sub-steps." },
+]);
+
+const LEVELS = [
+  { n: "💬 Chat", d: "Answers questions. Takes no actions.", ex: "Example: “Draft a reply to this email.”", gain: 15, risk: 5, when: "Always safe. A great place to start." },
+  { n: "🧑‍💼 Assistant + tools", d: "Can use tools, but you approve each action.", ex: "Example: proposes a calendar invite; you click Send.", gain: 35, risk: 15, when: "Good for anything touching real systems while trust is being built." },
+  { n: "🛤️ Workflow", d: "Fixed steps designed by people, with AI inside some of them.", ex: "Example: every invoice → extract → validate → post.", gain: 55, risk: 30, when: "Best for high-volume, well-understood processes." },
+  { n: "🤖 Agent + checkpoints", d: "Decides its own steps; pauses for approval on risky ones.", ex: "Example: a coding agent edits and tests freely, but asks before pushing.", gain: 80, risk: 45, when: "The sweet spot for most knowledge work today." },
+  { n: "🚀 Fully autonomous", d: "Works unattended in the background and reports when done.", ex: "Example: assign a ticket at night, review the pull request in the morning.", gain: 100, risk: 80, when: "Only with strong sandboxing, limits, evals and review of the output." },
+];
+function renderDial() {
+  const L = LEVELS[+$("#dial").value];
+  $("#dLevel").textContent = L.n; $("#dDesc").textContent = L.d; $("#dEx").textContent = L.ex;
+  $("#dGain").style.width = L.gain + "%";
+  $("#dRisk").style.width = L.risk + "%";
+  $("#dRisk").style.background = L.risk > 60 ? "var(--bad)" : L.risk > 30 ? "var(--warn)" : "var(--good)";
+  $("#dWhen").innerHTML = "<b>When:</b> " + L.when;
+}
+$("#dial").oninput = renderDial; renderDial();
+
+W.quiz($("#quiz"), [
+  { q: "What makes something an “agent” rather than a chatbot?", o: ["It has a name and avatar", "It uses tools in a loop and decides its own next steps", "It uses a bigger model", "It speaks out loud"], a: 1, e: "Tools + loop + its own decisions = agent." },
+  { q: "You process 10,000 identical expense forms a day. Best pattern?", o: ["Fully autonomous agent", "Workflow", "Chat", "Multi-agent swarm"], a: 1, e: "Known, stable steps call for a workflow: predictable and cheap." },
+  { q: "An agent keeps retrying the same failing command. What’s missing?", o: ["A bigger context window", "Loop limits and error handling", "Higher temperature", "More tools"], a: 1, e: "Max iterations and noticing repeated errors prevent infinite loops." },
+]);
+</script>
+<script src="../assets/deck.js"></script>
+</body>
+</html>

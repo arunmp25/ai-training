@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Topic 13 · MCP: the universal connector</title>
+<link rel="stylesheet" href="../assets/style.css?v=3.2">
+<link rel="stylesheet" href="../assets/widgets.css?v=3.2">
+<link rel="stylesheet" href="../assets/story.css?v=3.2">
+<style>
+  #nm { width: 100%; height: 340px; background: var(--card); border: 1px solid var(--line); border-radius: 14px; }
+  .count { font-size: 44px; font-weight: 800; }
+  .board { display: grid; grid-template-columns: 1fr 260px 1fr; gap: 18px; align-items: center; }
+  .plug { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 12px; background: var(--card); border: 1px solid var(--line); margin-bottom: 8px; transition: all .2s; }
+  .plug.on { border-color: var(--c-action); background: color-mix(in srgb, var(--c-action) 12%, var(--card)); }
+  .plug .e { font-size: 22px; }
+  .plug .grow small { display: block; color: var(--muted); font-size: 12px; }
+  .hub { text-align: center; padding: 26px 16px; border-radius: 20px; border: 3px solid var(--c-autonomy); background: color-mix(in srgb, var(--c-autonomy) 12%, var(--card)); }
+  .hub .e { font-size: 50px; }
+  .req { padding: 9px 12px; border-radius: 10px; background: var(--card); border: 1px solid var(--line); margin-bottom: 8px; font-size: 14px; transition: all .2s; }
+  .req.ok { border-color: var(--good); }
+  .req.no { opacity: .6; }
+</style>
+</head>
+<body class="deck" data-id="09">
+
+<section class="slide title-slide" data-title="Welcome">
+  <div class="big-emoji">🔌</div>
+  <div class="eyebrow">Session 3 · Topic 13</div>
+  <h1>MCP: USB-C for AI</h1>
+  <p class="sub">The <b>Model Context Protocol</b> is an open standard for plugging AI apps into tools and data. Build a connector once, and any MCP-compatible AI app can use it. Remember the drawer of old phone chargers? This is the USB-C moment.</p>
+  <aside class="notes"><span class="tag time">⏱ 30 sec</span><p class="say"><b>🎤 Say</b> MCP is like USB-C for AI: one standard plug between AI apps and tools or data. Build the connector once and any compatible app can use it.</p><ul><li>Introduced by Anthropic in late 2024 as an open standard, and now supported across many AI apps and vendors.</li><li>Analogy: before USB, every device had its own plug.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="The N×M problem">
+  <div class="eyebrow">The problem it solves</div>
+  <h2>Without a standard, every app needs a custom link to every system</h2>
+  <p class="sub">Move the sliders. Compare the number of integrations to build and maintain.</p>
+  <div class="split wide-left" style="align-items:center">
+    <svg id="nm" viewBox="0 0 600 340"></svg>
+    <div class="stack-v">
+      <div id="nmMode"></div>
+      <div><div class="label">AI apps: <span id="nLbl"></span></div><input type="range" id="nApps" min="1" max="6" value="4"></div>
+      <div><div class="label">Company systems: <span id="mLbl"></span></div><input type="range" id="mSys" min="1" max="6" value="5"></div>
+      <div class="card" style="text-align:center"><div class="label">Integrations to build</div><div class="count" id="nmCount">—</div><div class="muted" id="nmNote" style="font-size:14px"></div></div>
+    </div>
+  </div>
+  <aside class="notes"><span class="tag time">⏱ 3 min</span><p class="say"><b>🎤 Say</b> Without a standard, every app needs a custom link to every system. Move the sliders and watch the number of integrations grow.</p><ul><li>4 apps × 5 systems = 20 custom integrations. With MCP it’s 4 + 5 = 9, and adding a new AI app costs nothing extra.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="How it fits together">
+  <div style="position:absolute;right:clamp(24px,5vw,72px);top:40px"><button class="btn bts-btn" data-bts="mcp">🎬 Behind the scenes</button></div>
+  <div class="eyebrow">Architecture</div>
+  <h2>Host, client, server: who’s who</h2>
+  <p class="sub">Click each part. Then look at what a server can offer.</p>
+  <div id="arch"></div>
+  <div class="label" style="margin-top:16px">What an MCP server can offer</div>
+  <div id="prims"></div>
+  <aside class="notes"><span class="tag time">⏱ 3 min</span><p class="say"><b>🎤 Say</b> Three roles: the host is the AI app, the server is the connector, and the client is the plumbing inside the app. Most people only need host and server.</p><ul><li>For most people only two words matter: the <b>AI app</b> (host) and the <b>MCP server</b> (the connector). The client is plumbing inside the app.</li><li>Tools are by far the most used of the three.</li></ul></aside>
+</section>
+
+<section class="slide seq-slide" data-title="Sequence: An MCP session, start to finish">
+  <div class="eyebrow">Sequence diagram</div>
+  <h2>An MCP session, start to finish</h2>
+  <p class="sub">The host connects to the rating-engine MCP server, learns its tools, then uses one.</p>
+  <div id="seqMcp"></div>
+  <aside class="notes"><span class="tag time">⏱ 3 min</span><p class="say"><b>🎤 Say</b> Here is a full MCP session. At start-up the app connects and asks the server which tools it has. Then, when a user asks, the model requests a tool and the app forwards it to the server. The model never knows MCP is involved.</p><ul><li>Step through with → or the clicker. Each step shows the real message on the right.</li><li>Steps 1 to 4 happen once per session. Steps 5 to 12 repeat for every tool call.</li><li>Compare with the tool-call diagram in Topic 11: the only new part is the JSON-RPC hop to the server.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="Plug it in">
+  <div class="eyebrow">Try it</div>
+  <h2>Plug in servers and watch what the AI can do</h2>
+  <p class="sub">Switch MCP servers on and off. The requests on the right become possible, or not.</p>
+  <div class="board">
+    <div id="plugs"></div>
+    <div class="hub"><div class="e">🤖</div><b>Your AI app</b><div class="muted" style="font-size:13px" id="hubCount"></div></div>
+    <div id="reqs"></div>
+  </div>
+  <aside class="notes"><span class="tag time">⏱ 3 min</span><p class="say"><b>🎤 Say</b> Plug servers in and out and watch what becomes possible. The AI app itself never changes.</p><ul><li>The AI app itself never changes. You add capabilities by plugging in servers.</li><li>Some requests need two servers at once (Jira + Slack). Agents combine tools.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="Local vs remote">
+  <div class="eyebrow">In practice</div>
+  <h2>Local and remote servers</h2>
+  <div class="split">
+    <div class="card"><h3>💻 Local server</h3><p>Runs on your own machine, started by the AI app. Good for files, local databases and developer tools.</p>
+      <pre class="code">{
+  "mcpServers": {
+    "docs": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-filesystem", "./docs"]
+    }
+  }
+}</pre><p class="muted" style="font-size:13px">Example config file (e.g. <code>.mcp.json</code> in a project for Claude Code)</p></div>
+    <div class="card"><h3>☁️ Remote server</h3><p>Hosted at a URL, usually with a login (OAuth). Good for SaaS tools like ticketing, CRM, docs and chat. Often offered as “connectors” in AI apps.</p>
+      <pre class="code">{
+  "mcpServers": {
+    "tickets": {
+      "type": "http",
+      "url": "https://mcp.example.com/tickets"
+    }
+  }
+}</pre><p class="muted" style="font-size:13px">Illustrative URL. Use the one your vendor provides.</p></div>
+  </div>
+  <aside class="notes"><span class="tag time">⏱ 2 min</span><p class="say"><b>🎤 Say</b> Servers can run on your own machine or remotely. Most users see remote servers as a Connect button.</p><ul><li>Non-technical users usually see remote servers as a “Connect” button in their AI app.</li><li>Developers add servers in config files like this.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="Security">
+  <div class="eyebrow">Be careful</div>
+  <h2>An MCP server is code you are trusting</h2>
+  <p class="sub">Flip each card.</p>
+  <div id="sec"></div>
+  <aside class="notes"><span class="tag time">⏱ 2 min</span><p class="say"><b>🎤 Say</b> An MCP server is code you are trusting. A malicious one can hide instructions in its tool descriptions.</p><ul><li>“Tool poisoning” is real: a malicious server can hide instructions inside its tool descriptions, which the model reads (Topic 17).</li></ul></aside>
+</section>
+
+<section class="slide" data-title="Quick check">
+  <div class="eyebrow">Quick check</div>
+  <h2>Did it click?</h2>
+  <div id="quiz"></div>
+  <aside class="notes"><span class="tag time">⏱ 1 min</span><p class="say"><b>🎤 Say</b> Quick check.</p></aside>
+</section>
+
+<section class="slide" data-title="Takeaways">
+  <div class="eyebrow">Takeaways</div>
+  <h2>What to remember</h2>
+  <div class="cols-3" style="margin:10px 0 24px">
+    <div class="card"><b>🔌 One standard plug</b><p>Build a connector (MCP server) once; every MCP-compatible AI app can use it.</p></div>
+    <div class="card"><b>🧩 Host · client · server</b><p>The AI app hosts, the server exposes tools, resources and prompts from a system.</p></div>
+    <div class="card"><b>🔐 Trust carefully</b><p>Only use servers you trust, with the least access they need.</p></div>
+  </div>
+  <div class="row"><a class="btn primary" data-nexttopic>Next →</a></div>
+  <aside class="notes"><span class="tag time">⏱ 30 sec</span><p class="say"><b>🎤 Say</b> AI can now know things and do things. What if it decides for itself what to do next? That is an agent.</p><ul><li>Bridge: “It can know things (RAG) and do things (tools/MCP). What if it decides by itself what to do next? That’s an agent.”</li></ul></aside>
+</section>
+
+<script src="../assets/course.js?v=3.2"></script>
+<script src="../assets/widgets.js?v=3.2"></script>
+<script>
+const { $, $$ } = W;
+
+/* ---- N×M ---- */
+const APPS = ["💬 Chat app", "🧑‍💻 IDE", "🤖 Agent", "📱 Mobile bot", "🧭 Search", "📊 BI tool"];
+const SYS = ["🐙 GitHub", "💬 Slack", "🎫 Jira", "🗄️ Database", "📁 Drive", "📇 CRM"];
+let mcp = false;
+function renderNM() {
+  const n = +$("#nApps").value, m = +$("#mSys").value;
+  $("#nLbl").textContent = n; $("#mLbl").textContent = m;
+  const ay = (i) => 30 + (i + 0.5) * (280 / n), sy = (j) => 30 + (j + 0.5) * (280 / m);
+  let s = "";
+  if (!mcp) { for (let i = 0; i < n; i++) for (let j = 0; j < m; j++) s += `<line x1="150" y1="${ay(i)}" x2="450" y2="${sy(j)}" stroke="var(--bad)" stroke-opacity=".55" stroke-width="2"/>`; }
+  else {
+    for (let i = 0; i < n; i++) s += `<line x1="150" y1="${ay(i)}" x2="300" y2="170" stroke="var(--good)" stroke-width="2.5"/>`;
+    for (let j = 0; j < m; j++) s += `<line x1="300" y1="170" x2="450" y2="${sy(j)}" stroke="var(--good)" stroke-width="2.5"/>`;
+    s += `<rect x="255" y="145" width="90" height="50" rx="12" fill="var(--card2)" stroke="var(--c-autonomy)" stroke-width="3"/><text x="300" y="176" text-anchor="middle" font-weight="800" fill="var(--text)" font-size="16">MCP</text>`;
+  }
+  for (let i = 0; i < n; i++) s += `<text x="140" y="${ay(i) + 5}" text-anchor="end" fill="var(--text)" font-size="15" font-weight="600">${APPS[i]}</text>`;
+  for (let j = 0; j < m; j++) s += `<text x="460" y="${sy(j) + 5}" fill="var(--text)" font-size="15" font-weight="600">${SYS[j]}</text>`;
+  $("#nm").innerHTML = s;
+  const c = mcp ? n + m : n * m;
+  $("#nmCount").textContent = c;
+  $("#nmCount").style.color = mcp ? "var(--good)" : "var(--bad)";
+  $("#nmNote").innerHTML = mcp ? `${n} apps + ${m} servers. Add a new app and it can use all ${m} systems for free.` : `${n} × ${m} custom integrations, each one built and maintained separately.`;
+}
+W.tabs($("#nmMode"), [{ label: "😵 Without MCP" }, { label: "🔌 With MCP" }], { onChange: (i) => { mcp = i === 1; renderNM(); } });
+$("#nApps").oninput = renderNM; $("#mSys").oninput = renderNM;
+
+W.clickInfo($("#arch"), [
+  { icon: "🖥️", title: "Host", sub: "the AI app you use", c: "autonomy", html: "<p>The application the user works in: Claude Desktop, Claude Code, an IDE, your company’s own assistant. It contains the model connection and manages servers.</p>" },
+  { icon: "🔗", title: "Client", sub: "plumbing inside the host", c: "context", html: "<p>A small component inside the host that keeps a connection to <b>one</b> server. One client per server. You rarely need to think about it.</p>" },
+  { icon: "🔌", title: "MCP server", sub: "the connector", c: "action", html: "<p>A program that wraps a system (GitHub, a database, your ticketing tool) and exposes it in the standard MCP format. Built once by the vendor, the community, or your team.</p>" },
+  { icon: "🏢", title: "The system", sub: "GitHub, DB, Drive…", c: "knowledge", html: "<p>The actual system with the data or actions. The server talks to it using its normal API.</p>" },
+], { layout: "flow" });
+
+W.clickInfo($("#prims"), [
+  { icon: "🔧", title: "Tools", sub: "actions the AI can call", c: "action", html: "<p>Functions like <code>create_issue</code>, <code>search_messages</code>, <code>run_query</code>. Exactly the tools from Topic 11, packaged in a standard way. <b>By far the most used.</b></p>" },
+  { icon: "📄", title: "Resources", sub: "data the app can read", c: "knowledge", html: "<p>Read-only content such as files, records or schemas that the app can attach as context.</p>" },
+  { icon: "📋", title: "Prompts", sub: "ready-made templates", c: "context", html: "<p>Pre-written prompt templates the server offers, like “summarise this pull request”. Users often see them as slash commands.</p>" },
+], { cols: 3, side: true });
+
+/* ---- plug board ---- */
+const SERVERS = [
+  { k: "gh", e: "🐙", n: "GitHub", d: "repos, issues, pull requests" },
+  { k: "slack", e: "💬", n: "Slack", d: "channels, messages" },
+  { k: "drive", e: "📁", n: "Google Drive", d: "docs, sheets" },
+  { k: "db", e: "🗄️", n: "Postgres DB", d: "read-only SQL" },
+  { k: "jira", e: "🎫", n: "Jira", d: "tickets, sprints" },
+];
+const REQS = [
+  { t: "“Summarise open PRs in the payments repo”", need: ["gh"] },
+  { t: "“What did the team decide in #launch yesterday?”", need: ["slack"] },
+  { t: "“How many orders did we get last week?”", need: ["db"] },
+  { t: "“Find the Q3 board deck and list the risks”", need: ["drive"] },
+  { t: "“Create a ticket for this bug and post it in #eng”", need: ["jira", "slack"] },
+];
+const on = new Set(["gh"]);
+function renderBoard() {
+  $("#plugs").innerHTML = SERVERS.map((s) => `<div class="plug ${on.has(s.k) ? "on" : ""}"><span class="e">${s.e}</span><span class="grow"><b>${s.n}</b><small>${s.d}</small></span><span class="sw" data-k="${s.k}"></span></div>`).join("");
+  $$("#plugs .sw").forEach((el) => W.switch(el, on.has(el.dataset.k), (v) => { v ? on.add(el.dataset.k) : on.delete(el.dataset.k); renderBoard(); }));
+  $("#hubCount").textContent = `${on.size} server${on.size === 1 ? "" : "s"} connected`;
+  $("#reqs").innerHTML = '<div class="label">Can it do this?</div>' + REQS.map((r) => { const ok = r.need.every((k) => on.has(k)); return `<div class="req ${ok ? "ok" : "no"}">${ok ? "✅" : "❌"} ${r.t}${ok ? "" : `<div class="muted" style="font-size:12px">needs: ${r.need.map((k) => SERVERS.find((s) => s.k === k).n).join(" + ")}</div>`}</div>`; }).join("");
+}
+renderBoard();
+
+W.flips($("#sec"), [
+  { front: "🏷️ Only trusted servers", back: "Install servers from the vendor or sources you trust. A server runs code and sees your data." },
+  { front: "🔑 Least privilege", back: "Give the server a token that can only do what’s needed, e.g. read-only database access." },
+  { front: "☠️ Tool poisoning", back: "A malicious server can hide instructions in its tool descriptions, and the model reads them. <b>Review</b> what you install." },
+  { front: "📤 Data leaving", back: "Tools that send things out (email, web requests) can leak data if the agent is tricked. Watch those closely." },
+  { front: "✋ Approve writes", back: "Let reads run freely, but require approval for creating, sending or deleting." },
+  { front: "📜 Log everything", back: "Keep a record of which tools were called with which inputs, for debugging and audit." },
+]);
+
+W.quiz($("#quiz"), [
+  { q: "What problem does MCP mainly solve?", o: ["Models being too slow", "Every AI app needing custom integrations with every system", "Hallucinations", "Token costs"], a: 1, e: "N×M custom integrations become N+M standard ones." },
+  { q: "In MCP, what is the “server”?", o: ["The cloud machine running the model", "A connector that exposes a system’s tools and data", "The chat window", "A vector database"], a: 1, e: "An MCP server wraps a system (GitHub, a DB…) in the standard format." },
+  { q: "You add a Jira MCP server to your AI app. What changes?", o: ["The model is retrained", "The app can now call Jira tools", "Nothing until you upgrade the model", "Jira starts using AI"], a: 1, e: "Capabilities are added by plugging in servers. The model and app stay the same." },
+]);
+
+/* ===== v3 story ===== */
+W.BTS.mcp = {
+  title: "MCP on the wire: Claude talks to the rating server",
+  sub: "MCP messages are JSON-RPC. The app (the MCP client) asks the server what it offers, then calls tools when the model asks for them.",
+  parts: [
+    { label: "Plugging it in (config, simplified)", c: "muted", json: `// e.g. .mcp.json in your repo, or Claude Desktop's settings
+{
+  "mcpServers": {
+    "harborshield-rating": {
+      "type": "http",
+      "url": "https://mcp.harborshield.internal/rating"
+    }
+  }
+}` },
+    { label: "1 · Client → server: what can you do?", c: "accent", json: `{ "jsonrpc": "2.0", "id": 1, "method": "tools/list" }` },
+    { label: "Server → client", c: "action", json: `{ "jsonrpc": "2.0", "id": 1, "result": { "tools": [
+  { "name": "get_motor_quote",
+    "description": "Live annual motor premium from HarborShield's rating engine...",
+    "inputSchema": { "type": "object", "properties": { "policy_id": { "type": "string" }, ... } } },
+  { "name": "get_claim_status", "description": "...", "inputSchema": { ... } }
+] } }`, note: "The app turns these into the same tool definitions you saw in Topic 12, and puts them on the model’s desk." },
+    { label: "2 · Later, the model asks for a quote → client calls the server", c: "accent", json: `{ "jsonrpc": "2.0", "id": 7, "method": "tools/call",
+  "params": { "name": "get_motor_quote",
+              "arguments": { "policy_id": "MTR-55120", "add_driver": { "age": 18, "licence_years": 0 } } } }` },
+    { label: "Server → client", c: "action", json: `{ "jsonrpc": "2.0", "id": 7, "result": {
+  "content": [{ "type": "text", "text": "{\\"current_annual\\":18400,\\"new_annual\\":44750,\\"currency\\":\\"INR\\"}" }],
+  "isError": false
+} }`, note: "Same rating engine, same answer, whether the request came from Claude, Copilot, the CRM bot or the customer app." },
+  ],
+};
+</script>
+<script>W.seq(document.getElementById("seqMcp"), {"actors": [{"id": "host", "name": "Host + MCP client", "icon": "🖥️", "c": "autonomy"}, {"id": "srv", "name": "MCP server", "icon": "🔌", "c": "context"}, {"id": "api", "name": "Rating engine", "icon": "🧮", "c": "action"}, {"id": "model", "name": "Model", "icon": "🧠", "c": "model"}], "steps": [{"sep": "At start-up"}, {"from": "host", "to": "srv", "label": "initialize", "note": "Client and server agree on a protocol version and say what each supports.", "code": "{ \"jsonrpc\": \"2.0\", \"id\": 1, \"method\": \"initialize\",\n  \"params\": { \"protocolVersion\": \"2025-06-18\",\n    \"clientInfo\": { \"name\": \"claims-assistant\", \"version\": \"1.4\" }, \"capabilities\": {} } }"}, {"from": "srv", "to": "host", "label": "capabilities: tools", "code": "{ \"jsonrpc\": \"2.0\", \"id\": 1, \"result\": {\n  \"serverInfo\": { \"name\": \"rating-engine-mcp\" },\n  \"capabilities\": { \"tools\": {} } } }", "ret": true}, {"from": "host", "to": "srv", "label": "tools/list", "code": "{ \"jsonrpc\": \"2.0\", \"id\": 2, \"method\": \"tools/list\" }"}, {"from": "srv", "to": "host", "label": "get_motor_quote, get_home_quote", "code": "{ \"jsonrpc\": \"2.0\", \"id\": 2, \"result\": { \"tools\": [\n  { \"name\": \"get_motor_quote\", \"description\": \"Live motor premium...\", \"inputSchema\": { ... } },\n  { \"name\": \"get_home_quote\",  \"description\": \"Live home premium...\",  \"inputSchema\": { ... } } ] } }", "ret": true}, {"sep": "When a user asks"}, {"from": "host", "to": "model", "label": "Question + tools (from MCP)", "note": "The host converts the MCP tools into the model’s normal tools format. The model does not know MCP exists."}, {"from": "model", "to": "host", "label": "tool_use: get_motor_quote", "ret": true}, {"from": "host", "to": "srv", "label": "tools/call", "code": "{ \"jsonrpc\": \"2.0\", \"id\": 7, \"method\": \"tools/call\",\n  \"params\": { \"name\": \"get_motor_quote\",\n    \"arguments\": { \"policy_id\": \"MTR-55120\", \"add_driver\": { \"age\": 18 } } } }"}, {"from": "srv", "to": "api", "label": "POST /rating/v3/quote", "note": "The server is a thin adapter. It calls the real system with its own credentials."}, {"from": "api", "to": "srv", "label": "{ new_annual: 44750 }", "ret": true}, {"from": "srv", "to": "host", "label": "result.content", "code": "{ \"jsonrpc\": \"2.0\", \"id\": 7, \"result\": {\n  \"content\": [{ \"type\": \"text\", \"text\": \"{\\\"new_annual\\\":44750,\\\"currency\\\":\\\"INR\\\"}\" }],\n  \"isError\": false } }", "ret": true}, {"from": "host", "to": "model", "label": "tool_result"}, {"from": "model", "to": "host", "label": "Final answer", "ret": true}], "frames": []});</script>
+<script src="../assets/deck.js?v=3.2"></script>
+</body>
+</html>

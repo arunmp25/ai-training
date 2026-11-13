@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AI Training · Building with AI</title>
+<link rel="stylesheet" href="v2/assets/style.css">
+<link rel="stylesheet" href="v2/assets/widgets.css">
+<script>const t = localStorage.getItem("aitrain-theme"); if (t) document.documentElement.dataset.theme = t;</script>
+<style>
+  .vers { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; margin-top: 30px; }
+  .ver { display: block; text-decoration: none; color: var(--text); padding: 26px; border-radius: var(--radius); background: var(--card); border: 1px solid var(--line); transition: transform .15s, box-shadow .2s; }
+  .ver:hover { transform: translateY(-3px); box-shadow: 0 0 0 2px var(--accent); }
+  .ver h2 { font-size: 28px; margin: 6px 0 10px; } .ver ul { padding-left: 20px; color: var(--muted); } .ver li { margin: 5px 0; }
+  @media (max-width: 800px) { .vers { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body class="page">
+<div class="page-wrap">
+  <div class="eyebrow" style="text-transform:uppercase;letter-spacing:.14em;font-weight:800;color:var(--accent);font-size:13px">AI Training Programme</div>
+  <h1 style="font-size:clamp(36px,5vw,60px);margin-top:10px">Building with AI</h1>
+  <p class="muted" style="font-size:19px;max-width:760px">Three versions of the course. Pick one to open its course page.</p>
+  <div class="vers">
+    <a class="ver" href="v3/index.html" style="border-top:4px solid var(--accent)"><span class="tag" style="--c:var(--accent)">LATEST</span><h2>Version 3</h2>
+      <ul><li>One path in three sessions (no days, timings hidden; press <kbd>D</kbd> to show them)</li><li>Relatable, light examples: the “[Your Name]” email, the 20,000-page manual, the King’s keyword search, live insurance quotes</li><li>🎬 Behind the scenes: the real JSON at every step</li><li>Step-through sequence diagrams for every multi-step flow: API call, chat history, RAG, hybrid search, tool calls, MCP, the agent loop, hooks, injection defences</li><li>All of Version 2’s content, plus new demos</li></ul></a>
+    <a class="ver" href="v2/index.html" style="border-top:4px solid var(--good)"><span class="tag" style="--c:var(--good)">STABLE</span><h2>Version 2</h2>
+      <ul><li>One path (Option A, built up layer by layer)</li><li>Timings hidden by default: press <kbd>D</kbd> to show them</li><li>RAG in depth: chunking and overlap, embeddings, cosine similarity, vector databases, HNSW, filters, hybrid search, re-ranking, evaluation</li><li>Tools in depth: schemas, the message exchange, parallel calls, tool choice, errors, structured output, tool design</li></ul></a>
+    <a class="ver" href="v1/index.html"><span class="tag" style="--c:var(--muted)">ARCHIVED</span><h2>Version 1</h2>
+      <ul><li>Two delivery options (A: layer by layer, B: big picture first) and a comparison</li><li>Timings always shown</li><li>Lighter RAG and Tools topics</li></ul></a>
+  </div>
+</div>
+</body>
+</html>

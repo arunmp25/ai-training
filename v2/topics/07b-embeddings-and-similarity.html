@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Topic 07b · Embeddings and cosine similarity</title>
+<link rel="stylesheet" href="../assets/style.css">
+<link rel="stylesheet" href="../assets/widgets.css">
+<style>
+  .words { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+  .vec-tbl { width: 100%; border-collapse: collapse; font-size: 14px; }
+  .vec-tbl th, .vec-tbl td { padding: 4px 8px; border-bottom: 1px solid var(--line); text-align: left; }
+  .vec-tbl th { font-size: 11.5px; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; }
+  .vec-tbl td.n { font-family: ui-monospace, Menlo, monospace; text-align: right; }
+  .vec-tbl tr.sel td { background: color-mix(in srgb, var(--accent) 14%, transparent); font-weight: 700; }
+  .mini { display: inline-block; height: 9px; border-radius: 3px; background: var(--c-knowledge); vertical-align: middle; }
+  .strip { display: grid; grid-template-columns: repeat(48, 1fr); gap: 2px; height: 28px; }
+  .strip i { border-radius: 2px; }
+  .sent { display: grid; grid-template-columns: 26px 1fr; gap: 10px; align-items: center; padding: 7px 12px; border-radius: 12px; border: 1px solid var(--line); background: var(--card); cursor: pointer; }
+  .sent.on { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+  .sent .t { font-weight: 700; margin-bottom: 6px; font-size: 14.5px; }
+  .sent .nums { font-family: ui-monospace, Menlo, monospace; font-size: 12px; color: var(--muted); margin-top: 4px; }
+  .cos-svg { width: 100%; max-height: 52vh; aspect-ratio: 1.25; background: var(--card); border: 1px solid var(--line); border-radius: 14px; touch-action: none; user-select: none; }
+  .cos-svg .handle { cursor: grab; }
+  .big-num { font-size: 40px; font-weight: 800; font-variant-numeric: tabular-nums; }
+  .calc input { width: 64px; padding: 6px; border-radius: 8px; border: 1px solid var(--line); background: var(--card2); color: var(--text); font: 600 14px ui-monospace, Menlo, monospace; text-align: right; }
+  .calc td, .calc th { padding: 6px 8px; border-bottom: 1px solid var(--line); text-align: right; font-size: 14px; }
+  .calc th { font-size: 11.5px; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; }
+  .calc td:first-child, .calc th:first-child { text-align: left; }
+  .calc .mono { font-family: ui-monospace, Menlo, monospace; font-size: 13px; }
+  .emb svg { width: 100%; max-height: 46vh; aspect-ratio: 1.6; height: auto; background: var(--card); border-radius: 14px; border: 1px solid var(--line); }
+  .emb .pt { cursor: help; }
+  .res { font-size: 14px; display: grid; gap: 6px; }
+  .res div { padding: 8px 10px; border-radius: 8px; background: var(--card); border: 1px solid var(--line); transition: opacity .3s; }
+  .res .sim { float: right; font-weight: 800; color: var(--good); font-variant-numeric: tabular-nums; }
+  .res div.out { opacity: .35; }
+  #nearW div { padding: 5px 10px; }
+  .slide .sub { margin-bottom: 16px; }
+  .res div.out .sim { color: var(--muted); }
+</style>
+</head>
+<body class="deck" data-id="07b">
+
+<section class="slide title-slide" data-title="Welcome">
+  <div class="big-emoji">📍</div>
+  <div class="eyebrow">Topic 07b · RAG deep dive, part 1</div>
+  <h1>Embeddings: meaning as numbers</h1>
+  <p class="sub">To search by <i>meaning</i>, a computer needs a way to measure it. An <b>embedding</b> turns any text into a list of numbers. <b>Cosine similarity</b> tells us how close two of those lists point.</p>
+  <aside class="notes"><span class="tag time">⏱ 30 sec</span><ul><li>Promise: by the end everyone can explain “embedding”, “vector”, “dimension” and “cosine similarity” in plain words, and do one by hand.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="Describing things with numbers">
+  <div class="eyebrow">The intuition</div>
+  <h2>Describe each word with a few scores</h2>
+  <p class="sub">Imagine rating every word on 4 qualities, from 0 to 1. That list of scores is a <b>vector</b>. Each quality is a <b>dimension</b>. Click a word: words with similar scores come out as similar.</p>
+  <div class="words" id="words"></div>
+  <div class="split">
+    <div class="card"><div class="label">The vectors (4 dimensions)</div><table class="vec-tbl" id="vecTbl"></table></div>
+    <div class="card"><div class="label">Most similar to <span id="selW"></span> (cosine similarity)</div><div class="res" id="nearW"></div></div>
+  </div>
+  <aside class="notes"><span class="tag time">⏱ 3 min</span><ul><li>Click “puppy”: dog, kitten and cat are top. Click “truck”: car and bicycle.</li><li>Here <i>we</i> chose the 4 qualities. A real embedding model <b>learns</b> hundreds of them from reading huge amounts of text, and they don’t have human names. The idea is the same.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="Real embeddings">
+  <div class="eyebrow">What a real one looks like</div>
+  <h2>A real embedding: hundreds of numbers nobody can read</h2>
+  <p class="sub">An <b>embedding model</b> reads a whole sentence and outputs e.g. 1,536 numbers. Below: 48 of them as colours (blue = negative, orange = positive). Click two sentences to compare them.</p>
+  <div class="split wide-left">
+    <div class="stack-v" id="sents"></div>
+    <div class="stack-v">
+      <div class="card" style="text-align:center"><div class="label">Cosine similarity of the two selected</div><div class="big-num" id="pairCos"></div><div class="muted" id="pairNote"></div></div>
+      <div class="callout" style="--c:var(--c-knowledge);font-size:14.5px">
+        <b>Facts worth knowing</b><br>
+        • Typical sizes: 384, 768, 1,024, 1,536 or 3,072 dimensions.<br>
+        • Same input + same model = same vector, every time.<br>
+        • Multilingual models put “reset password” and “Passwort zurücksetzen” close together.<br>
+        • Embedding is fast and cheap compared with generating text.
+      </div>
+    </div>
+  </div>
+  <aside class="notes"><span class="tag time">⏱ 3 min</span><ul><li>Compare 1 and 2: different words, same meaning, so the colour patterns look alike and the score is high.</li><li>Compare 1 and 4: different language, still close (multilingual model).</li><li>Compare 1 and 3: unrelated, so the score is low.</li><li>The colours here are simulated to show the idea; real values look just as unreadable.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="The meaning map">
+  <div class="eyebrow">Searching by meaning</div>
+  <h2>Every chunk becomes a point on a meaning map</h2>
+  <p class="sub">Squash those hundreds of dimensions down to 2 and you can see it: chunks about the same topic cluster together. A question lands near the chunks that <i>mean</i> the same thing, even with no words in common. Pick a question.</p>
+  <div class="row" style="margin-bottom:10px" id="queries"></div>
+  <div class="split wide-left emb">
+    <svg id="map" viewBox="0 0 160 100"></svg>
+    <div class="stack-v">
+      <div><div class="label">🔎 Meaning search (embeddings): top 3</div><div class="res" id="semRes"></div></div>
+      <div><div class="label">🔤 Keyword search</div><div class="res" id="kwRes"></div></div>
+    </div>
+  </div>
+  <aside class="notes"><span class="tag time">⏱ 3 min</span><ul><li>“Can I work from my sofa?” shares <b>no words</b> with “Employees may work from home”, so keyword search fails and meaning search nails it.</li><li>This 2D picture is a projection (a squashed view) of the real high-dimensional space.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="Cosine similarity">
+  <div class="eyebrow">Measuring closeness</div>
+  <h2>Cosine similarity: do two arrows point the same way?</h2>
+  <p class="sub">Think of each vector as an arrow from the origin. Cosine similarity looks only at the <b>angle</b> between them: same direction = 1, unrelated (90°) = 0, opposite = −1. <b>Drag the arrow tips.</b></p>
+  <div class="split wide-left">
+    <svg class="cos-svg" id="cosSvg" viewBox="-110 -88 220 176"></svg>
+    <div class="stack-v">
+      <div class="card" style="text-align:center"><div class="label">Cosine similarity</div><div class="big-num" id="cosVal"></div><div class="muted" id="cosAng"></div></div>
+      <div class="card"><div class="kv" id="cosKv"></div></div>
+      <div class="row" id="cosPresets"></div>
+    </div>
+  </div>
+  <aside class="notes"><span class="tag time">⏱ 4 min</span><ul><li>Try “Same direction, longer”: cosine stays 1.00 even though B is twice as long, while the distance changes. Cosine ignores length, which is why it suits text: a long paragraph and a short sentence about the same thing should still match.</li><li>Real embeddings have 1,536 dimensions, not 2, but the maths and the idea are identical.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="Do one by hand">
+  <div class="eyebrow">Worked example</div>
+  <h2>Calculate cosine similarity yourself</h2>
+  <p class="sub">cos(A, B) = <b>(A · B)</b> ÷ (<b>|A|</b> × <b>|B|</b>). Multiply matching numbers and add them up (the dot product), then divide by the two lengths. Edit any number.</p>
+  <div class="split wide-left">
+    <div class="card"><table class="calc" id="calc" style="width:100%;border-collapse:collapse"></table></div>
+    <div class="stack-v" id="calcRes"></div>
+  </div>
+  <aside class="notes"><span class="tag time">⏱ 3 min</span><ul><li>Dimensions: [animal, pet, vehicle]. Walk the “puppy vs dog” row: 0.9×0.8 + 0.8×0.9 + 0×0.1 = 1.44, lengths 1.20 and 1.21, so cos ≈ 0.99.</li><li>Ask someone to change “dog” into a truck (0, 0, 0.9) and watch the score collapse.</li><li>A vector database does exactly this, just with 1,536 numbers and millions of chunks, very fast.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="Three ways to measure">
+  <div class="eyebrow">Similarity metrics</div>
+  <h2>Cosine, dot product, or distance?</h2>
+  <p class="sub">Vector databases ask which <b>metric</b> to use. Click each one.</p>
+  <div id="metrics"></div>
+  <aside class="notes"><span class="tag time">⏱ 2 min</span><ul><li>Practical answer: use what your embedding model’s documentation recommends, usually cosine.</li><li>Most modern models output <b>normalised</b> vectors (length 1). Then cosine, dot product and distance all give the same ranking, and dot product is just the fastest to compute.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="Scores and thresholds">
+  <div class="eyebrow">Using the score</div>
+  <h2>Top-k and thresholds: how many chunks make the cut?</h2>
+  <p class="sub">Question: <b>“Can I expense a taxi home after a late shift?”</b> Every chunk gets a score. Choose how many to keep (<b>top-k</b>) and the minimum score (<b>threshold</b>).</p>
+  <div class="split wide-left">
+    <div class="res" id="thrRes"></div>
+    <div class="stack-v">
+      <div><div class="label">Top-k: <span id="kLbl"></span></div><input type="range" id="kSl" min="1" max="8" value="3"></div>
+      <div><div class="label">Minimum score: <span id="tLbl"></span></div><input type="range" id="tSl" min="30" max="95" value="50"></div>
+      <div class="callout" id="thrNote" style="font-size:14.5px"></div>
+    </div>
+  </div>
+  <aside class="notes"><span class="tag time">⏱ 2 min</span><ul><li>k too high: noise and cost (and attention dilution, Topic 03). k too low: you miss the second half of the answer.</li><li>Scores are <b>relative</b>, not percentages of truth. 0.78 is “good” for one model and “meh” for another, so tune thresholds on your own data.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="Choosing an embedding model">
+  <div class="eyebrow">Practical choices</div>
+  <h2>Choosing an embedding model</h2>
+  <p class="sub">Click each factor.</p>
+  <div id="choose"></div>
+  <aside class="notes"><span class="tag time">⏱ 2 min</span><ul><li>The rule that bites teams: <b>documents and questions must be embedded by the same model</b>. Vectors from two different models are like coordinates on two different maps.</li><li>Public leaderboards (e.g. MTEB) are a starting point; test on your own questions.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="Where embeddings struggle">
+  <div class="eyebrow">Limits</div>
+  <h2>Where embeddings struggle</h2>
+  <p class="sub">Meaning search is powerful but not magic. Flip for the fix.</p>
+  <div id="limits"></div>
+  <aside class="notes"><span class="tag time">⏱ 2 min</span><ul><li>These limits are why real systems combine embeddings with keyword search and re-ranking. That’s the next topic.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="Quick check">
+  <div class="eyebrow">Quick check</div>
+  <h2>Did it click?</h2>
+  <div id="quiz"></div>
+  <aside class="notes"><span class="tag time">⏱ 1 min</span></aside>
+</section>
+
+<section class="slide" data-title="Takeaways">
+  <div class="eyebrow">Takeaways</div>
+  <h2>What to remember</h2>
+  <div class="cols-3" style="margin:10px 0 24px">
+    <div class="card"><b>📍 Embedding = meaning as numbers</b><p>A model turns text into a vector of hundreds of numbers. Similar meaning, similar vector.</p></div>
+    <div class="card"><b>📐 Cosine = same direction?</b><p>Dot product divided by the lengths. 1 = same meaning, 0 = unrelated. It ignores length.</p></div>
+    <div class="card"><b>⚖️ Same model, tuned cut-off</b><p>Embed documents and questions with the same model; tune top-k and thresholds on your own data.</p></div>
+  </div>
+  <div class="row"><a class="btn primary" data-nexttopic>Next →</a></div>
+  <aside class="notes"><span class="tag time">⏱ 30 sec</span><ul><li>Bridge: “Comparing one question with 16 chunks is easy. What about 50 million? That’s what a vector database is for.”</li></ul></aside>
+</section>
+
+<script src="../assets/course.js"></script>
+<script src="../assets/widgets.js"></script>
+<script>
+const { $, $$, cv } = W;
+const dot = (a, b) => a.reduce((s, x, i) => s + x * b[i], 0);
+const len = (a) => Math.sqrt(dot(a, a));
+const cosine = (a, b) => { const d = len(a) * len(b); return d ? dot(a, b) / d : 0; };
+const f2 = (x) => (Math.round(x * 100) / 100).toFixed(2);
+
+/* ---- words with hand-made features ---- */
+const DIMS = ["animal", "pet", "big", "vehicle"];
+const WORDS = { "🐶 puppy": [0.95, 0.95, 0.15, 0], "🐕 dog": [0.95, 0.9, 0.4, 0], "🐱 kitten": [0.95, 0.95, 0.05, 0], "🐈 cat": [0.95, 0.9, 0.2, 0],
+  "🦁 lion": [0.95, 0.05, 0.7, 0], "🐘 elephant": [0.95, 0, 1, 0], "🚲 bicycle": [0, 0.15, 0.2, 0.8], "🚗 car": [0, 0.05, 0.5, 1], "🚚 truck": [0, 0, 0.9, 1] };
+const WK = Object.keys(WORDS);
+$("#words").innerHTML = WK.map((w, i) => `<button class="btn" data-i="${i}">${w}</button>`).join("");
+function renderWords(si) {
+  const sel = WK[si];
+  $$("#words .btn").forEach((b) => b.classList.toggle("primary", +b.dataset.i === si));
+  $("#selW").textContent = sel;
+  $("#vecTbl").innerHTML = `<tr><th>Word</th>${DIMS.map((d) => `<th style="text-align:right">${d}</th>`).join("")}</tr>` +
+    WK.map((w) => `<tr class="${w === sel ? "sel" : ""}"><td>${w}</td>${WORDS[w].map((v) => `<td class="n">${v.toFixed(2)} <span class="mini" style="width:${v * 26}px"></span></td>`).join("")}</tr>`).join("");
+  const ranked = WK.filter((w) => w !== sel).map((w) => ({ w, s: cosine(WORDS[sel], WORDS[w]) })).sort((a, b) => b.s - a.s);
+  $("#nearW").innerHTML = ranked.map((r) => `<div><span class="sim" style="color:${r.s > 0.8 ? "var(--good)" : r.s > 0.4 ? "var(--warn)" : "var(--muted)"}">${f2(r.s)}</span>${r.w}</div>`).join("");
+}
+$("#words").onclick = (e) => { const b = e.target.closest("button"); if (b) renderWords(+b.dataset.i); };
+renderWords(0);
+
+/* ---- simulated real embeddings ---- */
+let seed = 7; const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647) * 2 - 1;
+const base = (n) => Array.from({ length: 48 }, rnd);
+const IT = base(), LEAVE = base();
+const mix = (b, noise) => b.map((x) => x + rnd() * noise);
+const SENTS = [
+  { t: "How do I reset my password?", v: mix(IT, 0.35) },
+  { t: "I forgot my login details", v: mix(IT, 0.55) },
+  { t: "What is the parental leave policy?", v: mix(LEAVE, 0.35) },
+  { t: "Wie setze ich mein Passwort zurück?", v: mix(IT, 0.5), note: "German" },
+];
+let pair = [0, 1];
+const col = (x) => `color-mix(in srgb, ${x > 0 ? "#ff9f43" : "#4f8cff"} ${Math.min(100, Math.abs(x) * 85)}%, var(--card2))`;
+function renderSents() {
+  $("#sents").innerHTML = SENTS.map((s, i) => `<div class="sent ${pair.includes(i) ? "on" : ""}" data-i="${i}"><b style="font-size:20px;color:var(--muted)">${i + 1}</b><div>
+    <div class="t">${s.t} ${s.note ? `<span class="tag" style="--c:var(--c-context)">${s.note}</span>` : ""}</div>
+    <div class="strip">${s.v.map((x) => `<i style="background:${col(x)}"></i>`).join("")}</div>
+    <div class="nums">[${s.v.slice(0, 5).map((x) => (x / 10).toFixed(3)).join(", ")}, … 1,531 more]</div></div></div>`).join("");
+  const c = cosine(SENTS[pair[0]].v, SENTS[pair[1]].v);
+  $("#pairCos").textContent = f2(c);
+  $("#pairCos").style.color = c > 0.7 ? "var(--good)" : c > 0.3 ? "var(--warn)" : "var(--bad)";
+  $("#pairNote").textContent = `Sentence ${pair[0] + 1} vs ${pair[1] + 1}: ` + (c > 0.7 ? "very similar meaning" : c > 0.3 ? "somewhat related" : "unrelated");
+}
+$("#sents").onclick = (e) => { const d = e.target.closest(".sent"); if (!d) return; const i = +d.dataset.i; if (pair.includes(i)) return; pair = [pair[1], i]; renderSents(); };
+renderSents();
+
+/* ---- meaning map ---- */
+const PTS = [
+  ["Annual leave: 24 days per year.", 14, 18, "context"], ["Request leave in the HR portal 2 weeks ahead.", 26, 28, "context"], ["Special leave: 5 days for your wedding.", 16, 33, "context"], ["Parental leave: 26 weeks paid.", 29, 16, "context"],
+  ["Employees may work from home up to 2 days per week.", 71, 19, "knowledge"], ["Remote days must be Tuesday or Thursday.", 81, 27, "knowledge"], ["Your home workspace must be safe and quiet.", 69, 31, "knowledge"], ["Home internet costs reimbursed up to €30/month.", 60, 43, "knowledge"],
+  ["Submit receipts within 30 days.", 17, 69, "action"], ["Taxis are reimbursed for late-night travel.", 29, 79, "action"], ["Meals on business trips: up to €40/day.", 14, 83, "action"], ["Use the Expenses app to scan receipts.", 31, 65, "action"],
+  ["Reset your password at id.acme.com.", 74, 69, "autonomy"], ["Report lost laptops to IT within 24 hours.", 83, 79, "autonomy"], ["Never share your password, even with IT.", 69, 83, "autonomy"], ["Install software only from the company portal.", 86, 64, "autonomy"],
+];
+const CLUSTERS = [["🌴 Leave", 21, 7, "context"], ["🏠 Remote work", 74, 7, "knowledge"], ["🧾 Expenses", 22, 96, "action"], ["💻 IT & security", 77, 96, "autonomy"]];
+const QS = [
+  { q: "Can I work from my sofa on Thursdays?", x: 76, y: 24 },
+  { q: "How do I claim back a taxi ride?", x: 25, y: 73 },
+  { q: "I forgot my login details", x: 73, y: 74 },
+  { q: "Can I take time off to get married?", x: 19, y: 29 },
+  { q: "Will the company pay for my home Wi-Fi?", x: 64, y: 39 },
+];
+const STOP = new Set("can i my on the a to do how get will for of in is it me".split(" "));
+const words = (s) => s.toLowerCase().replace(/[^a-z0-9 ]/g, " ").split(/\s+/).filter((w) => w && !STOP.has(w));
+$("#queries").innerHTML = QS.map((q, i) => `<button class="btn" data-i="${i}">${q.q}</button>`).join("");
+function renderMap(qi) {
+  const q = QS[qi];
+  $$("#queries .btn").forEach((b) => b.classList.toggle("primary", +b.dataset.i === qi));
+  const ranked = PTS.map((p, i) => ({ i, d: Math.hypot(p[1] - q.x, p[2] - q.y) })).sort((a, b) => a.d - b.d).slice(0, 3);
+  const X = (v) => v * 1.6;
+  $("#map").innerHTML = CLUSTERS.map(([l, x, y, c]) => `<text x="${X(x)}" y="${y}" font-size="4" font-weight="800" text-anchor="middle" fill="${cv(c)}">${l}</text>`).join("") +
+    ranked.map((r) => `<line x1="${X(q.x)}" y1="${q.y}" x2="${X(PTS[r.i][1])}" y2="${PTS[r.i][2]}" stroke="var(--good)" stroke-width="0.6" stroke-dasharray="1.5 1"/>`).join("") +
+    PTS.map((p, i) => `<circle class="pt" cx="${X(p[1])}" cy="${p[2]}" r="${ranked.some((r) => r.i === i) ? 2.4 : 1.6}" fill="${cv(p[3])}" stroke="${ranked.some((r) => r.i === i) ? "var(--good)" : "none"}" stroke-width="0.6"><title>${p[0]}</title></circle>`).join("") +
+    `<g><circle cx="${X(q.x)}" cy="${q.y}" r="2.8" fill="var(--warn)" stroke="var(--text)" stroke-width="0.5"><animate attributeName="r" values="2.2;3.4;2.2" dur="1.6s" repeatCount="indefinite"/></circle><title>${q.q}</title></g>`;
+  $("#semRes").innerHTML = ranked.map((r) => `<div><span class="sim">${(0.95 - r.d * 0.012).toFixed(2)}</span>${PTS[r.i][0]}</div>`).join("");
+  const qw = new Set(words(q.q));
+  const kw = PTS.filter((p) => words(p[0]).some((w) => qw.has(w)));
+  $("#kwRes").innerHTML = kw.length ? kw.slice(0, 3).map((p) => `<div>${p[0]} <span class="muted">(matched a word)</span></div>`).join("") : `<div style="color:var(--bad)">0 results: no exact words in common 😕</div>`;
+}
+$("#queries").onclick = (e) => { const b = e.target.closest("button"); if (b) renderMap(+b.dataset.i); };
+renderMap(0);
+
+/* ---- cosine playground ---- */
+const vA = [70, -20], vB = [40, -55];
+const svg = $("#cosSvg");
+function arrow(v, c, name) {
+  const [x, y] = v, a = Math.atan2(y, x), h = 7;
+  return `<line x1="0" y1="0" x2="${x}" y2="${y}" stroke="${c}" stroke-width="2.6"/>
+    <polygon points="${x},${y} ${x - h * Math.cos(a - 0.4)},${y - h * Math.sin(a - 0.4)} ${x - h * Math.cos(a + 0.4)},${y - h * Math.sin(a + 0.4)}" fill="${c}"/>
+    <circle class="handle" data-v="${name}" cx="${x}" cy="${y}" r="9" fill="${c}" fill-opacity=".25" stroke="${c}"/>
+    <text x="${x + 10 * Math.cos(a)}" y="${y + 10 * Math.sin(a) + 4}" fill="${c}" font-size="11" font-weight="800" text-anchor="middle">${name}</text>`;
+}
+function renderCos() {
+  // svg y grows downward; use (x, -y) as the maths vector
+  const A = [vA[0], -vA[1]], B = [vB[0], -vB[1]];
+  const c = cosine(A, B), ang = Math.acos(Math.max(-1, Math.min(1, c))) * 180 / Math.PI;
+  const a1 = Math.atan2(vA[1], vA[0]), a2 = Math.atan2(vB[1], vB[0]);
+  let d = a2 - a1; while (d > Math.PI) d -= 2 * Math.PI; while (d < -Math.PI) d += 2 * Math.PI;
+  const r = 24, large = 0, sweep = d > 0 ? 1 : 0;
+  const grid = [-100, -50, 50, 100].map((g) => `<line x1="${g}" y1="-88" x2="${g}" y2="88" stroke="var(--line)" stroke-width=".5"/><line x1="-110" y1="${g * 0.8}" x2="110" y2="${g * 0.8}" stroke="var(--line)" stroke-width=".5"/>`).join("");
+  svg.innerHTML = grid + `<line x1="-110" y1="0" x2="110" y2="0" stroke="var(--muted)" stroke-width=".6"/><line x1="0" y1="-88" x2="0" y2="88" stroke="var(--muted)" stroke-width=".6"/>
+    <path d="M ${r * Math.cos(a1)} ${r * Math.sin(a1)} A ${r} ${r} 0 ${large} ${sweep} ${r * Math.cos(a2)} ${r * Math.sin(a2)}" fill="none" stroke="var(--warn)" stroke-width="2"/>
+    <text x="${(r + 12) * Math.cos(a1 + d / 2)}" y="${(r + 12) * Math.sin(a1 + d / 2) + 4}" fill="var(--warn)" font-size="10" font-weight="800" text-anchor="middle">${Math.round(ang)}°</text>
+    <line x1="${vA[0]}" y1="${vA[1]}" x2="${vB[0]}" y2="${vB[1]}" stroke="var(--muted)" stroke-dasharray="3 3" stroke-width="1"/>` +
+    arrow(vA, "var(--c-model)", "A") + arrow(vB, "var(--c-knowledge)", "B");
+  $("#cosVal").textContent = f2(c);
+  $("#cosVal").style.color = c > 0.7 ? "var(--good)" : c > 0.2 ? "var(--warn)" : "var(--bad)";
+  $("#cosAng").textContent = `angle ${Math.round(ang)}° · ` + (c > 0.95 ? "same direction: same meaning" : c > 0.7 ? "similar" : c > 0.2 ? "loosely related" : c > -0.2 ? "unrelated (≈ 90°)" : "opposite");
+  const s = (v) => (v / 50).toFixed(2);
+  $("#cosKv").innerHTML = `<b>A</b><span class="mono">(${s(A[0])}, ${s(A[1])})</span><b>B</b><span class="mono">(${s(B[0])}, ${s(B[1])})</span>
+    <b>Length |A|, |B|</b><span>${(len(A) / 50).toFixed(2)}, ${(len(B) / 50).toFixed(2)}</span>
+    <b>Dot product</b><span>${(dot(A, B) / 2500).toFixed(2)} <span class="muted">(changes with length)</span></span>
+    <b>Distance</b><span>${(Math.hypot(A[0] - B[0], A[1] - B[1]) / 50).toFixed(2)} <span class="muted">(dashed line)</span></span>`;
+}
+let drag = null;
+const toSvg = (e) => { const p = svg.createSVGPoint(); p.x = e.clientX; p.y = e.clientY; return p.matrixTransform(svg.getScreenCTM().inverse()); };
+svg.addEventListener("pointerdown", (e) => { const h = e.target.closest(".handle"); if (h) { drag = h.dataset.v === "A" ? vA : vB; svg.setPointerCapture(e.pointerId); } });
+svg.addEventListener("pointermove", (e) => {
+  if (!drag) return;
+  const p = toSvg(e); let x = Math.max(-104, Math.min(104, p.x)), y = Math.max(-82, Math.min(82, p.y));
+  if (Math.hypot(x, y) < 12) return;
+  drag[0] = x; drag[1] = y; renderCos();
+});
+svg.addEventListener("pointerup", () => (drag = null));
+const PRE = [["Similar", [70, -20], [40, -55]], ["Same direction, longer", [40, -20], [80, -40]], ["Unrelated (90°)", [70, 0], [0, -70]], ["Opposite", [60, -30], [-60, 30]]];
+$("#cosPresets").innerHTML = PRE.map(([l], i) => `<button class="btn" data-i="${i}">${l}</button>`).join("");
+$("#cosPresets").onclick = (e) => { const b = e.target.closest("button"); if (!b) return; const [, a, bb] = PRE[+b.dataset.i]; vA[0] = a[0]; vA[1] = a[1]; vB[0] = bb[0]; vB[1] = bb[1]; renderCos(); };
+renderCos();
+
+/* ---- calculator ---- */
+const CD = ["animal", "pet", "vehicle"];
+const CV = { Q: { n: "🐶 puppy (question)", v: [0.9, 0.8, 0] }, D1: { n: "🐕 dog", v: [0.8, 0.9, 0.1] }, D2: { n: "🚚 truck", v: [0, 0.1, 0.9] } };
+function renderCalc(first) {
+  const rows = Object.entries(CV);
+  if (first) $("#calc").innerHTML = `<tr><th>Vector</th>${CD.map((d) => `<th>${d}</th>`).join("")}<th>Length |v|</th></tr>` +
+    rows.map(([k, r]) => `<tr><td><b>${r.n}</b></td>${r.v.map((x, j) => `<td><input type="number" step="0.1" min="-1" max="1" value="${x}" data-k="${k}" data-j="${j}"></td>`).join("")}<td class="mono" data-len="${k}"></td></tr>`).join("");
+  rows.forEach(([k, r]) => { $(`#calc [data-len="${k}"]`).innerHTML = `√(${r.v.map((x) => f2(x) + "²").join("+")}) = <b>${f2(len(r.v))}</b>`; });
+  const Q = CV.Q.v;
+  $("#calcRes").innerHTML = ["D1", "D2"].map((k) => {
+    const D = CV[k].v, d = dot(Q, D), c = cosine(Q, D);
+    const color = c > 0.7 ? "good" : c > 0.3 ? "warn" : "bad";
+    return `<div class="card" style="border-left:4px solid ${cv(color)}"><div class="label">puppy vs ${CV[k].n}</div>
+      <div class="calc mono" style="font-size:13.5px;line-height:1.9">
+      ① dot = ${Q.map((x, j) => `${f2(x)}×${f2(D[j])}`).join(" + ")} = <b>${f2(d)}</b><br>
+      ② lengths = ${f2(len(Q))} × ${f2(len(D))} = <b>${f2(len(Q) * len(D))}</b><br>
+      ③ cos = ${f2(d)} ÷ ${f2(len(Q) * len(D))} = <b style="font-size:20px;color:${cv(color)}">${f2(c)}</b></div></div>`;
+  }).join("") + `<div class="callout" style="--c:var(--c-knowledge);font-size:14px">The vector database ranks chunks by this number and returns the highest ones.</div>`;
+}
+$("#calc").addEventListener("input", (e) => { const t = e.target; if (t.dataset.k) { CV[t.dataset.k].v[+t.dataset.j] = parseFloat(t.value) || 0; renderCalc(false); } });
+renderCalc(true);
+
+/* ---- metrics ---- */
+W.clickInfo($("#metrics"), [
+  { icon: "📐", title: "Cosine similarity", sub: "angle only · −1 to 1 · higher = closer", c: "knowledge",
+    html: "<p>Compares <b>direction</b> and ignores length. A short question and a long paragraph about the same thing still score high.</p><p><b>Use when:</b> working with text embeddings. It’s the default almost everywhere.</p>" },
+  { icon: "✖️", title: "Dot product", sub: "direction × length · higher = closer", c: "model",
+    html: "<p>The raw sum of products, before dividing by lengths. Longer vectors get bigger scores.</p><p><b>Use when:</b> your model outputs <b>normalised</b> vectors (length 1). Then dot product <i>equals</i> cosine and is the fastest to compute.</p>" },
+  { icon: "📏", title: "Euclidean distance", sub: "straight-line gap · lower = closer", c: "action",
+    html: "<p>How far apart the arrow tips are. Note the direction: <b>smaller is better</b>.</p><p><b>Use when:</b> the model was trained for it, or for non-text data like images or sensor readings. On normalised vectors it ranks results the same as cosine.</p>" },
+], { cols: 3 });
+
+/* ---- thresholds ---- */
+const THR = [
+  ["Taxis are reimbursed for late-night travel after 22:00.", 0.89], ["Submit receipts in the Expenses app within 30 days.", 0.81], ["Night-shift staff may claim one taxi per shift.", 0.78],
+  ["Business-trip meals: up to €40 per day.", 0.62], ["Mileage for private cars: €0.30/km.", 0.57], ["Shift patterns are published every Friday.", 0.46],
+  ["Parking at HQ is free for employees.", 0.39], ["Annual leave: 24 days per year.", 0.21],
+];
+const GOOD = new Set([0, 1, 2]);
+function renderThr() {
+  const k = +$("#kSl").value, t = +$("#tSl").value / 100;
+  $("#kLbl").textContent = k; $("#tLbl").textContent = t.toFixed(2);
+  let kept = 0;
+  $("#thrRes").innerHTML = THR.map(([txt, s], i) => { const on = i < k && s >= t; if (on) kept++; return `<div class="${on ? "" : "out"}"><span class="sim">${s.toFixed(2)}</span>${GOOD.has(i) ? "⭐ " : ""}${txt}</div>`; }).join("");
+  const keptIdx = THR.map((_, i) => i).filter((i) => i < k && THR[i][1] >= t);
+  const missing = [...GOOD].filter((i) => !keptIdx.includes(i)).length, noise = keptIdx.filter((i) => !GOOD.has(i)).length;
+  const n = $("#thrNote");
+  if (!keptIdx.length) { n.style.setProperty("--c", "var(--bad)"); n.innerHTML = "❌ Nothing passes. The bot should say “I couldn’t find this”."; }
+  else if (missing) { n.style.setProperty("--c", "var(--warn)"); n.innerHTML = `🟡 Kept ${kept}, but missing ${missing} useful chunk${missing > 1 ? "s" : ""} (⭐). The answer may be incomplete.`; }
+  else if (noise) { n.style.setProperty("--c", "var(--warn)"); n.innerHTML = `🟡 All useful chunks kept, plus ${noise} irrelevant one${noise > 1 ? "s" : ""}: more cost and distraction.`; }
+  else { n.style.setProperty("--c", "var(--good)"); n.innerHTML = "✅ Exactly the three useful chunks. Clean context."; }
+}
+$("#kSl").oninput = $("#tSl").oninput = renderThr; renderThr();
+
+/* ---- choosing a model ---- */
+W.clickInfo($("#choose"), [
+  { icon: "🔢", title: "Dimensions", sub: "384 … 3,072", c: "model", html: "<p>More dimensions can capture finer meaning, but every vector costs more storage and search time. Many models let you shorten vectors with little loss.</p>" },
+  { icon: "📏", title: "Max input length", sub: "how much text per embedding", c: "context", html: "<p>Text beyond the limit is cut off silently. Keep chunks under it.</p>" },
+  { icon: "🌍", title: "Languages", sub: "multilingual or English-only", c: "knowledge", html: "<p>A multilingual model lets a question in Hindi find a policy written in English.</p>" },
+  { icon: "🏷️", title: "Domain", sub: "general, code, legal, medical", c: "action", html: "<p>Specialised models understand jargon better. Test with real questions from your users.</p>" },
+  { icon: "🔒", title: "Hosting and privacy", sub: "API or self-hosted", c: "trust", html: "<p>Every document passes through the embedding model. For sensitive data, check where it runs and what is retained.</p>" },
+  { icon: "🔁", title: "Lock-in", sub: "same model for docs and questions", c: "autonomy", html: "<p>Vectors from different models are not comparable. Switching models means <b>re-embedding every document</b>. Plan for it.</p>" },
+], { cols: 3, side: true });
+
+W.flips($("#limits"), [
+  { front: "🔢 Exact codes and IDs", back: "“Error E-4471” and “Error E-4417” embed almost the same. <b>Fix:</b> add keyword search (hybrid) for codes, SKUs, names." },
+  { front: "🚫 Negation", back: "“Pets are allowed” and “Pets are not allowed” land close together. <b>Fix:</b> re-rank, and let the model read the full chunk." },
+  { front: "🔣 Numbers and dates", back: "Embeddings are fuzzy on “before 2024” or “over €500”. <b>Fix:</b> store those as metadata and filter on them." },
+  { front: "🧪 Company jargon", back: "Internal project names mean nothing to a general model. <b>Fix:</b> a domain model, or add a glossary to chunks." },
+  { front: "❓ Question vs answer style", back: "Questions and documents are worded differently. <b>Fix:</b> query rewriting, or embed sample questions per chunk." },
+  { front: "🔁 Mixed models", back: "Old chunks embedded with model X, new questions with model Y: nonsense results. <b>Fix:</b> re-embed everything when you switch." },
+]);
+
+W.quiz($("#quiz"), [
+  { q: "What is an embedding?", o: ["A compressed copy of the text", "A list of numbers representing the text’s meaning", "A database index", "A summary written by the model"], a: 1, e: "A vector: hundreds of numbers where similar meanings get similar numbers." },
+  { q: "Cosine similarity of two vectors pointing the same way, one twice as long?", o: ["0.5", "2", "1", "0"], a: 2, e: "Cosine looks only at the angle, so length doesn’t matter." },
+  { q: "A · B = 0.6, |A| = 1, |B| = 1. What is the cosine similarity?", o: ["0.6", "1.6", "0.36", "Can’t tell"], a: 0, e: "cos = 0.6 ÷ (1 × 1) = 0.6. With normalised vectors, dot product = cosine." },
+  { q: "You switch to a new embedding model. What must you do?", o: ["Nothing", "Re-embed all documents with the new model", "Only embed new questions with it", "Lower the threshold"], a: 1, e: "Vectors from different models live on different maps and can’t be compared." },
+]);
+</script>
+<script src="../assets/deck.js"></script>
+</body>
+</html>

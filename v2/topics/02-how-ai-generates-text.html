@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Topic 02 · How AI generates text</title>
+<link rel="stylesheet" href="../assets/style.css">
+<link rel="stylesheet" href="../assets/widgets.css">
+<style>
+  #tokIn { width: 100%; min-height: 84px; padding: 12px 14px; border-radius: 12px; border: 1px solid var(--line); background: var(--card);
+           color: var(--text); font: 17px var(--font); resize: vertical; }
+  .toks { display: flex; flex-wrap: wrap; gap: 3px; padding: 14px; border-radius: 12px; background: var(--card2); min-height: 70px; margin-top: 12px; }
+  .tk { padding: 3px 5px; border-radius: 5px; font: 16px ui-monospace, Menlo, monospace; white-space: pre; }
+  .tk:nth-child(5n+1) { background: color-mix(in srgb, var(--c-model) 30%, transparent); }
+  .tk:nth-child(5n+2) { background: color-mix(in srgb, var(--c-action) 30%, transparent); }
+  .tk:nth-child(5n+3) { background: color-mix(in srgb, var(--c-knowledge) 30%, transparent); }
+  .tk:nth-child(5n+4) { background: color-mix(in srgb, var(--c-autonomy) 30%, transparent); }
+  .tk:nth-child(5n+5) { background: color-mix(in srgb, var(--c-trust) 30%, transparent); }
+  .tstats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 12px; }
+  .tstats .stat { padding: 12px; border-radius: 12px; background: var(--card); border: 1px solid var(--line); }
+  .tstats .n { font-size: 26px; font-weight: 800; }
+</style>
+</head>
+<body class="deck" data-id="02">
+
+<section class="slide title-slide" data-title="Welcome">
+  <div class="big-emoji">⌨️</div>
+  <div class="eyebrow">Topic 02</div>
+  <h1>What happens when you press Enter?</h1>
+  <p class="sub">No maths. Just the three ideas that explain almost everything about how AI behaves: <b>tokens</b>, <b>next-token prediction</b> and the <b>transformer</b>.</p>
+  <aside class="notes"><span class="tag time">⏱ 30 sec</span><ul><li>Promise: “After this, hallucinations, randomness and token pricing will all make sense.”</li></ul></aside>
+</section>
+
+<section class="slide" data-title="Tokens">
+  <div class="eyebrow">Idea 1 · Tokens</div>
+  <h2>AI doesn’t read words. It reads <span class="accent">tokens</span>.</h2>
+  <p class="sub">Text is chopped into small pieces called tokens: common words are one token, rarer words get split. Type anything below.</p>
+  <div class="row" style="margin-bottom:10px" id="tokPresets"></div>
+  <textarea id="tokIn" spellcheck="false">The customer wants a refund for the unbelievably delayed shipment.</textarea>
+  <div class="toks" id="toks"></div>
+  <div class="tstats">
+    <div class="stat"><div class="n" id="tC">0</div><div class="muted">characters</div></div>
+    <div class="stat"><div class="n" id="tW">0</div><div class="muted">words</div></div>
+    <div class="stat"><div class="n" id="tT" style="color:var(--accent)">0</div><div class="muted">tokens (approx.)</div></div>
+    <div class="stat"><div class="n" id="tR">0</div><div class="muted">tokens per word</div></div>
+  </div>
+  <p class="muted" style="font-size:13px;margin-top:10px">Illustration only. Real tokenizers differ by model, but the rule of thumb holds: <b>1 token ≈ ¾ of an English word</b>.</p>
+  <aside class="notes"><span class="tag time">⏱ 3 min</span>
+    <ul><li>Type a long or unusual word and watch it split. Try the code and non-English presets: they use more tokens.</li>
+    <li>Why care? <b>Everything is measured in tokens</b>: price, speed and the size limit (the context window, Topic 04).</li></ul></aside>
+</section>
+
+<section class="slide" data-title="Next-token prediction">
+  <div class="eyebrow">Idea 2 · Prediction</div>
+  <h2>An LLM does one thing: <span class="accent">predict the next token</span></h2>
+  <p class="sub">Given the text so far, it scores every possible next token. Pick a prompt, then pick a word. Change the temperature and run it 20 times.</p>
+  <div id="nt"></div>
+  <aside class="notes"><span class="tag time">⏱ 4 min</span>
+    <ul><li>Prompt 1 (France): very confident, so the answer is almost always the same.</li>
+    <li>Prompt 3 (revenue) is the killer example: the model <b>has no idea</b> what your revenue is, but it still produces a confident-looking number. <b>That is a hallucination</b>, and now you know why it happens.</li>
+    <li>Temperature: low means it always picks the top word; high means more variety. Run it 20 times to show that the same prompt can give different answers.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="One token at a time">
+  <div class="eyebrow">Then repeat</div>
+  <h2>Every answer is built one token at a time</h2>
+  <p class="sub">Predict a token, add it to the text, feed it all back in, predict again. Press auto-play.</p>
+  <div id="gen"></div>
+  <aside class="notes"><span class="tag time">⏱ 2 min</span>
+    <ul><li>This is why you see answers “type out” on screen: they genuinely are produced word by word.</li>
+    <li>It also means it can’t go back and edit an earlier word. It commits as it goes, which is why asking it to “think step by step first” helps (Topic 05).</li></ul></aside>
+</section>
+
+<section class="slide" data-title="The transformer">
+  <div class="eyebrow">Idea 3 · The transformer</div>
+  <h2>Inside the engine, at a glance</h2>
+  <p class="sub">“Transformer” is the name of the design behind every modern LLM. Click each stage, left to right.</p>
+  <div id="tf"></div>
+  <aside class="notes"><span class="tag time">⏱ 3 min</span>
+    <ul><li>Keep it intuitive. The only stage we go deeper on is <b>attention</b>, which gets the whole of the next topic.</li>
+    <li>Analogy: a reading committee where every word gets to ask every other word “are you relevant to me?”, repeated many times, and then a vote on the next word.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="Why this matters">
+  <div class="eyebrow">So what?</div>
+  <h2>Five behaviours this explains</h2>
+  <p class="sub">Now you know it’s a next-token predictor, these stop being mysterious. Flip each card.</p>
+  <div id="impl"></div>
+  <aside class="notes"><span class="tag time">⏱ 2 min</span><ul><li>Each card is the “why” behind a later topic. Point that out as you flip.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="Quick check">
+  <div class="eyebrow">Quick check</div>
+  <h2>Did it click?</h2>
+  <div id="quiz"></div>
+  <aside class="notes"><span class="tag time">⏱ 2 min</span></aside>
+</section>
+
+<section class="slide" data-title="Takeaways">
+  <div class="eyebrow">Takeaways</div>
+  <h2>What to remember</h2>
+  <div class="cols-3" style="margin:10px 0 24px">
+    <div class="card"><b>🧩 Tokens</b><p>AI reads and writes in tokens (≈ ¾ word). Price, speed and limits are all counted in tokens.</p></div>
+    <div class="card"><b>🎯 Prediction</b><p>It predicts the most <i>plausible</i> next token, which is not always the <i>true</i> one. That’s why it hallucinates.</p></div>
+    <div class="card"><b>🏗️ Transformer</b><p>Words become meaning-numbers, then <b>attention</b> lets every word look at every other word.</p></div>
+  </div>
+  <div class="row"><a class="btn primary" data-nexttopic>Next →</a></div>
+  <aside class="notes"><span class="tag time">⏱ 30 sec</span><ul><li>Bridge: “The magic ingredient was attention. Let’s see it in action.”</li></ul></aside>
+</section>
+
+<script src="../assets/course.js"></script>
+<script src="../assets/widgets.js"></script>
+<script>
+const { $ } = W;
+
+/* ---- approximate tokenizer (illustration) ---- */
+const COMMON = new Set("the a an and or but of to in on for with is are was were be it this that you i we they he she at by from as not have has do does can will would should our your my their customer refund wants delayed".split(" "));
+function tokenize(text) {
+  const out = [];
+  const parts = text.match(/\s+|[A-Za-z]+|\d+|[^\sA-Za-z\d]/g) || [];
+  let pendingSpace = "";
+  for (const p of parts) {
+    if (/^\s+$/.test(p)) { pendingSpace = p.includes("\n") ? "\n" : " "; continue; }
+    if (/^[A-Za-z]+$/.test(p)) {
+      const lw = p.toLowerCase();
+      if (p.length <= 6 || COMMON.has(lw)) out.push(pendingSpace + p);
+      else {
+        let rest = p, first = true;
+        while (rest.length) {
+          const n = rest.length <= 5 ? rest.length : rest.length > 8 ? 4 : 3;
+          out.push((first ? pendingSpace : "") + rest.slice(0, n)); rest = rest.slice(n); first = false;
+        }
+      }
+    } else if (/^\d+$/.test(p)) {
+      for (let i = 0; i < p.length; i += 3) out.push((i === 0 ? pendingSpace : "") + p.slice(i, i + 3));
+    } else if (/[^\x00-\x7F]/.test(p)) {
+      out.push(pendingSpace + p);
+    } else out.push(pendingSpace + p);
+    pendingSpace = "";
+  }
+  // non-latin scripts: roughly one token per character or two
+  return out.flatMap((t) => (/[^\x00-\x7F]/.test(t) && t.trim().length > 1 ? t.match(/.{1,2}/gu) : [t]));
+}
+const PRESETS = {
+  "Plain English": "The customer wants a refund for the unbelievably delayed shipment.",
+  "Jargon": "Antidisestablishmentarianism and supercalifragilistic configurations.",
+  "Code": "if (user.isActive && cart.total > 100) { applyDiscount(0.15); }",
+  "Numbers": "Invoice 2026-11-0045 totals 1234567.89 EUR.",
+  "Hindi": "ग्राहक को देरी से आए सामान के लिए पैसे वापस चाहिए।",
+};
+$("#tokPresets").innerHTML = Object.keys(PRESETS).map((k) => `<button class="btn" data-k="${k}">${k}</button>`).join("");
+$("#tokPresets").onclick = (e) => { const b = e.target.closest("button"); if (b) { $("#tokIn").value = PRESETS[b.dataset.k]; renderTok(); } };
+function renderTok() {
+  const text = $("#tokIn").value;
+  const toks = tokenize(text);
+  $("#toks").innerHTML = toks.map((t) => `<span class="tk">${t.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/ /g, "·")}</span>`).join("");
+  const words = (text.trim().match(/\S+/g) || []).length;
+  $("#tC").textContent = text.length; $("#tW").textContent = words; $("#tT").textContent = toks.length;
+  $("#tR").textContent = words ? (toks.length / words).toFixed(2) : "0";
+}
+$("#tokIn").addEventListener("input", renderTok);
+renderTok();
+
+/* ---- next token ---- */
+W.nextToken($("#nt"), [
+  { label: "🇫🇷 Capital", text: "The capital of France is", cands: [["Paris", 0.91], ["a", 0.03], ["located", 0.025], ["the", 0.02], ["home", 0.01], ["Lyon", 0.005]] },
+  { label: "🍕 Food", text: "My favourite food is", cands: [["pizza", 0.24], ["chocolate", 0.16], ["sushi", 0.13], ["pasta", 0.11], ["anything", 0.07], ["curry", 0.06]] },
+  { label: "📊 Revenue", text: "In Q3, our company’s revenue grew by", cands: [["12%", 0.14], ["8%", 0.13], ["15%", 0.12], ["10%", 0.11], ["20%", 0.08], ["5%", 0.07]] },
+  { label: "✉️ Email", text: "Thanks for your email. I’ll get back to you", cands: [["shortly", 0.34], ["soon", 0.28], ["tomorrow", 0.14], ["by", 0.1], ["as", 0.08], ["ASAP", 0.03]] },
+]);
+
+/* ---- generation ---- */
+W.generate($("#gen"), "The best way to learn a new skill is", [
+  [[" to", 0.58], [" by", 0.22], [" practice", 0.12], [" through", 0.05]],
+  [[" practice", 0.47], [" start", 0.21], [" teach", 0.14], [" break", 0.09]],
+  [[" a", 0.36], [" it", 0.29], [" every", 0.18], [" regularly", 0.11]],
+  [[" little", 0.52], [" bit", 0.25], [" lot", 0.13], [" few", 0.06]],
+  [[" every", 0.61], [" each", 0.24], [" bit", 0.06], [" and", 0.05]],
+  [[" day", 0.83], [" morning", 0.09], [" week", 0.05], [" single", 0.02]],
+  [[".", 0.71], [",", 0.17], [" and", 0.08], ["!", 0.03]],
+]);
+
+/* ---- transformer ---- */
+W.clickInfo($("#tf"), [
+  { icon: "📝", title: "Text in", sub: "your prompt + history", c: "context", html: "<p>Everything in the conversation so far: system instructions, your messages, documents, earlier replies. The model sees it all <b>at once</b>.</p>" },
+  { icon: "🧩", title: "Tokens", sub: "chop into pieces", c: "model", html: "<p>The text is split into tokens, and each token becomes an ID number.</p><p class='muted'>“refund” → 19542 (for example)</p>" },
+  { icon: "📍", title: "Embeddings", sub: "meaning as numbers", c: "knowledge", html: "<p>Each token becomes a long list of numbers that captures its <b>meaning</b>. Similar meanings get similar numbers: <i>king</i> sits near <i>queen</i>, <i>refund</i> near <i>reimbursement</i>.</p><p>Think of it as GPS coordinates for meaning. We meet embeddings again in RAG (Topic 07).</p>" },
+  { icon: "🔦", title: "Attention layers", sub: "words look at words ×N", c: "autonomy", html: "<p>The heart of the transformer. In each layer, every token looks at every other token and asks <b>“how relevant are you to me?”</b>, then updates its meaning.</p><p>“bank” next to “river” becomes riverbank; next to “cash” it becomes a financial bank. This repeats through dozens of layers. <b>Next topic is all about this.</b></p>" },
+  { icon: "📊", title: "Scores", sub: "every possible next token", c: "action", html: "<p>The final layer gives a score to <b>every token in its vocabulary</b> (tens of thousands of them) for “what comes next?”</p>" },
+  { icon: "🎲", title: "Pick one", sub: "temperature decides", c: "trust", html: "<p>One token is chosen: usually a likely one, with some randomness depending on temperature. It’s added to the text and <b>the whole thing runs again</b> for the next token.</p>" },
+], { layout: "flow" });
+
+/* ---- implications ---- */
+W.flips($("#impl"), [
+  { front: "🎭 Hallucination", back: "It predicts what <b>sounds plausible</b>, not what is <b>true</b>. If it doesn’t know, it still writes something fluent. <b>Fix:</b> give it sources (RAG, Topic 07)." },
+  { front: "🎲 Different answers each time", back: "There’s some randomness in picking tokens (temperature). Same prompt, different wording. <b>Fix:</b> clearer prompts, lower temperature, structured output." },
+  { front: "📅 Knowledge cutoff", back: "It only knows what was in its training data, up to a date. <b>Fix:</b> tools like web search (Topic 08)." },
+  { front: "💸 Tokens cost money", back: "You pay per token, in and out. Long documents and long chats cost more. (Topic 04)" },
+  { front: "🧠 No memory", back: "Each request is processed fresh. It “remembers” a chat only because the whole conversation is sent again every time. (Topic 04)" },
+  { front: "🧮 Shaky at exact maths", back: "It predicts digits as text instead of calculating. <b>Fix:</b> let it use a calculator or code tool." },
+]);
+
+W.quiz($("#quiz"), [
+  { q: "Roughly how many tokens is a 750-word email?", o: ["About 75", "About 1,000", "About 7,500", "Exactly 750"], a: 1, e: "1 token ≈ ¾ word, so 750 words ≈ 1,000 tokens." },
+  { q: "Asked about your company’s Q3 revenue (which it has never seen), a plain model will most likely…", o: ["Refuse to answer", "Look it up online", "Produce a plausible-sounding number", "Ask for your login"], a: 2, e: "It predicts plausible tokens. With no real data it will often produce a confident guess: a <b>hallucination</b>." },
+  { q: "You want the same, consistent answer every time. Which temperature?", o: ["Low", "High", "It makes no difference"], a: 0, e: "Low temperature means it nearly always picks the top-scoring token, so output is more predictable." },
+  { q: "Which part of the transformer lets words “look at” each other?", o: ["Tokenizer", "Attention", "Temperature", "Embedding"], a: 1, e: "<b>Attention</b>, the subject of the next topic." },
+]);
+</script>
+<script src="../assets/deck.js"></script>
+</body>
+</html>

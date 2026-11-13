@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Topic 01 · Talking to AI</title>
+<link rel="stylesheet" href="../assets/style.css">
+<link rel="stylesheet" href="../assets/widgets.css">
+<style>
+  .chatbox { display: flex; flex-direction: column; gap: 10px; }
+  .verdict { font-size: 14px; margin-top: 10px; }
+  #vague .bubble { font-size: 14px; padding: 10px 14px; }
+  .where .ci-card { min-height: 120px; }
+</style>
+</head>
+<body class="deck" data-id="01">
+
+<section class="slide title-slide" data-title="Welcome">
+  <div class="big-emoji">💬</div>
+  <div class="eyebrow">Topic 01</div>
+  <h1>Talking to AI</h1>
+  <p class="sub">Before any jargon: what is it actually like to work with AI, and how do you get good results from it?</p>
+  <div class="row"><button class="btn primary" data-goto="2">Let’s start →</button></div>
+  <aside class="notes"><span class="tag time">⏱ 1 min</span>
+    <ul><li>Warm, simple opening: “No maths, no code. By the end of the course you’ll understand every buzzword you hear in AI meetings.”</li>
+    <li>Quick poll: “Who used an AI assistant this week? For what?” Use their answers as examples throughout.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="Your new colleague">
+  <div class="eyebrow">The mindset</div>
+  <h2>Think of AI as a brilliant new colleague who started today</h2>
+  <p class="sub">Click each trait to see what it means for how you work with it.</p>
+  <div id="traits"></div>
+  <aside class="notes"><span class="tag time">⏱ 2 min</span>
+    <ul><li>This framing does most of the work for the whole course. Every “trick” is just treating it like a smart new hire.</li>
+    <li>Emphasise “knows nothing about you” and “will guess rather than ask”. These two explain most bad AI results.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="Where you meet AI">
+  <div class="eyebrow">Where you meet it</div>
+  <h2>Four ways AI shows up at work</h2>
+  <p class="sub">Same kind of engine underneath, packaged differently. Click each one.</p>
+  <div id="where" class="where"></div>
+  <aside class="notes"><span class="tag time">⏱ 1 min</span>
+    <ul><li>Point out that it’s the same kind of model in all four. The packaging (what we’ll later call the <b>harness</b>) is what differs.</li>
+    <li>Ask which ones people already use.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="Vague vs specific">
+  <div class="eyebrow">Try it</div>
+  <h2>Same request, three ways</h2>
+  <p class="sub">You need to tell your team that Thursday’s project review has moved. Switch between the prompts and compare what comes back.</p>
+  <div id="vague"></div>
+  <aside class="notes"><span class="tag time">⏱ 2 min</span>
+    <ul><li>Read the vague version first and ask: “Would you send this?” (No: wrong length, invented details, placeholders.)</li>
+    <li>Key point: the AI didn’t get smarter between versions. <b>You gave it what it needed.</b></li>
+    <li>Topic 05 breaks a good prompt into its parts. This is just a taster.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="It’s a conversation">
+  <div class="eyebrow">Iterate</div>
+  <h2>Don’t aim for perfect in one go. Have a conversation.</h2>
+  <p class="sub">Step through a real refinement. Each short follow-up builds on everything said before.</p>
+  <div class="split wide-right">
+    <div class="stack-v">
+      <div id="convCtrl"></div>
+      <div class="callout" style="--c:var(--c-context)">💡 Small, specific follow-ups beat starting over. The AI sees the whole conversation so far (we’ll see <i>how</i> in Topic 04).</div>
+    </div>
+    <div id="convLog" class="chatbox" style="max-height:440px"></div>
+  </div>
+  <aside class="notes"><span class="tag time">⏱ 1 min</span>
+    <ul><li>Stress that this is normal and expected. Experts iterate too.</li>
+    <li>Plant a seed: “How does it remember turn 1 at turn 4? Hold that thought for Topic 04.”</li></ul></aside>
+</section>
+
+<section class="slide" data-title="Good at / careful with">
+  <div class="eyebrow">Know its strengths</div>
+  <h2>Great at it, or be careful?</h2>
+  <p class="sub">For each task, decide whether a plain AI chat (no extra tools or company data) is great at it, or whether you should be careful.</p>
+  <div id="goodbad"></div>
+  <aside class="notes"><span class="tag time">⏱ 2 min</span>
+    <ul><li>Do it as a room vote for each card.</li>
+    <li>The “careful” items are exactly what later topics fix: live data → <b>tools</b> (08), company knowledge → <b>RAG</b> (07), precise maths → <b>tools</b>, sources → <b>grounding</b>.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="Five habits">
+  <div class="eyebrow">Habits</div>
+  <h2>Six habits of people who get great results</h2>
+  <p class="sub">Click each card to flip it.</p>
+  <div id="habits"></div>
+  <aside class="notes"><span class="tag time">⏱ 1 min</span>
+    <ul><li>These six habits are the practical takeaway for people who don’t go any deeper.</li>
+    <li>“Verify” is the one people skip. AI is fluent, and fluent isn’t the same as correct.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="The jargon map">
+  <div class="eyebrow">The map for this course</div>
+  <h2>All the AI jargon fits into six layers</h2>
+  <p class="sub">An AI system is like a car: the model is only the engine. Click a layer to see what it does and which buzzwords live there. Every later topic fills in one layer.</p>
+  <div id="map"></div>
+  <div class="row" style="margin-top:14px"><a class="btn" href="00-decoding-ai-jargon.html">📖 Open the full jargon dictionary</a></div>
+  <aside class="notes"><span class="tag time">⏱ 2 min</span>
+    <ul><li>This is the only jargon slide. Don’t explain every word, just show that each word has a home.</li>
+    <li>Say: “For the rest of the course, whenever you hear a new word, ask <i>which layer is that?</i>”</li></ul></aside>
+</section>
+
+<section class="slide" data-title="Takeaways">
+  <div class="eyebrow">Takeaways</div>
+  <h2>What to remember</h2>
+  <div class="cols-3" style="margin:10px 0 24px">
+    <div class="card"><div class="big-emoji" style="font-size:40px">🧑‍💼</div><p>Treat AI like a <b>brilliant new colleague</b>: smart, fast, and knowing nothing about you yet.</p></div>
+    <div class="card"><div class="big-emoji" style="font-size:40px">🎯</div><p><b>Be specific</b>: audience, purpose, format, facts. Then <b>iterate</b> in short follow-ups.</p></div>
+    <div class="card"><div class="big-emoji" style="font-size:40px">🔍</div><p><b>Verify</b>. It’s fluent, not always right. Live data and company facts need extra layers.</p></div>
+  </div>
+  <div class="callout">Next we look under the hood: <b>what actually happens when you press Enter?</b></div>
+  <div class="row" style="margin-top:18px"><a class="btn primary" data-nexttopic>Next →</a></div>
+  <aside class="notes"><span class="tag time">⏱ 30 sec</span><ul><li>Bridge: “Why is it a good guesser but bad at facts it hasn’t seen? Let’s look at how it generates text.”</li></ul></aside>
+</section>
+
+<script src="../assets/course.js"></script>
+<script src="../assets/widgets.js"></script>
+<script>
+const { $, cv } = W;
+
+W.clickInfo($("#traits"), [
+  { icon: "📚", title: "Has read a huge amount", c: "model", html: "<p>It has learned from a vast amount of text: books, websites, code, manuals.</p><p><b>So:</b> it’s great at explaining, drafting, summarising and brainstorming on almost any topic.</p>" },
+  { icon: "⚡", title: "Instant and tireless", c: "knowledge", html: "<p>It writes a page in seconds and never gets bored of revisions.</p><p><b>So:</b> ask for 5 options instead of 1. Ask for a rewrite. Iterating costs you nothing.</p>" },
+  { icon: "🆕", title: "Started today", c: "context", html: "<p>It knows nothing about <b>you</b>, your team, your customers or this project.</p><p><b>So:</b> give it the context a new hire would need: who it’s for, why, what good looks like.</p>" },
+  { icon: "🫥", title: "Remembers nothing", c: "context", html: "<p>Each new chat starts from a blank page (unless a memory feature feeds old facts back in).</p><p><b>So:</b> restate key facts, or use features like projects, memory or instruction files.</p>" },
+  { icon: "😊", title: "Eager to please", c: "action", html: "<p>It will almost always produce <i>something</i> rather than say “I don’t know” or ask a question.</p><p><b>So:</b> tell it “ask me if anything is unclear” and “say if you’re not sure”.</p>" },
+  { icon: "🎭", title: "Sometimes confidently wrong", c: "trust", html: "<p>It can state made-up facts, numbers or sources in a perfectly confident tone. This is called <b>hallucination</b>.</p><p><b>So:</b> verify anything that matters. Give it sources to work from.</p>" },
+], { cols: 3, side: true });
+
+W.clickInfo($("#where"), [
+  { icon: "💬", title: "Chat assistants", sub: "Claude, ChatGPT, Gemini…", c: "context", html: "<p>A chat window where you type and it replies. The most flexible way to use AI.</p><p><b>Great for:</b> drafting, summarising, explaining, brainstorming, analysing documents you upload.</p>" },
+  { icon: "🧩", title: "AI inside your tools", sub: "Office, email, docs, CRM…", c: "knowledge", html: "<p>AI built into apps you already use, like drafting a reply in your email client or summarising a meeting.</p><p><b>Great for:</b> quick help without leaving your work. It can often see the document or thread you have open.</p>" },
+  { icon: "🤖", title: "Agents", sub: "Claude Code, Cursor, Copilot…", c: "autonomy", html: "<p>AI that doesn’t just talk but <b>acts</b>: reads files, runs commands, edits code, uses your systems, working step by step towards a goal.</p><p><b>Great for:</b> multi-step tasks. This is where the course ends up (Topics 10–12).</p>" },
+  { icon: "🔌", title: "Built into products", sub: "via an API", c: "action", html: "<p>Developers call the model from their own software: a support bot, a document classifier, a search feature.</p><p><b>Great for:</b> automating one task at scale, invisibly to the end user.</p>" },
+], { cols: 4, side: false });
+
+const reply = (txt, verdict, c) => `<div class="chatbox">${txt}</div><div class="verdict callout" style="--c:${cv(c)}">${verdict}</div>`;
+W.tabs($("#vague"), [
+  { label: "😐 Vague", html: `<div class="split">
+      <div><div class="label">Prompt</div><div class="bubble user" style="max-width:100%">Write an email about the meeting.</div></div>
+      <div><div class="label">AI reply</div>${reply(`<div class="bubble ai" style="max-width:100%">Subject: Upcoming Meeting<br><br>Dear Team,<br><br>I hope this email finds you well. I wanted to reach out regarding our upcoming meeting. It is important that we all come together to discuss key priorities and align on next steps. Please make sure to prepare any relevant materials in advance.<br><br>Please let me know if you have any questions.<br><br>Best regards,<br>[Your Name]</div>`, "❌ Generic, wordy, no date, no reason, placeholder name. It had to <b>guess</b> everything.", "bad")}</div></div>` },
+  { label: "🙂 Better", html: `<div class="split">
+      <div><div class="label">Prompt</div><div class="bubble user" style="max-width:100%">Write a short email to my team saying Thursday’s project review is moving to Friday at 2pm.</div></div>
+      <div><div class="label">AI reply</div>${reply(`<div class="bubble ai" style="max-width:100%">Subject: Project review moved to Friday 2pm<br><br>Hi team,<br><br>Quick update: Thursday’s project review is moving to <b>Friday at 2pm</b>. Same room and agenda. Please update your calendars.<br><br>Thanks,<br>[Your Name]</div>`, "🟡 Much better: right facts, right length. Still missing the reason and your name, and the tone is a guess.", "warn")}</div></div>` },
+  { label: "🤩 Great", html: `<div class="split">
+      <div><div class="label">Prompt</div><div class="bubble user" style="max-width:100%">Write a short, friendly email to my 6-person design team. Thursday’s project review moves to <b>Friday 2pm</b> because the client asked for an extra day to send feedback. Mention that the agenda is unchanged and they don’t need to do anything else. Under 80 words. Sign it “Maya”.</div></div>
+      <div><div class="label">AI reply</div>${reply(`<div class="bubble ai" style="max-width:100%">Subject: Review moved to Friday 2pm 🗓️<br><br>Hi all,<br><br>Heads-up: our project review is moving from Thursday to <b>Friday at 2pm</b>. The client asked for an extra day to send their feedback, so we’ll have it all in hand.<br><br>The agenda is unchanged and there’s nothing else you need to do. Just update your calendars.<br><br>Thanks!<br>Maya</div>`, "✅ Ready to send. Audience, reason, tone, length, name: <b>nothing left to guess.</b>", "good")}</div></div>` },
+]);
+
+W.stepper({
+  ctrl: $("#convCtrl"), log: $("#convLog"), interval: 2600,
+  steps: [
+    { raw: 1, html: `<div class="bubble user">Give me 5 ideas for our team offsite.</div>` },
+    { raw: 1, html: `<div class="bubble ai">1. Escape room 2. Cooking class 3. Hiking day 4. Volunteering 5. Strategy workshop at a hotel</div>` },
+    { raw: 1, html: `<div class="bubble user">We’re 12 people, budget is tight and two people use wheelchairs.</div>` },
+    { raw: 1, html: `<div class="bubble ai">Updated: 1. Accessible cooking class 2. Volunteering at a food bank (step-free) 3. Picnic and games in an accessible park 4. Museum tour with a guide 5. Board-game café afternoon</div>` },
+    { raw: 1, html: `<div class="bubble user">Love #2 and #5. Make a half-day plan combining them, as a table.</div>` },
+    { raw: 1, html: `<div class="bubble ai"><table class="cmp"><tr><th>Time</th><th>Activity</th></tr><tr><td>10:00</td><td>Food bank volunteering</td></tr><tr><td>12:30</td><td>Lunch nearby</td></tr><tr><td>14:00</td><td>Board-game café, team challenges</td></tr><tr><td>16:00</td><td>Wrap-up and photos</td></tr></table></div>` },
+  ],
+});
+
+W.classify($("#goodbad"), [
+  { text: "📝 Summarise a 20-page report you paste in", a: 0, why: "Summarising text it can see is a core strength." },
+  { text: "📈 Tell you today’s share price", a: 1, why: "A plain model has no live data. It needs a <b>tool</b> (like web search) for that. Topic 08." },
+  { text: "💡 Brainstorm 20 names for a new product", a: 0, why: "Generating lots of options fast is a sweet spot." },
+  { text: "🏢 Explain your company’s travel policy", a: 1, why: "It has never seen your internal documents. You need to give them to it, which is what <b>RAG</b> does (Topic 07)." },
+  { text: "✍️ Turn rough bullet points into a polished email", a: 0, why: "Rewriting and changing tone are great uses." },
+  { text: "🔢 Multiply 48,213 × 9,177 exactly", a: 1, why: "It predicts text and doesn’t truly calculate. It can slip on exact arithmetic unless it uses a calculator or code <b>tool</b>." },
+  { text: "📚 Give academic references for a claim", a: 1, why: "Classic hallucination risk: it may invent realistic-looking sources. Always check them." },
+  { text: "🧑‍🏫 Explain a concept like you’re 12 years old", a: 0, why: "Explaining at any level is a real strength." },
+], [{ label: "👍 Great at it", c: "good" }, { label: "⚠️ Be careful", c: "warn" }], { cols: 2 });
+
+W.flips($("#habits"), [
+  { front: "🎯 Be specific", back: "Say <b>who</b> it’s for, <b>why</b>, and <b>what good looks like</b>. Vague in, generic out." },
+  { front: "🧳 Give context", back: "Paste the email thread, the data, the background. It only knows what you show it." },
+  { front: "🖼️ Show an example", back: "“Write it like this one” beats a paragraph describing the style you want." },
+  { front: "📐 Ask for a format", back: "Table, bullets, 100 words, JSON, three options… say it up front." },
+  { front: "🔁 Iterate", back: "Treat the first answer as a draft. Short follow-ups: “shorter”, “more formal”, “add a table”." },
+  { front: "🔍 Verify", back: "Check facts, numbers, names and sources before you use them. <b>Fluent ≠ correct.</b>", c: "trust" },
+]);
+
+W.layerMap($("#map"));
+</script>
+<script src="../assets/deck.js"></script>
+</body>
+</html>

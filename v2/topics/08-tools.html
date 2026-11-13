@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Topic 08 · Tools and function calling</title>
+<link rel="stylesheet" href="../assets/style.css">
+<link rel="stylesheet" href="../assets/widgets.css">
+<style>
+  .actors { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 12px; }
+  .actor { --c: var(--accent); text-align: center; padding: 12px; border-radius: 12px; border: 1px solid var(--line); background: var(--card); font-weight: 700; transition: all .3s; color: var(--muted); }
+  .actor .e { font-size: 28px; display: block; }
+  .actor.lit { color: var(--text); border-color: var(--c); background: color-mix(in srgb, var(--c) 20%, var(--card)); box-shadow: 0 0 16px color-mix(in srgb, var(--c) 40%, transparent); }
+</style>
+</head>
+<body class="deck" data-id="08">
+
+<section class="slide title-slide" data-title="Welcome">
+  <div class="big-emoji">🔧</div>
+  <div class="eyebrow">Topic 08</div>
+  <h1>Tools: giving AI hands</h1>
+  <p class="sub">A model can only produce text. <b>Tools</b> let that text turn into actions: looking things up, calculating, updating systems.</p>
+  <aside class="notes"><span class="tag time">⏱ 30 sec</span><ul><li>Also called <b>function calling</b> or <b>tool use</b>. Same thing.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="The idea">
+  <div class="eyebrow">The key insight</div>
+  <h2>The model doesn’t run tools. It <span class="accent">asks</span> for them.</h2>
+  <p class="sub">Like a surgeon saying “scalpel”: the model writes a structured request, your software carries it out, and the result goes back to the model.</p>
+  <div id="idea"></div>
+  <aside class="notes"><span class="tag time">⏱ 2 min</span><ul><li>Crucial for safety: <b>your software decides</b> whether to actually run the request. That’s where permissions and approvals live (Topic 13).</li></ul></aside>
+</section>
+
+<section class="slide" data-title="A tool call, step by step">
+  <div class="eyebrow">Walkthrough</div>
+  <h2>“Where is my order?”: a tool call, step by step</h2>
+  <p class="sub">Watch who does what. The highlighted box shows who is active.</p>
+  <div class="actors" id="actors">
+    <div class="actor" data-a="user" style="--c:var(--accent)"><span class="e">🙋</span>Customer</div>
+    <div class="actor" data-a="app" style="--c:var(--c-autonomy)"><span class="e">🖥️</span>Your app (harness)</div>
+    <div class="actor" data-a="model" style="--c:var(--c-model)"><span class="e">🧠</span>Model</div>
+    <div class="actor" data-a="api" style="--c:var(--c-action)"><span class="e">📦</span>Shipping system</div>
+  </div>
+  <div class="split wide-right"><div id="tcCtrl"></div><div id="tcLog" style="max-height:330px"></div></div>
+  <aside class="notes"><span class="tag time">⏱ 3 min</span><ul><li>The JSON is shown only so people see it’s structured. Topic 08b walks through the real messages in detail.</li><li>Note step 2: the app sends the <b>tool descriptions</b> with every request. That’s how the model knows which tools exist.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="Descriptions matter">
+  <div class="eyebrow">Tool design</div>
+  <h2>The model only knows a tool by its description</h2>
+  <p class="sub">Request: <b>“Find Dana Lee’s email address.”</b> Compare vague and clear tool descriptions.</p>
+  <div id="descTabs"></div>
+  <aside class="notes"><span class="tag time">⏱ 2 min</span><ul><li>Tool descriptions are prompts too. Everything from Topic 05 applies: be specific, say when to use it and when not to.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="Pick the tool">
+  <div class="eyebrow">Your turn</div>
+  <h2>You’re the model: which tool would you call?</h2>
+  <p class="sub">Toolbox: <code>get_order_status</code> · <code>search_help_articles</code> · <code>issue_refund</code> · <code>send_email</code> · or no tool at all.</p>
+  <div id="pick"></div>
+  <aside class="notes"><span class="tag time">⏱ 2 min</span></aside>
+</section>
+
+<section class="slide" data-title="Read vs write">
+  <div class="eyebrow">Risk</div>
+  <h2>Not all tools are equally risky</h2>
+  <p class="sub">Classify each tool by what could go wrong. This decides how much approval it needs.</p>
+  <div id="risk"></div>
+  <aside class="notes"><span class="tag time">⏱ 2 min</span><ul><li>Simple policy many teams use: read-only tools run freely, reversible writes are logged, and irreversible actions need a human to click Approve.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="Quick check">
+  <div class="eyebrow">Quick check</div>
+  <h2>Did it click?</h2>
+  <div id="quiz"></div>
+  <aside class="notes"><span class="tag time">⏱ 1 min</span></aside>
+</section>
+
+<section class="slide" data-title="Takeaways">
+  <div class="eyebrow">Takeaways</div>
+  <h2>What to remember</h2>
+  <div class="cols-3" style="margin:10px 0 24px">
+    <div class="card"><b>🙋 It asks, you act</b><p>The model writes a structured tool request; your software runs it and returns the result.</p></div>
+    <div class="card"><b>📝 Descriptions are prompts</b><p>Clear names and descriptions mean the right tool gets picked.</p></div>
+    <div class="card"><b>⚠️ Mind the risk</b><p>Read-only runs freely; irreversible actions need approval.</p></div>
+  </div>
+  <div class="row"><a class="btn primary" data-nexttopic>Next →</a></div>
+  <aside class="notes"><span class="tag time">⏱ 30 sec</span><ul><li>Bridge: “That’s the idea. Next, let’s open the hood: the actual definitions and messages, and how to design tools well.”</li></ul></aside>
+</section>
+
+<script src="../assets/course.js"></script>
+<script src="../assets/widgets.js"></script>
+<script>
+const { $, $$ } = W;
+
+W.clickInfo($("#idea"), [
+  { icon: "🙋", title: "User asks", sub: "“What’s the weather in Pune?”", c: "accent", html: "<p>A question the model can’t answer from training: it needs live data.</p>" },
+  { icon: "🧠", title: "Model requests", sub: "get_weather(city: Pune)", c: "model", html: "<p>Instead of guessing, the model replies with a <b>structured request</b>: which tool, with which inputs. That’s still just text, just in a strict format.</p>" },
+  { icon: "🖥️", title: "Your app runs it", sub: "calls the weather API", c: "autonomy", html: "<p>Your software (the harness) sees the request, <b>decides whether to allow it</b>, runs it, and gets a result.</p>" },
+  { icon: "📦", title: "Result returns", sub: "{ temp: 31°C, sunny }", c: "action", html: "<p>The result is added to the context, back on the desk.</p>" },
+  { icon: "💬", title: "Model answers", sub: "“It’s 31°C and sunny.”", c: "good", html: "<p>Now it answers using real data. It might call more tools first if it needs them, which is the start of an <b>agent loop</b> (Topic 10).</p>" },
+], { layout: "flow" });
+
+const act = (a) => $$("#actors .actor").forEach((x) => x.classList.toggle("lit", x.dataset.a === a));
+W.stepper({
+  ctrl: $("#tcCtrl"), log: $("#tcLog"), interval: 2800, onReset: () => act(null),
+  steps: [
+    { who: "Customer → app", c: "accent", html: "“Where is my order #4512?”", onEnter: () => act("user") },
+    { who: "App → model", c: "autonomy", html: "Sends the question <b>plus the list of available tools</b>:<div class='json'>tools: [{ name: \"get_order_status\",\n  description: \"Look up shipping status by order ID\",\n  input: { order_id: string } }]</div>", onEnter: () => act("app") },
+    { who: "Model → app", c: "model", html: "Doesn’t answer yet. Asks for the tool:<div class='json'>tool_use: get_order_status\ninput: { \"order_id\": \"4512\" }</div>", onEnter: () => act("model") },
+    { who: "App → shipping system", c: "action", html: "Checks it’s allowed (read-only: yes), then calls the real shipping API.", onEnter: () => act("api") },
+    { who: "Shipping system → app", c: "action", html: "<div class='json'>{ \"status\": \"in transit\", \"carrier\": \"BlueDart\", \"eta\": \"Thursday\" }</div>", onEnter: () => act("api") },
+    { who: "App → model", c: "autonomy", html: "Adds the <b>tool result</b> to the conversation and asks the model to continue.", onEnter: () => act("app") },
+    { who: "Model → customer", c: "good", html: "“Your order #4512 is <b>in transit with BlueDart</b> and should arrive <b>Thursday</b>. 📦”", onEnter: () => act("model") },
+  ],
+});
+
+W.tabs($("#descTabs"), [
+  { label: "😵 Vague descriptions", html: `<div class="split">
+     <pre class="code">search:  "Searches."
+lookup:  "Looks things up."</pre>
+     <div class="stack-v"><div class="bubble sys" style="max-width:100%;text-align:left">🧠 Model picks <code>search("Dana Lee email")</code>, which searches the public help centre.</div>
+       <div class="bubble ai" style="max-width:100%;border-color:var(--bad)">I couldn’t find Dana Lee. Try contacting support. 🤷</div>
+       <div class="callout" style="--c:var(--bad)">❌ Both names were meaningless, so it guessed wrong.</div></div></div>` },
+  { label: "✨ Clear descriptions", html: `<div class="split">
+     <pre class="code">search_help_articles:
+  "Search PUBLIC help-centre articles.
+   Not for customer data."
+
+find_customer:
+  "Look up a customer by name or email.
+   Returns contact details and plan."</pre>
+     <div class="stack-v"><div class="bubble sys" style="max-width:100%;text-align:left">🧠 Model picks <code>find_customer(name: "Dana Lee")</code></div>
+       <div class="bubble ai" style="max-width:100%">Dana Lee’s email is dana.lee@example.com (Business plan).</div>
+       <div class="callout" style="--c:var(--good)">✅ Clear names, clear “use for / not for”, so it picked the right tool.</div></div></div>` },
+]);
+
+const TOOLS = [{ label: "get_order_status", c: "action" }, { label: "search_help_articles", c: "knowledge" }, { label: "issue_refund", c: "trust" }, { label: "send_email", c: "autonomy" }, { label: "No tool", c: "muted" }];
+W.classify($("#pick"), [
+  { text: "“Has my parcel left the warehouse yet?”", a: 0, why: "Live order data, so <code>get_order_status</code>." },
+  { text: "“How do I change my billing address?”", a: 1, why: "A how-to question answered by the help centre." },
+  { text: "“I was charged twice. Please give me my money back.”", a: 2, why: "<code>issue_refund</code>. Money moving is irreversible, so it should need approval." },
+  { text: "“Email me a copy of this conversation.”", a: 3, why: "<code>send_email</code>, to the customer’s verified address only." },
+  { text: "“Write me a funny haiku about Mondays.”", a: 4, why: "Pure text generation. No tool needed." },
+], TOOLS, { cols: 2 });
+
+W.classify($("#risk"), [
+  { text: "🔍 search_documents", a: 0, why: "Only reads. Low risk (just make sure it respects permissions)." },
+  { text: "📅 read_calendar", a: 0, why: "Read-only." },
+  { text: "📝 create_draft_email", a: 1, why: "Creates something, but a draft can be deleted. Nothing has left the building." },
+  { text: "🗓️ create_calendar_event", a: 1, why: "A change, but it’s easy to undo." },
+  { text: "📤 send_email_to_customer", a: 2, why: "Once it’s sent, it can’t be unsent. Needs approval, or strict rules." },
+  { text: "🗑️ delete_files", a: 2, why: "Irreversible. Human approval, or don’t give the agent this tool at all." },
+  { text: "💸 transfer_payment", a: 2, why: "Irreversible and financial. Always a human decision." },
+], [{ label: "🟢 Read-only", c: "good" }, { label: "🟡 Reversible change", c: "warn" }, { label: "🔴 Irreversible", c: "bad" }], { cols: 2 });
+
+W.quiz($("#quiz"), [
+  { q: "Who actually executes a tool call?", o: ["The model", "Your application / harness", "The user", "The internet"], a: 1, e: "The model only <i>requests</i>; your software decides and executes." },
+  { q: "How does the model know which tools exist?", o: ["It was trained on your APIs", "Tool names and descriptions are sent with each request", "It searches for them", "It guesses"], a: 1, e: "Tool definitions are part of the context, which is why descriptions matter." },
+  { q: "Which tool most needs a human approval step?", o: ["search_help_articles", "read_calendar", "transfer_payment", "get_order_status"], a: 2, e: "Irreversible, high-impact actions need a human in the loop." },
+]);
+</script>
+<script src="../assets/deck.js"></script>
+</body>
+</html>

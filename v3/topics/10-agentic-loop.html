@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Topic 14 · The agentic loop</title>
+<link rel="stylesheet" href="../assets/style.css?v=3.2">
+<link rel="stylesheet" href="../assets/widgets.css?v=3.2">
+<link rel="stylesheet" href="../assets/story.css?v=3.2">
+<style>
+  .flow { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin: 10px 0; }
+  .flow span.b { padding: 10px 14px; border-radius: 10px; background: var(--card); border: 1px solid var(--line); font-weight: 700; font-size: 14px; }
+  .dial-level { font-size: 26px; font-weight: 800; }
+  .risk { height: 14px; border-radius: 99px; background: var(--card2); overflow: hidden; }
+  .risk i { display: block; height: 100%; transition: width .4s, background .4s; }
+  .ticks { display: flex; justify-content: space-between; font-size: 12px; color: var(--muted); margin-top: 4px; }
+</style>
+</head>
+<body class="deck" data-id="10">
+
+<section class="slide title-slide" data-title="Welcome">
+  <div class="big-emoji">🔁</div>
+  <div class="eyebrow">Session 3 · Topic 14</div>
+  <h1>The agentic loop</h1>
+  <p class="sub">An <b>agent</b> is a model using tools <b>in a loop</b>, deciding its own next step, until the goal is done. That’s the whole idea.</p>
+  <aside class="notes"><span class="tag time">⏱ 30 sec</span><p class="say"><b>🎤 Say</b> An agent is a model using tools in a loop, deciding its own next step until the goal is done. That is the whole idea.</p><ul><li>A common definition: “an LLM using tools in a loop”. Everything else is detail.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="Workflow vs agent">
+  <div class="eyebrow">Two patterns</div>
+  <h2>Workflow or agent?</h2>
+  <p class="sub">Both use AI and tools. The difference is <b>who decides the next step</b>.</p>
+  <div id="wa"></div>
+  <aside class="notes"><span class="tag time">⏱ 2 min</span><p class="say"><b>🎤 Say</b> Workflow or agent? The difference is who decides the next step: your code or the model.</p><ul><li>Many “agents” in production are really workflows, and that’s fine. Predictable is good.</li><li>Use an agent when you can’t write the steps down in advance.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="The loop in action">
+  <div class="eyebrow">Watch it think</div>
+  <h2>Plan → Act → Observe → Done? → repeat</h2>
+  <p class="sub">A coding agent (Claude Code, GitHub Copilot’s agent mode…) hunts a real-looking bug: drivers aged exactly 25 are charged the under-25 surcharge. Step through or auto-play and watch the loop go round. <button class="btn bts-btn" data-bts="loop" style="margin-left:6px;padding:4px 10px">🎬 Behind the scenes</button></p>
+  <div id="loop"></div>
+  <aside class="notes"><span class="tag time">⏱ 4 min</span><p class="say"><b>🎤 Say</b> A coding agent hunts a pricing bug where drivers aged exactly 25 are charged the under-25 surcharge. It did not know the plan in advance. Each result changed the next step.</p><ul><li>Notice it <b>didn’t know the plan in advance</b>. Each observation changed the next step.</li><li>Loop 3 needed approval to edit a file. The harness enforces that (Topic 15).</li><li>Loop 4 is verification. Good agents check their work instead of claiming success.</li></ul></aside>
+</section>
+
+<section class="slide seq-slide" data-title="Sequence: The agent loop as a sequence diagram">
+  <div class="eyebrow">Sequence diagram</div>
+  <h2>The agent loop as a sequence diagram</h2>
+  <p class="sub">“Fix the age-25 pricing bug.” The same request–tool–result cycle repeats until the model says it is done.</p>
+  <div id="seqLoop"></div>
+  <aside class="notes"><span class="tag time">⏱ 3 min</span><p class="say"><b>🎤 Say</b> Here is the same loop as a sequence diagram. The model asks for a tool, the harness runs it and sends back the result, and this repeats until the model stops asking.</p><ul><li>Step through with → or the clicker. Each step shows the real message on the right.</li><li>The loop is in the harness, not the model: a while-loop that keeps going while the model asks for tools.</li><li>Harnesses also stop the loop on limits: max turns, cost, time.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="You are the agent">
+  <div class="eyebrow">Your turn</div>
+  <h2>You’re the agent: what’s your next move?</h2>
+  <p class="sub">Goal: <b>“Book a meeting room for 8 people tomorrow at 10:00.”</b> Tools: <code>search_rooms</code>, <code>book_room</code>, <code>send_invite</code>. Answer in order.</p>
+  <div id="you"></div>
+  <aside class="notes"><span class="tag time">⏱ 3 min</span><p class="say"><b>🎤 Say</b> You are the agent. What is your next move?</p><ul><li>The last question is the important one: handle errors honestly. Blind retrying causes infinite loops; claiming success is a “fake success” failure.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="When loops go wrong">
+  <div class="eyebrow">Failure modes</div>
+  <h2>When loops go wrong</h2>
+  <p class="sub">Flip each card for the fix. Most fixes live in the harness, the next topic.</p>
+  <div id="fails"></div>
+  <aside class="notes"><span class="tag time">⏱ 2 min</span><p class="say"><b>🎤 Say</b> Loops go wrong in predictable ways: endless retries, fake success, drifting off task. Most fixes live in the harness.</p></aside>
+</section>
+
+<section class="slide" data-title="The autonomy dial">
+  <div class="eyebrow">How much freedom?</div>
+  <h2>The autonomy dial</h2>
+  <p class="sub">Autonomy isn’t on or off. Slide it to see each level, an example, and the risk.</p>
+  <input type="range" id="dial" min="0" max="4" value="2">
+  <div class="ticks"><span>Chat</span><span>Assistant + tools</span><span>Workflow</span><span>Agent + checkpoints</span><span>Fully autonomous</span></div>
+  <div class="split" style="margin-top:18px">
+    <div class="card"><div class="dial-level" id="dLevel"></div><p id="dDesc"></p><p class="muted" id="dEx"></p></div>
+    <div class="card stack-v">
+      <div><div class="label">Speed / leverage</div><div class="risk"><i id="dGain" style="background:var(--good)"></i></div></div>
+      <div><div class="label">Risk if it goes wrong</div><div class="risk"><i id="dRisk"></i></div></div>
+      <div class="callout" id="dWhen" style="font-size:14.5px"></div>
+    </div>
+  </div>
+  <aside class="notes"><span class="tag time">⏱ 2 min</span><p class="say"><b>🎤 Say</b> Autonomy is a dial, not a switch. Start low and turn it up as trust and testing grow.</p><ul><li>Start low and move up as trust (and evals) grow. Most business use today sits at “agent with checkpoints”.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="Quick check">
+  <div class="eyebrow">Quick check</div>
+  <h2>Did it click?</h2>
+  <div id="quiz"></div>
+  <aside class="notes"><span class="tag time">⏱ 1 min</span><p class="say"><b>🎤 Say</b> Quick check.</p></aside>
+</section>
+
+<section class="slide" data-title="Takeaways">
+  <div class="eyebrow">Takeaways</div>
+  <h2>What to remember</h2>
+  <div class="cols-3" style="margin:10px 0 24px">
+    <div class="card"><b>🔁 The loop</b><p>Plan → act (tool) → observe the result → done? If not, go round again.</p></div>
+    <div class="card"><b>🛤️ Workflow vs agent</b><p>Fixed steps when you know them; an agent when you don’t. Pick the simplest that works.</p></div>
+    <div class="card"><b>🎚️ Dial up gradually</b><p>Limits, checkpoints and verification make loops safe.</p></div>
+  </div>
+  <div class="row"><a class="btn primary" data-nexttopic>Next →</a></div>
+  <aside class="notes"><span class="tag time">⏱ 30 sec</span><p class="say"><b>🎤 Say</b> Who runs this loop, executes the tools and asks for approval? Not the model. The harness.</p><ul><li>Bridge: “Who runs this loop, executes the tools, asks for approval and manages memory? Not the model. The <b>harness</b>.”</li></ul></aside>
+</section>
+
+<script src="../assets/course.js?v=3.2"></script>
+<script src="../assets/widgets.js?v=3.2"></script>
+<script>
+const { $ } = W;
+
+W.tabs($("#wa"), [
+  { label: "🛤️ Workflow", html: `<div class="split"><div>
+      <div class="label">Example: process an invoice</div>
+      <div class="flow"><span class="b">📥 Receive PDF</span>→<span class="b">🧠 Extract fields</span>→<span class="b">✔️ Validate</span>→<span class="b">📤 Post to ERP</span></div>
+      <p>A <b>person designed the steps</b>. The AI fills in one or two of them (e.g. extraction). The same path every time.</p></div>
+    <div class="card"><b>✅ Predictable, testable, cheap</b><br><b>❌ Breaks on anything unexpected</b><p class="muted">Use when the steps are known and stable.</p></div></div>` },
+  { label: "🤖 Agent", html: `<div class="split"><div>
+      <div class="label">Example: “Find out why churn rose last month”</div>
+      <div class="flow"><span class="b">🧠 Plan</span>→<span class="b">🔧 Act</span>→<span class="b">👀 Observe</span>→<span class="b">✅ Done?</span>→ <span class="muted">↩ repeat</span></div>
+      <p>The <b>model decides</b> what to look at next based on what it found. The path differs every time.</p></div>
+    <div class="card"><b>✅ Flexible, handles the unexpected</b><br><b>❌ Less predictable, costs more, needs guardrails</b><p class="muted">Use when you can’t write the steps down in advance.</p></div></div>` },
+]);
+
+W.loop($("#loop"), "Drivers aged exactly 25 are being charged the under-25 surcharge. Find and fix it.", [
+  { plan: "Find where the under-25 surcharge is applied.", act: "<code>grep(\"UNDER_25\", path: \"rating/\")</code>", observe: "Found in <code>rating/motor/driver_factors.py</code>, line 88.", check: "Not done. I need to read the code." },
+  { plan: "Read the code around line 88.", act: "<code>read_file(\"rating/motor/driver_factors.py\")</code>", observe: "❗ <code>if driver.age &lt;= 25: factor += UNDER_25_SURCHARGE</code>. 25-year-olds are included.", check: "Not done. Likely cause found; prove it with a test first." },
+  { plan: "Add a test for a 25-year-old driver and run it.", act: "<code>edit_file(\"tests/test_driver_factors.py\")</code>, then <code>run(\"pytest tests/test_driver_factors.py\")</code>", observe: "❌ 1 failed: a 25-year-old got the surcharge. Bug confirmed.", check: "Not done. Now fix it." },
+  { plan: "Change <code>&lt;=</code> to <code>&lt;</code>.", act: "<code>edit_file(\"rating/motor/driver_factors.py\")</code> 🔐 <i>harness asks for approval; the developer approves</i>", observe: "File updated.", check: "Not done. Check nothing else broke." },
+  { plan: "Run the whole test suite.", act: "<code>run(\"pytest -q\")</code>", observe: "✅ 312 passed.", check: "<b>Done!</b> Root cause: an off-by-one (<code>&lt;=</code> instead of <code>&lt;</code>). Fixed, with a new test so it can’t come back." },
+]);
+
+W.classify($("#you"), [
+  { text: "1️⃣ What do you do first?", a: 1, why: "Gather information before acting. Booking blind might pick a room that’s too small or already taken." },
+  { text: "2️⃣ <code>search_rooms</code> returns: “Everest (10 seats), free” and “K2 (6 seats), free”. Next?", a: 2, why: "Everest fits 8 people; K2 doesn’t. Use the observation to decide." },
+  { text: "3️⃣ <code>book_room(Everest)</code> returns: “Error: Everest requires manager approval.” Next?", a: 5, why: "Report honestly and offer options. Retrying blindly is an infinite loop; claiming success is a fake success." },
+], [{ label: "book_room right away", c: "bad" }, { label: "search_rooms (8+ seats, 10:00)", c: "good" }, { label: "Book Everest", c: "good" }, { label: "Book K2", c: "warn" }, { label: "Retry book_room until it works", c: "bad" }, { label: "Tell the user and offer alternatives", c: "good" }], { cols: 1 });
+
+W.flips($("#fails"), [
+  { front: "♾️ Infinite loop", back: "Keeps retrying the same failing action. <b>Fix:</b> a maximum number of iterations, and noticing repeated errors." },
+  { front: "🧭 Drift", back: "Wanders off the goal into side quests. <b>Fix:</b> a clear goal, a to-do list it re-reads, checkpoints." },
+  { front: "🗂️ Context overflow", back: "Long tasks fill the desk with tool output. <b>Fix:</b> compaction, subagents, trimming tool results." },
+  { front: "🧱 Compounding errors", back: "A small early mistake snowballs through later steps. <b>Fix:</b> verify at each step, tests, human review." },
+  { front: "🎭 Fake success", back: "Says “Done!” when it isn’t. <b>Fix:</b> require verification (run the test, check the result)." },
+  { front: "💸 Runaway cost", back: "Each loop re-sends a growing context. <b>Fix:</b> budgets, timeouts, smaller models for sub-steps." },
+]);
+
+const LEVELS = [
+  { n: "💬 Chat", d: "Answers questions. Takes no actions.", ex: "Example: “Draft a reply to this email.”", gain: 15, risk: 5, when: "Always safe. A great place to start." },
+  { n: "🧑‍💼 Assistant + tools", d: "Can use tools, but you approve each action.", ex: "Example: proposes a calendar invite; you click Send.", gain: 35, risk: 15, when: "Good for anything touching real systems while trust is being built." },
+  { n: "🛤️ Workflow", d: "Fixed steps designed by people, with AI inside some of them.", ex: "Example: every invoice → extract → validate → post.", gain: 55, risk: 30, when: "Best for high-volume, well-understood processes." },
+  { n: "🤖 Agent + checkpoints", d: "Decides its own steps; pauses for approval on risky ones.", ex: "Example: a coding agent edits and tests freely, but asks before pushing.", gain: 80, risk: 45, when: "The sweet spot for most knowledge work today." },
+  { n: "🚀 Fully autonomous", d: "Works unattended in the background and reports when done.", ex: "Example: assign a ticket at night, review the pull request in the morning.", gain: 100, risk: 80, when: "Only with strong sandboxing, limits, evals and review of the output." },
+];
+function renderDial() {
+  const L = LEVELS[+$("#dial").value];
+  $("#dLevel").textContent = L.n; $("#dDesc").textContent = L.d; $("#dEx").textContent = L.ex;
+  $("#dGain").style.width = L.gain + "%";
+  $("#dRisk").style.width = L.risk + "%";
+  $("#dRisk").style.background = L.risk > 60 ? "var(--bad)" : L.risk > 30 ? "var(--warn)" : "var(--good)";
+  $("#dWhen").innerHTML = "<b>When:</b> " + L.when;
+}
+$("#dial").oninput = renderDial; renderDial();
+
+W.quiz($("#quiz"), [
+  { q: "What makes something an “agent” rather than a chatbot?", o: ["It has a name and avatar", "It uses tools in a loop and decides its own next steps", "It uses a bigger model", "It speaks out loud"], a: 1, e: "Tools + loop + its own decisions = agent." },
+  { q: "You process 10,000 identical expense forms a day. Best pattern?", o: ["Fully autonomous agent", "Workflow", "Chat", "Multi-agent swarm"], a: 1, e: "Known, stable steps call for a workflow: predictable and cheap." },
+  { q: "An agent keeps retrying the same failing command. What’s missing?", o: ["A bigger context window", "Loop limits and error handling", "Higher temperature", "More tools"], a: 1, e: "Max iterations and noticing repeated errors prevent infinite loops." },
+]);
+
+/* ===== v3 story ===== */
+W.BTS.loop = {
+  title: "The agent’s loop, as messages",
+  sub: "Each turn the model replies with tool calls; the harness runs them and sends the results back. It stops when the model says it’s done (end_turn). Simplified.",
+  parts: [
+    { label: "Tools the harness gives the model (names vary by harness)", c: "muted", json: `"tools": [ "Grep", "Read", "Edit", "Bash", "TodoWrite", ... ]` },
+    { label: "The loop", c: "autonomy", json: `turn 1 ← tool_use  Grep { "pattern": "UNDER_25", "path": "rating/" }
+       → tool_result  "rating/motor/driver_factors.py:88"
+turn 2 ← tool_use  Read { "file_path": "rating/motor/driver_factors.py" }
+       → tool_result  "...88:  if driver.age <= 25: factor += UNDER_25_SURCHARGE..."
+turn 3 ← tool_use  Edit { "file_path": "tests/test_driver_factors.py", ... }      // add a failing test
+       ← tool_use  Bash { "command": "pytest tests/test_driver_factors.py -q" }
+       → tool_result  "1 failed: test_age_25_has_no_surcharge"
+turn 4 ← tool_use  Edit { "file_path": "rating/motor/driver_factors.py",
+                          "old_string": "if driver.age <= 25:",
+                          "new_string": "if driver.age < 25:" }           // 🔐 the developer approves
+turn 5 ← tool_use  Bash { "command": "pytest -q" }
+       → tool_result  "312 passed in 4.81s"
+turn 6 ← stop_reason: "end_turn"
+         "Fixed an off-by-one in driver_factors.py:88 (<= should be <). Added a regression test. All 312 tests pass."`, note: "This is the same request/response pattern as the insurance quote in Topic 11. The only new thing is that the harness keeps going round until the model decides it’s finished." },
+  ],
+};
+</script>
+<script>W.seq(document.getElementById("seqLoop"), {"actors": [{"id": "user", "name": "Developer", "icon": "👩‍💻", "c": "accent"}, {"id": "app", "name": "Harness", "icon": "🧰", "c": "autonomy"}, {"id": "model", "name": "Model", "icon": "🧠", "c": "model"}, {"id": "tools", "name": "Files + terminal", "icon": "🛠️", "c": "action"}], "steps": [{"from": "user", "to": "app", "label": "“Fix the age-25 pricing bug”"}, {"from": "app", "to": "model", "label": "Task + tools + CLAUDE.md", "note": "Tools here are generic: read_file, edit_file, run_command, search."}, {"from": "model", "to": "app", "label": "tool_use: search “age”", "ret": true}, {"from": "app", "to": "tools", "label": "grep -rn \"age\" pricing/"}, {"from": "tools", "to": "app", "label": "pricing/bands.py:42", "ret": true}, {"from": "app", "to": "model", "label": "tool_result"}, {"from": "model", "to": "app", "label": "tool_use: run tests", "code": "{ \"type\": \"tool_use\", \"name\": \"run_command\", \"input\": { \"command\": \"pytest tests/test_bands.py\" } }", "ret": true}, {"from": "app", "to": "tools", "label": "pytest"}, {"from": "tools", "to": "app", "label": "1 failed: age 25 → band B", "ret": true}, {"from": "app", "to": "model", "label": "tool_result"}, {"from": "model", "to": "app", "label": "tool_use: edit_file (&lt; to &lt;=)", "code": "{ \"type\": \"tool_use\", \"name\": \"edit_file\",\n  \"input\": { \"path\": \"pricing/bands.py\", \"old\": \"if age < 25:\", \"new\": \"if age <= 25:\" } }", "ret": true}, {"from": "app", "to": "tools", "label": "Apply edit, re-run tests"}, {"from": "tools", "to": "app", "label": "All 48 tests pass", "ret": true}, {"from": "app", "to": "model", "label": "tool_result"}, {"from": "model", "to": "app", "label": "end_turn: summary", "note": "No tool_use in the reply, so the loop stops.", "code": "{ \"stop_reason\": \"end_turn\" }", "ret": true}, {"from": "app", "to": "user", "label": "“Fixed: off-by-one at line 42”", "ret": true}], "frames": [{"from": 2, "to": 13, "label": "loop · until stop_reason = end_turn", "c": "warn"}]});</script>
+<script src="../assets/deck.js?v=3.2"></script>
+</body>
+</html>

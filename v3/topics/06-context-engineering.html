@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Topic 7 · Context engineering</title>
+<link rel="stylesheet" href="../assets/style.css?v=3.2">
+<link rel="stylesheet" href="../assets/widgets.css?v=3.2">
+<link rel="stylesheet" href="../assets/story.css?v=3.2">
+<style>
+  .items { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .item { padding: 12px 14px; border-radius: 12px; background: var(--card); border: 1px solid var(--line); cursor: pointer; transition: all .2s; font-size: 14.5px; }
+  .item:hover { border-color: var(--accent); }
+  .item.in { background: color-mix(in srgb, var(--accent) 16%, var(--card)); border-color: var(--accent); }
+  .item.good { border-color: var(--good); background: color-mix(in srgb, var(--good) 14%, var(--card)); }
+  .item.bad { border-color: var(--bad); background: color-mix(in srgb, var(--bad) 12%, var(--card)); }
+  .item .cost { float: right; font-size: 12px; font-weight: 800; color: var(--muted); }
+  .item .fb { display: none; font-size: 12.5px; color: var(--muted); margin-top: 6px; }
+  .checked .item .fb { display: block; }
+  .budget { height: 18px; border-radius: 99px; background: var(--card2); overflow: hidden; }
+  .budget i { display: block; height: 100%; background: var(--accent); transition: width .3s; }
+  .budget.over i { background: var(--bad); }
+  .ctx-stack { display: grid; gap: 6px; }
+  .ctx-stack div { --c: var(--accent); padding: 10px 14px; border-radius: 10px; border: 1px solid var(--c); background: color-mix(in srgb, var(--c) 12%, var(--card)); font-weight: 600; font-size: 14px; display: flex; justify-content: space-between; }
+  .ctx-stack div.you { border-width: 3px; box-shadow: 0 0 20px color-mix(in srgb, var(--c) 40%, transparent); }
+  .calc20k { display: grid; grid-template-columns: 1fr 1.15fr; gap: 20px; align-items: start; }
+  .calc20k .big { font-size: 34px; font-weight: 800; font-variant-numeric: tabular-nums; }
+  .calc20k .stat { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; padding: 7px 0; border-bottom: 1px dashed var(--line); }
+  .calc20k .stat b { font-variant-numeric: tabular-nums; }
+  .desk-bar { height: 22px; border-radius: 8px; background: var(--card2); overflow: hidden; position: relative; margin: 6px 0 2px; }
+  .desk-bar i { position: absolute; inset: 0 auto 0 0; background: var(--c-context); transition: width .3s; }
+  .desk-bar.over i { background: var(--bad); }
+</style>
+</head>
+<body class="deck" data-id="06">
+
+<section class="slide title-slide" data-title="Welcome">
+  <div class="big-emoji">🧳</div>
+  <div class="eyebrow">Session 2 · Topic 7</div>
+  <h1>Context engineering</h1>
+  <p class="sub">Prompt engineering is about the right <b>words</b>. Context engineering is about putting the right <b>information</b> on the desk, and keeping the wrong information off it.</p>
+  <aside class="notes"><span class="tag time">⏱ 30 sec</span><p class="say"><b>🎤 Say</b> Prompt engineering is about the right words. Context engineering is about putting the right information on the desk and keeping the wrong information off it.</p><ul><li>This is where the industry focus shifted: once prompts are decent, quality depends on <i>what you feed in</i>.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="Can you paste 20,000 pages?">
+  <div class="eyebrow">Do the maths</div>
+  <h2>Can you paste a 20,000-page manual into the prompt?</h2>
+  <p class="sub">Drag the slider from one page up to the whole manual. Numbers are illustrative (≈600 tokens a page, $3 per million input tokens, 2,000 broker questions a day).</p>
+  <div class="calc20k">
+    <div class="card">
+      <div class="label">Pages pasted into every question</div>
+      <input type="range" id="pg" min="0" max="7" step="1" value="0" style="width:100%">
+      <div class="big" id="pgOut"></div>
+      <div id="win" style="margin-top:10px"></div>
+      <div class="label" style="margin-top:14px">How full is the desk?</div>
+      <div class="desk-bar" id="deskBar"><i></i></div>
+      <div class="muted" id="deskTxt" style="font-size:14px"></div>
+    </div>
+    <div class="card">
+      <div class="stat"><span>Tokens per question</span><b id="sTok"></b></div>
+      <div class="stat"><span>Cost per question</span><b id="sCost"></b></div>
+      <div class="stat"><span>Cost per day (2,000 questions)</span><b id="sDay"></b></div>
+      <div class="stat"><span>Time just to read it</span><b id="sTime"></b></div>
+      <div class="callout" id="quip" style="margin-top:12px"></div>
+    </div>
+  </div>
+  <aside class="notes"><span class="tag time">⏱ 3 min</span><p class="say"><b>🎤 Say</b> Back to the 20,000-page question. Drag the slider: one page is fine, a few hundred is expensive, the whole manual does not fit at all, and the daily cost is huge.</p><ul><li>Walk it up slowly: 1 page, 20 pages (fine), 500 (getting pricey), 20,000 (impossible). Let the room gasp at the per-day number.</li><li>Three problems, not one: it doesn’t fit, it would cost a fortune, and even when it fits, models lose details buried in the middle of huge contexts (Topic 4).</li><li>Prices and window sizes are round, illustrative numbers. The shape of the problem is what matters.</li></ul></aside>
+</section>
+
+
+
+<section class="slide" data-title="Prompt vs context">
+  <div class="eyebrow">The bigger picture</div>
+  <h2>Your prompt is one slice of the context</h2>
+  <p class="sub">In a real AI app or agent, the context is assembled from many sources for every single request. Someone (or something) has to decide what goes in.</p>
+  <div class="split wide-right" style="align-items:start">
+    <div class="ctx-stack" id="ctxStack"></div>
+    <div class="stack-v">
+      <div class="callout" style="--c:var(--c-context)"><b>Context engineering</b> = designing the system that decides, for every request, <b>which</b> information goes on the desk, in <b>what form</b>, and <b>what is left off</b>.</div>
+      <div class="card"><b>Good context is:</b><ul style="margin:8px 0 0;padding-left:20px"><li><b>Relevant</b>: only what this task needs</li><li><b>Fresh</b>: up to date, not last year’s policy</li><li><b>Consistent</b>: no contradicting instructions</li><li><b>Compact</b>: summarised where possible</li><li><b>Structured</b>: clearly labelled sections</li></ul></div>
+    </div>
+  </div>
+  <aside class="notes"><span class="tag time">⏱ 2 min</span><p class="say"><b>🎤 Say</b> In a real app your prompt is a small slice. The context is assembled from many sources on every request, and someone has to decide what goes in.</p><ul><li>Highlight the glowing “your message” row: often under 1% of the tokens.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="Pack the briefcase">
+  <div class="eyebrow">Game</div>
+  <h2>Pack the briefcase</h2>
+  <p class="sub">A customer asks: <b>“Why was I charged twice in October?”</b> You have a budget of <b>10 units</b> of context. Click items to pack them, then check your briefing.</p>
+  <div class="row" style="margin-bottom:10px"><div class="grow"><div class="budget" id="budget"><i></i></div></div><b id="budgetLbl">0 / 10</b>
+    <button class="btn primary" id="pkCheck">✔ Check briefing</button><button class="btn ghost" id="pkReset">↺ Reset</button></div>
+  <div class="items" id="items"></div>
+  <div class="callout hidden" id="pkResult" style="margin-top:12px"></div>
+  <aside class="notes"><span class="tag time">⏱ 3 min</span><p class="say"><b>🎤 Say</b> You have a budget of ten units. Pack the briefing for this customer question. The common mistake is packing the whole manual just in case.</p><ul><li>Let the room shout picks. Common mistake: packing the full manual “just in case”, which blows the budget and adds noise.</li><li>Best briefing: incident note, invoices, refund policy, reply guide, refund tool = 6 units, all relevant.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="The four moves">
+  <div class="eyebrow">Techniques</div>
+  <h2>The four moves of context engineering</h2>
+  <p class="sub">Click each move. You’ll meet every one of them again in later topics.</p>
+  <div id="moves"></div>
+  <aside class="notes"><span class="tag time">⏱ 2 min</span><p class="say"><b>🎤 Say</b> Context engineering has four moves: select, compress, write and isolate. Each one comes back in a later topic.</p><ul><li>Select → RAG (Topic 8). Compress → compaction (Topic 5). Write → memory and notes files (Topic 12). Isolate → subagents (Topic 12).</li></ul></aside>
+</section>
+
+<section class="slide" data-title="Common mistakes">
+  <div class="eyebrow">Watch out</div>
+  <h2>Context mistakes that quietly ruin answers</h2>
+  <p class="sub">Flip each card for the fix.</p>
+  <div id="mistakes"></div>
+  <aside class="notes"><span class="tag time">⏱ 2 min</span><p class="say"><b>🎤 Say</b> These mistakes quietly ruin answers. Flip each card for the fix.</p></aside>
+</section>
+
+<section class="slide" data-title="Quick check">
+  <div class="eyebrow">Quick check</div>
+  <h2>Did it click?</h2>
+  <div id="quiz"></div>
+  <aside class="notes"><span class="tag time">⏱ 1 min</span><p class="say"><b>🎤 Say</b> Quick check.</p></aside>
+</section>
+
+<section class="slide" data-title="Takeaways">
+  <div class="eyebrow">Takeaways</div>
+  <h2>What to remember</h2>
+  <div class="cols-3" style="margin:10px 0 24px">
+    <div class="card"><b>🧳 Curate the desk</b><p>Quality depends on what’s in the context, not just the wording of your request.</p></div>
+    <div class="card"><b>🔀 Four moves</b><p>Select, compress, write (save outside), isolate.</p></div>
+    <div class="card"><b>➡️ Next problem</b><p>How do we <i>select</i> the right paragraph from 50,000 documents, automatically? <b>RAG.</b></p></div>
+  </div>
+  <div class="row"><a class="btn primary" data-nexttopic>Next →</a></div>
+  <aside class="notes"><span class="tag time">⏱ 30 sec</span><p class="say"><b>🎤 Say</b> Selecting the right information is the move that matters most, and the standard way to do it is RAG. That is next.</p></aside>
+</section>
+
+<script src="../assets/course.js?v=3.2"></script>
+<script src="../assets/widgets.js?v=3.2"></script>
+<script>
+const { $, $$ } = W;
+
+$("#ctxStack").innerHTML = [
+  ["⚙️ System prompt", "context", "1.5K"], ["📌 Instruction file / memory", "autonomy", "2K"], ["🛠️ Tool definitions", "action", "3K"],
+  ["📚 Retrieved documents", "knowledge", "6K"], ["🔧 Tool results", "trust", "4K"], ["💬 Conversation history", "model", "8K"],
+  ["✉️ Your message", "accent", "0.1K", true],
+].map(([l, c, t, you]) => `<div class="${you ? "you" : ""}" style="--c:${W.cv(c)}"><span>${l}</span><span class="muted">${t} tokens</span></div>`).join("");
+
+/* ---- packing game ---- */
+const ITEMS = [
+  { t: "🧾 October billing incident note", cost: 1, ok: 1, fb: "Explains exactly why: the root cause." },
+  { t: "📄 This customer’s last 3 invoices", cost: 2, ok: 1, fb: "Shows the duplicate charge: the evidence." },
+  { t: "📚 Full 300-page product manual", cost: 8, ok: 0, fb: "Huge, and almost all irrelevant. Blows the budget and adds noise." },
+  { t: "🗃️ All 20,000 past support tickets", cost: 10, ok: 0, fb: "Way too much. If useful, retrieve the 2–3 similar ones (RAG)." },
+  { t: "✍️ Reply tone guide (1 page)", cost: 1, ok: 1, fb: "Keeps the reply on-brand." },
+  { t: "💶 Refund policy section", cost: 1, ok: 1, fb: "Tells it what it’s allowed to offer." },
+  { t: "🏢 Company history and mission", cost: 2, ok: 0, fb: "Nice, but not needed to answer this." },
+  { t: "🔧 Tool: issue_refund", cost: 1, ok: 1, fb: "Lets it actually fix the problem (Topic 11)." },
+  { t: "💬 Customer’s full chat log since 2021", cost: 4, ok: 0, fb: "Mostly stale. A one-line summary would do." },
+];
+let packed = new Set();
+function renderPack() {
+  const used = [...packed].reduce((a, i) => a + ITEMS[i].cost, 0);
+  $("#items").innerHTML = ITEMS.map((it, i) => `<div class="item ${packed.has(i) ? "in" : ""}" data-i="${i}"><span class="cost">${it.cost} unit${it.cost > 1 ? "s" : ""}</span>${it.t}<div class="fb">${it.ok ? "✅" : "❌"} ${it.fb}</div></div>`).join("");
+  $("#budget i").style.width = Math.min(100, used * 10) + "%";
+  $("#budget").classList.toggle("over", used > 10);
+  $("#budgetLbl").textContent = `${used} / 10`;
+  $$("#items .item").forEach((el) => (el.onclick = () => { const i = +el.dataset.i; packed.has(i) ? packed.delete(i) : packed.add(i); $("#items").classList.remove("checked"); $("#pkResult").classList.add("hidden"); renderPack(); }));
+}
+$("#pkCheck").onclick = () => {
+  const used = [...packed].reduce((a, i) => a + ITEMS[i].cost, 0);
+  const goodIn = [...packed].filter((i) => ITEMS[i].ok).length, badIn = [...packed].filter((i) => !ITEMS[i].ok).length;
+  const goodTotal = ITEMS.filter((x) => x.ok).length;
+  $$("#items .item").forEach((el) => { const i = +el.dataset.i; if (packed.has(i)) el.classList.add(ITEMS[i].ok ? "good" : "bad"); });
+  $("#items").classList.add("checked");
+  const r = $("#pkResult"); r.classList.remove("hidden");
+  const perfect = used <= 10 && goodIn === goodTotal && !badIn;
+  r.style.setProperty("--c", perfect ? "var(--good)" : used > 10 ? "var(--bad)" : "var(--warn)");
+  r.innerHTML = used > 10 ? `⚠ Over budget (${used}/10): this won’t fit on the desk. Something must go.`
+    : perfect ? `🎉 Perfect briefing: all ${goodTotal} essentials in just ${used} units, no noise.`
+    : `You packed ${goodIn}/${goodTotal} essentials${badIn ? ` and ${badIn} distraction${badIn > 1 ? "s" : ""}` : ""}. Read the notes on each card, then adjust.`;
+};
+$("#pkReset").onclick = () => { packed = new Set(); $("#items").classList.remove("checked"); $("#pkResult").classList.add("hidden"); renderPack(); };
+renderPack();
+
+W.clickInfo($("#moves"), [
+  { icon: "🎯", title: "Select", sub: "pull in only what’s relevant", c: "knowledge", html: "<p>Don’t dump everything: <b>find</b> the few pieces that matter for this request.</p><p><b>Example:</b> from 50,000 help articles, retrieve the 3 about billing errors.</p><p class='muted'>Main technique: <b>RAG</b>, next topic.</p>" },
+  { icon: "🗜️", title: "Compress", sub: "summarise what’s long", c: "context", html: "<p>Keep the meaning, drop the bulk.</p><p><b>Example:</b> replace 40 turns of chat history with a 5-line summary; trim a tool result to the fields that matter.</p><p class='muted'>In agents this is called <b>compaction</b> (Topic 5).</p>" },
+  { icon: "📝", title: "Write (save outside)", sub: "notes the AI can re-read", c: "autonomy", html: "<p>Store information <b>outside</b> the context and bring it back only when needed.</p><p><b>Example:</b> an agent keeps a to-do list or <code>NOTES.md</code> file; a memory feature saves “user is vegetarian”.</p><p class='muted'>Instruction files and memory: Topic 16.</p>" },
+  { icon: "🧪", title: "Isolate", sub: "split work across contexts", c: "action", html: "<p>Give sub-tasks their <b>own separate context</b> so the main one stays clean.</p><p><b>Example:</b> three helper agents each research one competitor and return a one-paragraph summary.</p><p class='muted'>That’s <b>subagents</b>: Topic 16.</p>" },
+], { cols: 4 });
+
+W.flips($("#mistakes"), [
+  { front: "🗑️ The kitchen sink", back: "Pasting everything “just in case”. <b>Fix:</b> select the relevant part; more isn’t better." },
+  { front: "🕰️ Stale information", back: "Last year’s price list in the context means confidently wrong answers. <b>Fix:</b> keep sources fresh and dated." },
+  { front: "⚔️ Contradictions", back: "System prompt says “be brief”, the instruction file says “be thorough”. <b>Fix:</b> one source of truth for each rule." },
+  { front: "👻 Ghosts of failed attempts", back: "A long chat full of wrong turns keeps steering the model wrong. <b>Fix:</b> start a fresh chat with a clean summary." },
+  { front: "🧰 Too many tools", back: "50 tool definitions eat context and confuse tool choice. <b>Fix:</b> only load the tools the task needs." },
+  { front: "🔓 Untrusted text mixed in", back: "A web page or email in the context can carry hidden instructions. <b>Fix:</b> label it clearly as data (Topic 17)." },
+]);
+
+W.quiz($("#quiz"), [
+  { q: "What’s the core idea of context engineering?", o: ["Using longer prompts", "Choosing what information goes into the context, and what stays out", "Training the model on your data", "Using a bigger model"], a: 1, e: "It’s about curating the desk: relevant, fresh, compact, structured." },
+  { q: "An agent’s chat history is huge and old. Which move?", o: ["Select", "Compress", "Isolate", "Ignore it"], a: 1, e: "Summarise it (compaction) to keep the key facts and lose the bulk." },
+  { q: "You want three competitors researched without flooding the main context with web pages. Which move?", o: ["Write", "Compress", "Isolate", "Select"], a: 2, e: "Isolate: give each research task its own context (a subagent), and return only summaries." },
+]);
+
+/* ===== v3 story ===== */
+(() => {
+  const PG = [1, 5, 20, 100, 500, 2000, 5000, 20000], TPP = 600, PRICE = 3 / 1e6, QPD = 2000;
+  let win = 200000;
+  const money = (x) => x < 1 ? "$" + x.toFixed(3) : "$" + Math.round(x).toLocaleString();
+  const QUIPS = [
+    ["good", "✅ One page fits easily. Cheap, fast, focused."],
+    ["good", "✅ Five pages: still tiny. This is what a good prompt looks like."],
+    ["good", "✅ Twenty pages fits fine. Most real questions need far less."],
+    ["warn", "🟡 100 pages fits, but you pay to re-read all of it on every single question."],
+    ["warn", "🟠 500 pages: the desk is crowded. Details in the middle start getting missed (Topic 4)."],
+    ["bad", "🔴 Doesn’t fit a normal desk. Even the big desk is mostly full and very slow."],
+    ["bad", "🔴 Doesn’t fit anywhere, even after removing the appendix on hailstones."],
+    ["bad", "💀 <b>The whole manual.</b> It doesn’t fit, and if it did, every answer would cost more than a team lunch, and every day more than a small car."],
+  ];
+  function upd() {
+    const i = +$("#pg").value, pages = PG[i], tok = pages * TPP, fill = tok / win;
+    $("#pgOut").textContent = pages.toLocaleString() + (pages === 1 ? " page" : " pages");
+    $("#sTok").textContent = tok.toLocaleString();
+    $("#sCost").textContent = money(tok * PRICE) + (fill > 1 ? " (if it fit)" : "");
+    $("#sDay").textContent = money(tok * PRICE * QPD);
+    const sec = tok / 40000;
+    $("#sTime").textContent = sec < 1 ? "under a second" : sec < 90 ? Math.round(sec) + " seconds" : Math.round(sec / 60) + " minutes";
+    const bar = $("#deskBar"); bar.classList.toggle("over", fill > 1); bar.querySelector("i").style.width = Math.min(100, fill * 100) + "%";
+    $("#deskTxt").innerHTML = fill > 1 ? `<b style="color:var(--bad)">${fill.toFixed(0)}× too big</b> for this desk` : `${(fill * 100).toFixed(fill < .01 ? 2 : 0)}% of the desk`;
+    const [c, q] = QUIPS[i]; $("#quip").style.setProperty("--c", W.cv(c)); $("#quip").innerHTML = q;
+  }
+  W.tabs($("#win"), [{ label: "Desk: 200K tokens" }, { label: "Big desk: 1M tokens" }], { onChange: (i) => { win = i ? 1000000 : 200000; upd(); } });
+  $("#win .tab-body")?.remove();
+  $("#pg").oninput = upd;
+})();
+</script>
+<script src="../assets/deck.js?v=3.2"></script>
+</body>
+</html>

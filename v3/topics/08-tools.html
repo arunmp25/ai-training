@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Topic 11 · Tools and function calling</title>
+<link rel="stylesheet" href="../assets/style.css?v=3.2">
+<link rel="stylesheet" href="../assets/widgets.css?v=3.2">
+<link rel="stylesheet" href="../assets/story.css?v=3.2">
+<style>
+  .actors { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 12px; }
+  .actor { --c: var(--accent); text-align: center; padding: 12px; border-radius: 12px; border: 1px solid var(--line); background: var(--card); font-weight: 700; transition: all .3s; color: var(--muted); }
+  .actor .e { font-size: 28px; display: block; }
+  .actor.lit { color: var(--text); border-color: var(--c); background: color-mix(in srgb, var(--c) 20%, var(--card)); box-shadow: 0 0 16px color-mix(in srgb, var(--c) 40%, transparent); }
+</style>
+</head>
+<body class="deck" data-id="08">
+
+<section class="slide title-slide" data-title="Welcome">
+  <div class="big-emoji">🔧</div>
+  <div class="eyebrow">Session 2 · Topic 11</div>
+  <h1>Tools: giving AI hands</h1>
+  <p class="sub">A model can only produce text. <b>Tools</b> let that text turn into actions: looking things up, calculating, updating systems.</p>
+  <aside class="notes"><span class="tag time">⏱ 30 sec</span><p class="say"><b>🎤 Say</b> A model can only produce text. Tools turn that text into actions: looking things up, calculating, updating systems.</p><ul><li>Also called <b>function calling</b> or <b>tool use</b>. Same thing.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="The idea">
+  <div class="eyebrow">The key insight</div>
+  <h2>The model doesn’t run tools. It <span class="accent">asks</span> for them.</h2>
+  <p class="sub">Like a surgeon saying “scalpel”: the model writes a structured request, your software carries it out, and the result goes back to the model.</p>
+  <div id="idea"></div>
+  <aside class="notes"><span class="tag time">⏱ 2 min</span><p class="say"><b>🎤 Say</b> The key point: the model does not run tools. It asks for them, and your software decides whether to carry out the request.</p><ul><li>Crucial for safety: <b>your software decides</b> whether to actually run the request. That’s where permissions and approvals live (Topic 17).</li></ul></aside>
+</section>
+
+<section class="slide" data-title="A tool call, step by step">
+  <div class="eyebrow">Walkthrough</div>
+  <h2>A live insurance quote: a tool call, step by step</h2>
+  <p class="sub">Watch who does what. The highlighted box shows who is active. <button class="btn bts-btn" data-bts="quote" style="margin-left:8px">🎬 Behind the scenes: the full JSON</button></p>
+  <div class="actors" id="actors">
+    <div class="actor" data-a="user" style="--c:var(--accent)"><span class="e">🙋</span>Customer</div>
+    <div class="actor" data-a="app" style="--c:var(--c-autonomy)"><span class="e">🖥️</span>Your app (harness)</div>
+    <div class="actor" data-a="model" style="--c:var(--c-model)"><span class="e">🧠</span>Model</div>
+    <div class="actor" data-a="api" style="--c:var(--c-action)"><span class="e">🧮</span>Rating engine</div>
+  </div>
+  <div class="split wide-right"><div id="tcCtrl"></div><div id="tcLog" style="max-height:330px"></div></div>
+  <aside class="notes"><span class="tag time">⏱ 3 min</span><p class="say"><b>🎤 Say</b> Let us follow a live insurance quote. Watch who is active at each step: the customer, your app, the model and the rating engine.</p><ul><li>The JSON is shown only so people see it’s structured. Topic 12 walks through the real messages in detail.</li><li>Note step 2: the app sends the <b>tool descriptions</b> with every request. That’s how the model knows which tools exist.</li></ul></aside>
+</section>
+
+<section class="slide seq-slide" data-title="Sequence: The same quote as a sequence diagram">
+  <div class="eyebrow">Sequence diagram</div>
+  <h2>The same quote as a sequence diagram</h2>
+  <p class="sub">Two requests to the model, one call to the rating engine. The model never touches the rating engine.</p>
+  <div id="seqTool"></div>
+  <aside class="notes"><span class="tag time">⏱ 3 min</span><p class="say"><b>🎤 Say</b> Here is the same quote as a sequence diagram. Count the model calls: two. And notice step 4, where your app checks permissions before calling the rating engine.</p><ul><li>Step through with → or the clicker. Each step shows the real message on the right.</li><li>Count the model calls: two. Every tool call costs one extra round trip.</li><li>Step 4 is where safety lives. Topic 17 comes back to it.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="Descriptions matter">
+  <div class="eyebrow">Tool design</div>
+  <h2>The model only knows a tool by its description</h2>
+  <p class="sub">Request: <b>“Find Dana Lee’s email address.”</b> Compare vague and clear tool descriptions.</p>
+  <div id="descTabs"></div>
+  <aside class="notes"><span class="tag time">⏱ 2 min</span><p class="say"><b>🎤 Say</b> The model knows a tool only by its description. Vague descriptions get the wrong tool or no tool at all.</p><ul><li>Tool descriptions are prompts too. Everything from Topic 6 applies: be specific, say when to use it and when not to.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="Pick the tool">
+  <div class="eyebrow">Your turn</div>
+  <h2>You’re the model: which tool would you call?</h2>
+  <p class="sub">Toolbox: <code>get_motor_quote</code> · <code>search_underwriting_manual</code> · <code>issue_refund</code> · <code>send_email</code> · or no tool at all.</p>
+  <div id="pick"></div>
+  <aside class="notes"><span class="tag time">⏱ 2 min</span><p class="say"><b>🎤 Say</b> You are the model. For each request, which tool would you call, or none?</p></aside>
+</section>
+
+<section class="slide" data-title="Read vs write">
+  <div class="eyebrow">Risk</div>
+  <h2>Not all tools are equally risky</h2>
+  <p class="sub">Classify each tool by what could go wrong. This decides how much approval it needs.</p>
+  <div id="risk"></div>
+  <aside class="notes"><span class="tag time">⏱ 2 min</span><p class="say"><b>🎤 Say</b> Not all tools carry the same risk. Reading is safe, reversible changes need logging, and irreversible actions need a human to approve.</p><ul><li>Simple policy many teams use: read-only tools run freely, reversible writes are logged, and irreversible actions need a human to click Approve.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="Quick check">
+  <div class="eyebrow">Quick check</div>
+  <h2>Did it click?</h2>
+  <div id="quiz"></div>
+  <aside class="notes"><span class="tag time">⏱ 1 min</span><p class="say"><b>🎤 Say</b> Quick check.</p></aside>
+</section>
+
+<section class="slide" data-title="Takeaways">
+  <div class="eyebrow">Takeaways</div>
+  <h2>What to remember</h2>
+  <div class="cols-3" style="margin:10px 0 24px">
+    <div class="card"><b>🙋 It asks, you act</b><p>The model writes a structured tool request; your software runs it and returns the result.</p></div>
+    <div class="card"><b>📝 Descriptions are prompts</b><p>Clear names and descriptions mean the right tool gets picked.</p></div>
+    <div class="card"><b>⚠️ Mind the risk</b><p>Read-only runs freely; irreversible actions need approval.</p></div>
+  </div>
+  <div class="row"><a class="btn primary" data-nexttopic>Next →</a></div>
+  <aside class="notes"><span class="tag time">⏱ 30 sec</span><p class="say"><b>🎤 Say</b> That is the idea. Next, the actual definitions and messages, and how to design tools well.</p><ul><li>Bridge: “That’s the idea. Next, let’s open the hood: the actual definitions and messages, and how to design tools well.”</li></ul></aside>
+</section>
+
+<script src="../assets/course.js?v=3.2"></script>
+<script src="../assets/widgets.js?v=3.2"></script>
+<script>
+const { $, $$ } = W;
+
+W.clickInfo($("#idea"), [
+  { icon: "🙋🏽‍♀️", title: "Customer asks", sub: "“Add Arjun (18). New price?”", c: "accent", html: "<p>A question no document can answer: it needs <b>today’s</b> rates and a calculation for <b>this</b> policy.</p>" },
+  { icon: "🧠", title: "Model requests", sub: "get_motor_quote(…)", c: "model", html: "<p>Instead of guessing ₹9,999, the model replies with a <b>structured request</b>: which tool, with which inputs. Still just text, in a strict format.</p>" },
+  { icon: "🖥️", title: "Your app runs it", sub: "calls the rating engine", c: "autonomy", html: "<p>Your code (the harness) sees the request, <b>decides whether to allow it</b>, calls the real rating engine, and gets a result.</p>" },
+  { icon: "🧮", title: "Result returns", sub: "{ annual: ₹44,750 }", c: "action", html: "<p>The result is added to the context, back on the desk.</p>" },
+  { icon: "💬", title: "Model answers", sub: "“₹44,750 a year, because…”", c: "good", html: "<p>Now it answers using real numbers. It might call more tools first, which is the start of an <b>agent loop</b> (Topic 14).</p>" },
+], { layout: "flow" });
+
+const act = (a) => $$("#actors .actor").forEach((x) => x.classList.toggle("lit", x.dataset.a === a));
+W.stepper({
+  ctrl: $("#tcCtrl"), log: $("#tcLog"), interval: 2800, onReset: () => act(null),
+  steps: [
+    { who: "Customer → app", c: "accent", html: "“What will my car premium be if I add my son Arjun, 18? Today’s price, please.”", onEnter: () => act("user") },
+    { who: "App → model", c: "autonomy", html: "Sends the question <b>plus the list of available tools</b>:<div class='json'>tools: [{ name: \"get_motor_quote\",\n  description: \"Live premium from HarborShield's rating engine…\",\n  input: { policy_id, add_driver: { age, licence_years } } }]</div>", onEnter: () => act("app") },
+    { who: "Model → app", c: "model", html: "Doesn’t answer yet. Asks for the tool:<div class='json'>tool_use: get_motor_quote\ninput: { \"policy_id\": \"MTR-55120\",\n         \"add_driver\": { \"age\": 18, \"licence_years\": 0 } }</div>", onEnter: () => act("model") },
+    { who: "App → rating engine", c: "action", html: "Checks it’s allowed (a quote is read-only: yes), then calls the real rating engine.", onEnter: () => act("api") },
+    { who: "Rating engine → app", c: "action", html: "<div class='json'>{ \"current_annual\": 18400, \"new_annual\": 44750,\n  \"currency\": \"INR\",\n  \"factors\": [\"new driver aged 18: +151%\", \"5-year no-claims: −12%\"] }</div>", onEnter: () => act("api") },
+    { who: "App → model", c: "autonomy", html: "Adds the <b>tool result</b> to the conversation and asks the model to continue.", onEnter: () => act("app") },
+    { who: "Model → customer", c: "good", html: "“Adding Arjun would take your premium from <b>₹18,400 to ₹44,750 a year</b>, mainly because he’s a new driver. Your 5-year no-claims discount still applies. Want me to compare third-party cover too? 🚗”", onEnter: () => act("model") },
+  ],
+});
+
+W.tabs($("#descTabs"), [
+  { label: "😵 Vague descriptions", html: `<div class="split">
+     <pre class="code">search:  "Searches."
+lookup:  "Looks things up."</pre>
+     <div class="stack-v"><div class="bubble sys" style="max-width:100%;text-align:left">🧠 Model picks <code>search("Dana Lee email")</code>, which searches the public help centre.</div>
+       <div class="bubble ai" style="max-width:100%;border-color:var(--bad)">I couldn’t find Dana Lee. Try contacting support. 🤷</div>
+       <div class="callout" style="--c:var(--bad)">❌ Both names were meaningless, so it guessed wrong.</div></div></div>` },
+  { label: "✨ Clear descriptions", html: `<div class="split">
+     <pre class="code">search_help_articles:
+  "Search PUBLIC help-centre articles.
+   Not for customer data."
+
+find_customer:
+  "Look up a customer by name or email.
+   Returns contact details and plan."</pre>
+     <div class="stack-v"><div class="bubble sys" style="max-width:100%;text-align:left">🧠 Model picks <code>find_customer(name: "Dana Lee")</code></div>
+       <div class="bubble ai" style="max-width:100%">Dana Lee’s email is dana.lee@example.com (Business plan).</div>
+       <div class="callout" style="--c:var(--good)">✅ Clear names, clear “use for / not for”, so it picked the right tool.</div></div></div>` },
+]);
+
+const TOOLS = [{ label: "get_motor_quote", c: "action" }, { label: "search_underwriting_manual", c: "knowledge" }, { label: "issue_refund", c: "trust" }, { label: "send_email", c: "autonomy" }, { label: "No tool", c: "muted" }];
+W.classify($("#pick"), [
+  { text: "“How much more if I switch to comprehensive cover?”", a: 0, why: "A live price for this policy: <code>get_motor_quote</code>." },
+  { text: "“Do you cover thatched roofs?”", a: 1, why: "A rule in the underwriting manual: RAG search (Topic 8)." },
+  { text: "“I was charged twice. Please give me my money back.”", a: 2, why: "<code>issue_refund</code>. Money moving is irreversible, so it should need approval." },
+  { text: "“Email me that quote.”", a: 3, why: "<code>send_email</code>, to the customer’s verified address only." },
+  { text: "“Write me a poem about renewals.”", a: 4, why: "Pure text generation. No tool needed." },
+], TOOLS, { cols: 2 });
+
+W.classify($("#risk"), [
+  { text: "🔍 search_documents", a: 0, why: "Only reads. Low risk (just make sure it respects permissions)." },
+  { text: "📅 read_calendar", a: 0, why: "Read-only." },
+  { text: "📝 create_draft_email", a: 1, why: "Creates something, but a draft can be deleted. Nothing has left the building." },
+  { text: "🗓️ create_calendar_event", a: 1, why: "A change, but it’s easy to undo." },
+  { text: "📤 send_email_to_customer", a: 2, why: "Once it’s sent, it can’t be unsent. Needs approval, or strict rules." },
+  { text: "🗑️ delete_files", a: 2, why: "Irreversible. Human approval, or don’t give the agent this tool at all." },
+  { text: "💸 transfer_payment", a: 2, why: "Irreversible and financial. Always a human decision." },
+], [{ label: "🟢 Read-only", c: "good" }, { label: "🟡 Reversible change", c: "warn" }, { label: "🔴 Irreversible", c: "bad" }], { cols: 2 });
+
+W.quiz($("#quiz"), [
+  { q: "Who actually executes a tool call?", o: ["The model", "Your application / harness", "The user", "The internet"], a: 1, e: "The model only <i>requests</i>; your software decides and executes." },
+  { q: "How does the model know which tools exist?", o: ["It was trained on your APIs", "Tool names and descriptions are sent with each request", "It searches for them", "It guesses"], a: 1, e: "Tool definitions are part of the context, which is why descriptions matter." },
+  { q: "Which tool most needs a human approval step?", o: ["search_help_articles", "read_calendar", "transfer_payment", "get_order_status"], a: 2, e: "Irreversible, high-impact actions need a human in the loop." },
+]);
+
+/* ===== v3 story ===== */
+W.BTS.quote = {
+  title: "A live quote: every message, in full",
+  sub: "Two round trips to the model. Notice the model never touches the rating engine; your app does.",
+  parts: [
+    { label: "① Request: question + tool definitions", c: "accent", json: `{
+  "model": "claude-sonnet-5-5",
+  "max_tokens": 800,
+  "system": "You are HarborShield's Quote Assistant. Never estimate prices yourself:
+             always use get_motor_quote.",
+  "tools": [{
+    "name": "get_motor_quote",
+    "description": "Get a live annual motor premium from HarborShield's rating engine.
+                    Use for ANY question about price. Read-only: it does not change the policy.",
+    "input_schema": {
+      "type": "object",
+      "properties": {
+        "policy_id":  { "type": "string", "description": "Format MTR-12345" },
+        "add_driver": { "type": "object", "properties": {
+                         "age": { "type": "integer" }, "licence_years": { "type": "integer" } } },
+        "cover":      { "type": "string", "enum": ["third_party", "comprehensive"] }
+      },
+      "required": ["policy_id"]
+    }
+  }],
+  "messages": [{ "role": "user",
+    "content": "Policy MTR-55120. What will my premium be if I add my son Arjun, 18? Today's price please." }]
+}` },
+    { label: "② Response: the model asks for the tool", c: "model", json: `{
+  "stop_reason": "tool_use",        // "I'm waiting for a result"
+  "content": [
+    { "type": "text", "text": "Let me get today's price from the rating engine." },
+    { "type": "tool_use", "id": "toolu_01A",
+      "name": "get_motor_quote",
+      "input": { "policy_id": "MTR-55120",
+                 "add_driver": { "age": 18, "licence_years": 0 },
+                 "cover": "comprehensive" } }
+  ]
+}` },
+    { label: "③ Your app calls the rating engine", c: "action", json: `POST https://rating.harborshield.internal/v3/motor/quote
+{ "policy": "MTR-55120", "drivers_add": [{ "age": 18, "years_licensed": 0 }] }
+→ { "current_annual": 18400, "new_annual": 44750, "currency": "INR",
+    "factors": ["new driver aged 18: +151%", "5-year no-claims: -12%"],
+    "rated_at": "2026-11-12T14:03:11+05:30" }` },
+    { label: "④ Request: the whole conversation again + the tool_result", c: "accent", json: `"messages": [
+  { "role": "user", "content": "Policy MTR-55120. What will my premium be if I add..." },
+  { "role": "assistant", "content": [ ...the tool_use block from ②... ] },
+  { "role": "user", "content": [
+    { "type": "tool_result", "tool_use_id": "toolu_01A",
+      "content": "{\\"current_annual\\":18400,\\"new_annual\\":44750,\\"currency\\":\\"INR\\",...}" }
+  ]}
+]` },
+    { label: "⑤ Final answer", c: "good", json: `{
+  "stop_reason": "end_turn",
+  "content": [{ "type": "text",
+    "text": "Adding Arjun would take your premium from ₹18,400 to ₹44,750 a year,
+             mainly because he's a new driver. Your 5-year no-claims discount still applies..." }]
+}`, note: "The tool_result goes back in a “user” message, matched by tool_use_id. The model is stateless, so request ④ re-sends everything." },
+  ],
+};
+</script>
+<script>W.seq(document.getElementById("seqTool"), {"actors": [{"id": "user", "name": "Customer", "icon": "🙋", "c": "accent"}, {"id": "app", "name": "Your app (harness)", "icon": "🖥️", "c": "autonomy"}, {"id": "model", "name": "Model", "icon": "🧠", "c": "model"}, {"id": "api", "name": "Rating engine", "icon": "🧮", "c": "action"}], "steps": [{"from": "user", "to": "app", "label": "“Premium if I add my son, 18?”"}, {"from": "app", "to": "model", "label": "Request 1: question + tool list", "note": "The app sends the tool definitions with every request. That is how the model knows the tool exists.", "code": "{ \"tools\": [{ \"name\": \"get_motor_quote\",\n    \"description\": \"Live premium for a motor policy, optionally with changes\",\n    \"input_schema\": { \"type\": \"object\",\n      \"properties\": { \"policy_id\": {\"type\":\"string\"}, \"add_driver\": {\"type\":\"object\"} },\n      \"required\": [\"policy_id\"] } }],\n  \"messages\": [{ \"role\": \"user\", \"content\": \"Premium if I add my son, 18?\" }] }"}, {"from": "model", "to": "app", "label": "tool_use: get_motor_quote", "note": "The model does not run anything. It replies with a structured request and stops.", "code": "{ \"stop_reason\": \"tool_use\",\n  \"content\": [{ \"type\": \"tool_use\", \"id\": \"toolu_01\",\n    \"name\": \"get_motor_quote\",\n    \"input\": { \"policy_id\": \"MTR-55120\", \"add_driver\": { \"age\": 18, \"licence_years\": 0 } } }] }", "ret": true}, {"from": "app", "to": "app", "label": "Validate + check permissions", "note": "Your code decides whether to run it: is this customer allowed to see this policy? Are the inputs valid?"}, {"from": "app", "to": "api", "label": "POST /quote", "note": "An ordinary API call from your code to your system.", "code": "POST /rating/v3/quote\n{ \"policy\": \"MTR-55120\", \"drivers\": [{ \"age\": 18, \"years_licensed\": 0 }] }"}, {"from": "api", "to": "app", "label": "{ new_annual: 44750 }", "code": "{ \"current_annual\": 18400, \"new_annual\": 44750, \"currency\": \"INR\" }", "ret": true}, {"from": "app", "to": "model", "label": "Request 2: history + tool_result", "note": "The app sends the whole conversation again, now with the result attached.", "code": "{ \"role\": \"user\", \"content\": [{ \"type\": \"tool_result\", \"tool_use_id\": \"toolu_01\",\n    \"content\": \"{\\\"current_annual\\\":18400,\\\"new_annual\\\":44750,\\\"currency\\\":\\\"INR\\\"}\" }] }"}, {"from": "model", "to": "app", "label": "end_turn: plain-English answer", "code": "{ \"stop_reason\": \"end_turn\",\n  \"content\": [{ \"type\": \"text\", \"text\": \"Adding an 18-year-old driver would take your premium from ₹18,400 to ₹44,750 a year...\" }] }", "ret": true}, {"from": "app", "to": "user", "label": "“₹18,400 → ₹44,750 a year”", "ret": true}], "frames": []});</script>
+<script src="../assets/deck.js?v=3.2"></script>
+</body>
+</html>

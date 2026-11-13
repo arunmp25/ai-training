@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Topic 11 · Agent harnesses</title>
+<link rel="stylesheet" href="../assets/style.css">
+<link rel="stylesheet" href="../assets/widgets.css">
+<style>
+  .feat { display: flex; align-items: center; gap: 12px; padding: 10px 14px; border-radius: 12px; background: var(--card); border: 1px solid var(--line); margin-bottom: 8px; }
+  .feat b { flex: 1; } .feat small { display: block; color: var(--muted); font-weight: 500; }
+  .outcome { font-size: 15px; }
+  .outcome li { margin: 6px 0; }
+  .score { font-size: 40px; font-weight: 800; }
+  .land { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; }
+  .hcard { --c: var(--accent); padding: 10px 12px; border-radius: 12px; background: var(--card); border: 1px solid var(--line); border-top: 4px solid var(--c); }
+  .hcard b { font-size: 16px; } .hcard .who { font-size: 12px; color: var(--muted); font-weight: 700; } .hcard p { font-size: 12.5px; margin: 4px 0 0; line-height: 1.35; }
+  .engine-car { display: grid; grid-template-columns: 1fr auto 1fr; gap: 18px; align-items: center; margin: 10px 0 18px; }
+  .engine-car .card { text-align: center; } .engine-car .e { font-size: 50px; }
+</style>
+</head>
+<body class="deck" data-id="11">
+
+<section class="slide title-slide" data-title="Welcome">
+  <div class="big-emoji">🚗</div>
+  <div class="eyebrow">Topic 11</div>
+  <h1>Agent harnesses: the car around the engine</h1>
+  <p class="sub">The model decides. The <b>harness</b> does everything else: runs the loop, executes tools, manages context and memory, enforces permissions. It’s where agents become reliable.</p>
+  <aside class="notes"><span class="tag time">⏱ 30 sec</span><ul><li>The big idea of Day 3: <b>same model + different harness = very different results.</b></li></ul></aside>
+</section>
+
+<section class="slide" data-title="Engine vs car">
+  <div class="eyebrow">The distinction</div>
+  <h2>Model vs harness</h2>
+  <div class="engine-car">
+    <div class="card"><div class="e">🧠</div><h3>The model</h3><p>Reads the context, decides the next step, writes text or a tool request.</p><p class="muted">Claude, GPT, Gemini…</p></div>
+    <div style="font-size:30px">+</div>
+    <div class="card"><div class="e">🚗</div><h3>The harness</h3><p>Everything around it: the loop, tools, files, memory, permissions, interface.</p><p class="muted">Claude Code, Codex, Cursor, Copilot…</p></div>
+  </div>
+  <div class="callout">An everyday example: <b>Claude Code</b> is a harness. It wraps a Claude model with a terminal interface, file and shell tools, an agent loop, project instructions, permission prompts, hooks, skills and subagents.</div>
+  <aside class="notes"><span class="tag time">⏱ 1 min</span></aside>
+</section>
+
+<section class="slide" data-title="Same model, different harness">
+  <div class="eyebrow">Try it</div>
+  <h2>Same model. Add harness features one by one.</h2>
+  <p class="sub">Task: <b>“The login test is failing. Fix it.”</b> Switch features on and watch the outcome change.</p>
+  <div class="split wide-right">
+    <div id="feats"></div>
+    <div class="card"><div class="row"><div class="grow"><div class="label">Outcome</div></div><div class="score" id="hScore"></div></div><ul class="outcome" id="hOut"></ul></div>
+  </div>
+  <aside class="notes"><span class="tag time">⏱ 3 min</span><ul><li>Everything off is just “chat”: you copy, paste and test yourself.</li><li>Switch on the loop and tools: now it actually fixes and verifies. Then instructions, context management and permissions make it fit your team and keep it safe.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="Anatomy of a harness">
+  <div class="eyebrow">What’s inside</div>
+  <h2>Anatomy of an agent harness</h2>
+  <p class="sub">Ten parts you’ll find in most harnesses. Click each one. Examples are from Claude Code, and other harnesses have equivalents.</p>
+  <div id="anat"></div>
+  <aside class="notes"><span class="tag time">⏱ 4 min</span><ul><li>The last four (instructions, skills, subagents, hooks) are the <b>customisation</b> points. They get their own topic next.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="The landscape">
+  <div class="eyebrow">The landscape</div>
+  <h2>Many harnesses, five families</h2>
+  <p class="sub">Filter by family. <span class="muted">This space changes monthly; names and features are a snapshot and worth re-checking before you present.</span></p>
+  <div id="landTabs"></div>
+  <aside class="notes"><span class="tag time">⏱ 3 min</span><ul><li>Don’t try to cover every product. The point is the <b>families</b>: where it runs and who it’s for.</li><li>Ask: “Which of these do we already have licences for?”</li></ul></aside>
+</section>
+
+<section class="slide" data-title="Comparing families">
+  <div class="eyebrow">Compare</div>
+  <h2>How the families differ</h2>
+  <table class="cmp">
+    <tr><th>Family</th><th>Where it runs</th><th>Best for</th><th>Autonomy</th><th>Customisation</th></tr>
+    <tr><td><b>⌨️ Terminal agents</b></td><td>Your terminal, on your machine</td><td>Developers, multi-file changes, scripting, automation</td><td>High (with permission prompts)</td><td>Very high: instruction files, skills, subagents, hooks, MCP</td></tr>
+    <tr><td><b>🧑‍💻 IDE agents</b></td><td>Inside the code editor</td><td>Developers who want inline help plus an agent mode</td><td>Medium to high</td><td>High: rules files, MCP</td></tr>
+    <tr><td><b>☁️ Cloud / background</b></td><td>Vendor sandbox in the cloud</td><td>Hand off a task, get a pull request back later</td><td>High, sandboxed</td><td>Medium: repo instructions, environment setup</td></tr>
+    <tr><td><b>🖥️ Desktop & general</b></td><td>Chat or desktop apps</td><td>Everyone: documents, research, email, spreadsheets</td><td>Low to medium</td><td>Medium: projects, connectors (MCP), skills</td></tr>
+    <tr><td><b>🧱 SDKs & frameworks</b></td><td>Inside your own product</td><td>Building your own agent for customers or internal use</td><td>Whatever you design</td><td>Total: you build the harness</td></tr>
+  </table>
+  <aside class="notes"><span class="tag time">⏱ 2 min</span></aside>
+</section>
+
+<section class="slide" data-title="A harness at work">
+  <div class="eyebrow">Behind the scenes</div>
+  <h2>A coding harness fixing a bug, step by step</h2>
+  <p class="sub">Every step is a harness feature at work. Watch the chips on the right.</p>
+  <div class="split wide-right">
+    <div class="stack-v"><div id="walkCtrl"></div><div class="label">Harness features used</div><div class="pill-row" id="walkFeat"></div></div>
+    <div id="walkLog" style="max-height:440px"></div>
+  </div>
+  <aside class="notes"><span class="tag time">⏱ 3 min</span><ul><li>If you can, follow this with a <b>live demo</b> of a real harness doing a small task, pointing out each feature as it appears.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="Which harness?">
+  <div class="eyebrow">Your turn</div>
+  <h2>Which family fits?</h2>
+  <div id="pick"></div>
+  <aside class="notes"><span class="tag time">⏱ 2 min</span></aside>
+</section>
+
+<section class="slide" data-title="Quick check">
+  <div class="eyebrow">Quick check</div>
+  <h2>Did it click?</h2>
+  <div id="quiz"></div>
+  <aside class="notes"><span class="tag time">⏱ 1 min</span></aside>
+</section>
+
+<section class="slide" data-title="Takeaways">
+  <div class="eyebrow">Takeaways</div>
+  <h2>What to remember</h2>
+  <div class="cols-3" style="margin:10px 0 24px">
+    <div class="card"><b>🚗 Harness = the car</b><p>Loop, tools, context, memory, permissions, interface. The model is only the engine.</p></div>
+    <div class="card"><b>🗺️ Five families</b><p>Terminal, IDE, cloud, desktop, SDK. Pick by who uses it and where.</p></div>
+    <div class="card"><b>🔧 Make it yours</b><p>Harnesses are customisable. That’s the next topic.</p></div>
+  </div>
+  <div class="row"><a class="btn primary" data-nexttopic>Next →</a></div>
+  <aside class="notes"><span class="tag time">⏱ 30 sec</span></aside>
+</section>
+
+<script src="../assets/course.js"></script>
+<script src="../assets/widgets.js"></script>
+<script>
+const { $, $$, cv } = W;
+
+/* ---- same model, different harness ---- */
+const FEATS = [
+  { k: "loop", n: "🔁 Agent loop", d: "keeps going until done" },
+  { k: "tools", n: "🔧 File and terminal tools", d: "read, edit, run commands" },
+  { k: "instr", n: "📌 Project instructions", d: "e.g. CLAUDE.md / AGENTS.md" },
+  { k: "ctx", n: "🗜️ Context management", d: "compaction, subagents" },
+  { k: "perm", n: "🔐 Permissions", d: "ask before risky actions" },
+];
+const fon = new Set();
+function renderFeats() {
+  $("#feats").innerHTML = FEATS.map((f) => `<div class="feat"><b>${f.n}<small>${f.d}</small></b><span class="sw" data-k="${f.k}"></span></div>`).join("");
+  $$("#feats .sw").forEach((el) => W.switch(el, fon.has(el.dataset.k), (v) => { v ? fon.add(el.dataset.k) : fon.delete(el.dataset.k); renderOut(); }));
+  renderOut();
+}
+function renderOut() {
+  const L = fon.has("loop"), T = fon.has("tools");
+  const out = [];
+  let s = 1;
+  if (!T && !L) out.push("💬 Explains what <i>might</i> be wrong and suggests code in the chat.", "👤 <b>You</b> copy, paste, run the tests and report back. Several rounds.");
+  else if (T && !L) { out.push("📂 Reads one file and proposes an edit…", "⏹️ …then stops. It never runs the tests, so you don’t know if it worked."); s = 2; }
+  else if (!T && L) { out.push("🔁 Wants to iterate, but has no hands: it can only keep talking.", "👤 Still you doing all the work."); s = 1; }
+  else { out.push("🔁 Runs the tests, reads the error, finds the bug, edits, <b>re-runs until green</b>. ✅"); s = 3; }
+  if (fon.has("instr")) { out.push(T ? "📌 Uses <b>your</b> conventions: pnpm, your test command, your code style." : "📌 Knows your conventions, but can’t act on them yet."); if (T) s++; }
+  else if (T) out.push("<span style='color:var(--warn)'>⚠ Guesses your setup: runs <code>npm test</code> instead of your <code>pnpm test:unit</code>.</span>");
+  if (fon.has("ctx")) { out.push("🗜️ Big codebase? Summarises and delegates, so it doesn’t lose track."); if (T && L) s++; }
+  else if (T && L) out.push("<span style='color:var(--warn)'>⚠ On a big repo the desk fills up and it forgets earlier findings.</span>");
+  if (fon.has("perm")) { out.push("🔐 Asks before <code>git push</code>; can’t touch production config."); s++; }
+  else if (T) out.push("<span style='color:var(--bad)'>⚠ Nothing stops it running risky commands.</span>");
+  $("#hOut").innerHTML = out.map((o) => `<li>${o}</li>`).join("");
+  const stars = Math.min(5, s);
+  $("#hScore").textContent = "★".repeat(stars) + "☆".repeat(5 - stars);
+  $("#hScore").style.color = stars >= 5 ? "var(--good)" : stars >= 3 ? "var(--warn)" : "var(--muted)";
+}
+renderFeats();
+
+/* ---- anatomy ---- */
+W.clickInfo($("#anat"), [
+  { icon: "🔁", title: "Agent loop", c: "autonomy", html: "<p>Calls the model, executes the requested tool, feeds the result back, and repeats until the model says it’s done (or a limit is hit).</p><p class='muted'>Claude Code: runs automatically as you chat; you see each step.</p>" },
+  { icon: "🔧", title: "Tool executor", c: "action", html: "<p>The built-in tools: read and edit files, search code, run shell commands, fetch web pages. Plus any from MCP.</p><p class='muted'>Claude Code: Read, Edit, Write, Grep, Glob, Bash, WebFetch…</p>" },
+  { icon: "🗜️", title: "Context manager", c: "context", html: "<p>Decides what stays on the desk. Summarises (compacts) old history when the window fills, and trims huge tool outputs.</p><p class='muted'>Claude Code: automatic compaction, plus a <code>/compact</code> command.</p>" },
+  { icon: "📌", title: "Instructions & memory", c: "autonomy", html: "<p>Loads standing instructions every session: project conventions, commands, do’s and don’ts.</p><p class='muted'>Claude Code: <code>CLAUDE.md</code> files. Many other tools read <code>AGENTS.md</code>.</p>" },
+  { icon: "🔐", title: "Permissions & sandbox", c: "trust", html: "<p>What may run without asking, what needs approval, what’s blocked. Sandboxing limits what commands can touch.</p><p class='muted'>Claude Code: permission modes and allow/deny rules in <code>settings.json</code>.</p>" },
+  { icon: "🔌", title: "MCP connections", c: "action", html: "<p>Plugs in external systems as extra tools: GitHub, Jira, databases, docs.</p><p class='muted'>Claude Code: <code>.mcp.json</code> or the <code>claude mcp add</code> command.</p>" },
+  { icon: "📚", title: "Skills", c: "knowledge", html: "<p>Packaged expertise (instructions + files) that loads only when a task needs it.</p><p class='muted'>Claude Code: <code>.claude/skills/&lt;name&gt;/SKILL.md</code>.</p>" },
+  { icon: "👥", title: "Subagents", c: "model", html: "<p>Helper agents with their own fresh context, for research or specialised jobs. Only their summary comes back.</p><p class='muted'>Claude Code: <code>.claude/agents/&lt;name&gt;.md</code>.</p>" },
+  { icon: "🪝", title: "Hooks", c: "warn", html: "<p>Scripts that <b>always</b> run on events (before a tool runs, after an edit, at session start). Deterministic: not up to the model.</p><p class='muted'>Claude Code: <code>hooks</code> in <code>settings.json</code>.</p>" },
+  { icon: "🖥️", title: "Interface", c: "accent", html: "<p>Where you interact: terminal, IDE panel, desktop app, web, or headless API for automation.</p><p class='muted'>Claude Code: CLI, IDE extensions, desktop and web apps, Agent SDK.</p>" },
+], { cols: 5 });
+
+/* ---- landscape ---- */
+const LAND = {
+  term: { n: "⌨️ Terminal", c: "autonomy", items: [["Claude Code", "Anthropic", "Agentic coding in the terminal; deep customisation (CLAUDE.md, skills, subagents, hooks, plugins, MCP)."], ["Codex CLI", "OpenAI", "OpenAI’s open-source terminal coding agent; reads AGENTS.md."], ["Gemini CLI", "Google", "Google’s open-source terminal agent for Gemini models."], ["Aider", "Open source", "Long-standing terminal pair-programmer; works with many models."]] },
+  ide: { n: "🧑‍💻 IDE", c: "model", items: [["Cursor", "Anysphere", "AI-first code editor with an agent mode, rules files and MCP."], ["GitHub Copilot", "GitHub / Microsoft", "Inline suggestions, chat, and agent mode in VS Code and other IDEs."], ["Windsurf", "—", "Agentic IDE with its own agent mode."], ["Cline / Roo Code", "Open source", "VS Code extensions that run an agent loop with your choice of model."]] },
+  cloud: { n: "☁️ Cloud / background", c: "knowledge", items: [["Claude Code on the web", "Anthropic", "Run coding tasks in a cloud sandbox from the browser or phone."], ["Codex (cloud)", "OpenAI", "Delegate tasks to cloud sandboxes and get pull requests back."], ["Copilot coding agent", "GitHub", "Assign an issue to Copilot; it works in the background and opens a PR."], ["Devin", "Cognition", "An autonomous “AI software engineer” working in its own environment."]] },
+  desk: { n: "🖥️ Desktop & general", c: "context", items: [["Claude apps", "Anthropic", "Desktop, web and mobile, with projects, connectors (MCP), skills and file creation."], ["ChatGPT", "OpenAI", "Chat assistant with agent capabilities, connectors and custom GPTs."], ["Microsoft 365 Copilot", "Microsoft", "AI across Word, Excel, Outlook and Teams, using your work data."], ["Gemini in Workspace", "Google", "AI across Gmail, Docs and Sheets."]] },
+  sdk: { n: "🧱 SDKs & frameworks", c: "action", items: [["Claude Agent SDK", "Anthropic", "The harness behind Claude Code, as a library for building your own agents."], ["OpenAI Agents SDK", "OpenAI", "Library for building agents with tools, handoffs and guardrails."], ["Google ADK", "Google", "Agent Development Kit for building agents on Gemini and other models."], ["LangGraph / CrewAI", "Open source", "Frameworks for orchestrating multi-step, multi-agent workflows."]] },
+};
+const land = (keys) => `<div class="land">${keys.flatMap((k) => LAND[k].items.map(([n, who, d]) => `<div class="hcard" style="--c:${cv(LAND[k].c)}"><div class="who">${LAND[k].n} · ${who}</div><b>${n}</b><p>${d}</p></div>`)).join("")}</div>`;
+W.tabs($("#landTabs"), [{ label: "All", html: land(Object.keys(LAND)) }, ...Object.entries(LAND).map(([k, v]) => ({ label: v.n, html: land([k]) }))]);
+
+/* ---- walkthrough ---- */
+const feat = (t, c) => { if (![...$$("#walkFeat .chip")].some((x) => x.textContent === t)) $("#walkFeat").insertAdjacentHTML("beforeend", `<span class="chip fade-in" style="--c:${cv(c)}">${t}</span>`); };
+W.stepper({
+  ctrl: $("#walkCtrl"), log: $("#walkLog"), interval: 2600, onReset: () => ($("#walkFeat").innerHTML = ""),
+  steps: [
+    { who: "Session start", c: "autonomy", html: "Loads <code>CLAUDE.md</code>: “Use pnpm. Run <code>pnpm test:unit</code>. Never edit generated files.”", onEnter: () => feat("📌 Instructions", "autonomy") },
+    { raw: 1, html: `<div class="bubble user">The login test is failing. Fix it.</div>` },
+    { who: "Plan", c: "model", html: "Creates a to-do list: reproduce → find cause → fix → verify.", onEnter: () => feat("🔁 Agent loop", "autonomy") },
+    { who: "Tool: Bash", c: "action", html: "Runs <code>pnpm test:unit login</code> → ❌ <i>expected 200, got 401</i>", onEnter: () => feat("🔧 Tools", "action") },
+    { who: "Tool: Grep + Read", c: "action", html: "Searches for the auth middleware and reads <code>auth.ts</code>. Spots that the token expiry check uses seconds vs milliseconds." },
+    { who: "Tool: Edit", c: "action", html: "Fixes the comparison in <code>auth.ts</code>." },
+    { who: "Hook: after edit", c: "warn", html: "A <b>PostToolUse hook</b> automatically runs the formatter on the edited file. The model didn’t choose this; it always happens.", onEnter: () => feat("🪝 Hooks", "warn") },
+    { who: "Tool: Bash", c: "action", html: "Re-runs the tests → ✅ all 48 passing." },
+    { who: "Permission check", c: "trust", html: "Wants to <code>git push</code>. The harness pauses: <i>“Allow git push?”</i> You approve.", onEnter: () => feat("🔐 Permissions", "trust") },
+    { raw: 1, html: `<div class="bubble ai">Fixed: the token expiry was compared in seconds against milliseconds. Tests pass. Pushed to <code>fix/login-expiry</code>.</div>` },
+  ],
+});
+
+W.classify($("#pick"), [
+  { text: "Developers want an agent that works across the whole repo from the command line and can be scripted in CI.", a: 0, why: "Terminal agents shine for multi-file work and automation." },
+  { text: "The team lives in VS Code and wants suggestions as they type, plus an agent when needed.", a: 1, why: "An IDE agent keeps everything in the editor." },
+  { text: "Assign 20 small backlog tickets on Friday and review pull requests on Monday.", a: 2, why: "Cloud / background agents work unattended in sandboxes." },
+  { text: "HR and finance staff want help with documents, spreadsheets and email.", a: 3, why: "Desktop and general assistants, with connectors to company tools." },
+  { text: "We’re adding an AI agent to our customer-facing product.", a: 4, why: "Build on an SDK so you control the harness." },
+], [{ label: "⌨️ Terminal", c: "autonomy" }, { label: "🧑‍💻 IDE", c: "model" }, { label: "☁️ Cloud", c: "knowledge" }, { label: "🖥️ Desktop", c: "context" }, { label: "🧱 SDK", c: "action" }]);
+
+W.quiz($("#quiz"), [
+  { q: "Which of these is the job of the harness, not the model?", o: ["Deciding which tool to call", "Actually executing the tool and asking for permission", "Writing the final answer", "Understanding the question"], a: 1, e: "The model decides; the harness executes, enforces and manages." },
+  { q: "Two teams use the same model, but one gets far better results. The most likely reason?", o: ["Luck", "A better harness setup: instructions, tools, context management", "Typing faster", "A different keyboard"], a: 1, e: "Same engine, different car." },
+  { q: "Which harness family would you use to build an agent into your own app?", o: ["IDE agent", "SDK / framework", "Desktop app", "Terminal agent"], a: 1, e: "SDKs let you build and control your own harness." },
+]);
+</script>
+<script src="../assets/deck.js"></script>
+</body>
+</html>
