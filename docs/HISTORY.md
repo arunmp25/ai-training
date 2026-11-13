@@ -1,0 +1,59 @@
+# Project history
+
+What has been built so far, why, and the feedback that shaped it. Newest at the bottom. Read this before changing content or tone.
+
+## Goal
+AI-architect style training for a whole team on concepts (RAG, tools, MCP, agents, the agent harness), not code. Delivered as interactive HTML: one file per topic, plus an index. Presented live on a projector with a clicker, and usable by people on their own laptops.
+
+## Version 1 (archived, `v1/`)
+- Topic decks 00–13 and a “full journey” deck (`b1`).
+- Two delivery options: **A** builds up layer by layer; **B** shows the big picture first. The course page compares them.
+- Timings shown on every slide. Lighter RAG and tools content.
+
+## Version 2 (stable, `v2/`)
+- Option A only.
+- Timings hidden by default (D key to show).
+- RAG split into three topics: RAG (07), embeddings and similarity (07b), vector databases and retrieval (07c): chunking and overlap, cosine similarity by hand, HNSW, filters, hybrid search, re-ranking, retrieval metrics.
+- Tools split into two: tools (08) and a deep dive (08b): schemas, the message exchange, parallel calls, tool choice, errors, structured output, tool design.
+- User verdict: “good but becomes dry very easily”.
+
+## Version 3 (latest, `v3/`)
+### The request
+- Start session 1 by decoding AI jargon and layering it out.
+- Give it a story line the audience can follow, with humour. Agents like Claude Code and GitHub Copilot as one line; building with APIs as another.
+- After prompts, someone asks “can I send a 20,000-page document in the prompt?”, which leads into RAG.
+- A funny RAG example: keyword search for things belonging to the King misses the Queen’s items; vector search finds them.
+- Someone asks how to get real-time insurance rating data, which leads into tools and a rating engine.
+- Show the JSON “behind the scenes” wherever it applies. Reduce topics if needed.
+- Create a new version first, then plan before building.
+
+### Decisions
+- v3 started as a copy of v2. The user asked whether content had been lost; the rule since then is that **every v2 slide is kept**.
+- Built a story version with a cast of characters, dialogue scenes, cliffhangers and Day 1/2/3 labels.
+
+### Feedback: “keep it professional, don’t make it dramatic”
+The user asked for relatable or funny references only, no Day labels (sessions only), and no characters. So:
+- Removed the cast, all dialogue scenes and storyline badges. Character names became “the customer”, “your app”, “the assistant”.
+- Structure is Session 1–3 with Topics 1–17 (numbers shown to the audience; file ids unchanged).
+- Kept short neutral example slides: the “[Your Name]” email (T2), same question two answers and tokens sold by the slice (T3), who is “he” (T4), the forgetful chat (T5), the 20,000-page question (end of T6) and cost calculator (T7), the royal inventory search with the King prawn curry and king − man + woman (T9), POL-88812 vs POL-88821 (T10), the ₹9,999 stale-rate answer that leads into tools (end of T10), four apps needing one rating engine and the drawer of chargers that leads into MCP (end of T12), Ferrari or tractor (T15), the overnight run with `pricing_v2_final_FINAL` (T16), the pirate claim prompt injection (T17), and a final recap matching each example to its concept.
+- 🎬 Behind the scenes drawers with real JSON on 11 slides.
+
+### Feedback: “people are technical, add sequence diagrams for multi-step processes”
+- Added `W.seq`, a step-through SVG sequence diagram with a side panel that shows the real message for each step.
+- Ten diagrams: pressing Enter (T2), re-sent history (T5), RAG indexing and query (T8), hybrid search and re-ranking (T10), tool call (T11), parallel calls and a failure (T12), MCP session (T13), agent loop (T14), permissions and hooks (T16), injection defences (T17).
+
+### Feedback: “the MCP diagram was not displaying”, “add speaker notes that can be hidden”, “zip version 3”
+- Diagrams started blank until → was pressed, which looked broken. They now show the whole flow faintly from the start. Added a minimum height and `?v=3.2` cache-busting on asset links.
+- Added a spoken 🎤 Say talk track to all 187 slides, above the existing tips. Notes are hidden by default; N or the 📝 Notes button toggles them and the choice is remembered.
+- Fixed 57 cross-references that still used old v2 topic numbers, and a leftover “Three days” slide title.
+- Packaged `AI-Training-v3.zip` (v3 only, self-contained).
+
+### Git
+- Repository initialised and pushed to https://github.com/arunmp25/ai-training on `main` (first commit 2026-11-13).
+
+## Known loose ends
+- Three v2 slides still scroll slightly at 1280×720: Topic 15 “The landscape” and “Which harness?”, Topic 16 “Which one?”. A few others overflow by a few pixels; the jargon dictionary scrolls by design.
+- Four sequence diagrams scroll inside their box at projector size (RAG, tool retry, MCP, agent loop). The user was offered tighter rows; no answer yet.
+- HarborShield, Mrs Patel’s son, the King’s horse Biscuit and a sign-off name in a Topic 2 makeover remain in examples; the user was told and can ask for removal.
+- `W.scene`, `W.CAST`, `W.castCards` and their styles are unused leftovers from the character version.
+- Product names in Topic 15 (the harness landscape) change quickly; re-check before presenting.
