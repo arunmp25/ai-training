@@ -253,6 +253,71 @@ roles.forEach(([t, d], i) => {
 });
 s.addNotes("MCP, the Model Context Protocol, is an open standard introduced by Anthropic in late 2024 and now supported across many AI apps. Click 1: without a standard, every AI app needs a custom integration with every system. Three apps and three systems means nine integrations to build and maintain. Click 2: with MCP, each app speaks MCP once and each system gets one MCP server. Three plus three, six connectors. This is why Guidewire chose MCP for its Developer Assistant. Click 3: a server can offer tools (actions), resources (data) and prompts (templates). Tools are by far the most used. Click 4: the vocabulary. The host is the AI app or harness. Inside it, one client per server. The server is the connector. Messages are JSON-RPC 2.0, over stdio for a local server or HTTP for a remote one.");
 
+// ===================== 4b: MCP vs API, like you're five =====================
+s = content("MCP vs API, explained like you’re five", "Imagine your AI helper wants to play with lots of different toys.", "Harness and MCP");
+const TOYS = ["Toy car", "Teddy bear", "Train"], TY = [2.45, 3.3, 4.15];
+// Left: API (click 1)
+panel(s, 0.6, 1.75, 5.9, 3.85, { a: 1 });
+label(s, "API: every toy has its own special plug", 0.85, 1.85, 5.4, 0.4, { size: 15, bold: true, a: 1 });
+box(s, { x: 0.9, y: 2.95, w: 1.5, h: 0.9, text: "AI helper", fill: C.accent1, bold: true, size: 14, a: 1 });
+const plugs = [[pres.shapes.OVAL, C.accent3], [pres.shapes.ISOSCELES_TRIANGLE, C.accent5], [pres.shapes.RECTANGLE, C.accent4]];
+TY.forEach((y, i) => {
+  arrow(s, 2.4, 3.4, 3.85, y + 0.35, { a: 1, noHead: true, color: plugs[i][1], width: 2.5 });
+  s.addShape(plugs[i][0], { x: 3.85, y: y + 0.19, w: 0.32, h: 0.32, fill: { color: plugs[i][1] }, line: { type: "none" }, objectName: nm(1, "plug") });
+  box(s, { x: 4.3, y, w: 1.9, h: 0.7, text: TOYS[i], fill: C.background1, line: C.accent6, size: 13, a: 1 });
+});
+label(s, "The helper needs a different cable for every toy. New toy? New cable.", 0.85, 5.0, 5.4, 0.5, { size: 13, color: C.accent5, bold: true, a: 1 });
+// Right: MCP (click 2)
+panel(s, 6.8, 1.75, 5.9, 3.85, { a: 2, fill: C.background1, line: C.text1, lineW: 1.25 });
+label(s, "MCP: one plug fits every toy", 7.05, 1.85, 5.4, 0.4, { size: 15, bold: true, a: 2 });
+box(s, { x: 7.1, y: 2.95, w: 1.5, h: 0.9, text: "AI helper", fill: C.accent1, bold: true, size: 14, a: 2 });
+arrow(s, 8.6, 3.4, 9.4, 3.4, { a: 2, noHead: true, width: 2.5 });
+box(s, { x: 9.4, y: 2.45, w: 0.5, h: 2.4, text: "MCP", fill: C.text1, color: C.background1, bold: true, size: 11, margin: 0, a: 2 });
+TY.forEach((y, i) => {
+  arrow(s, 9.9, y + 0.35, 10.1, y + 0.35, { a: 2, noHead: true, width: 2.5 });
+  s.addShape(pres.shapes.RECTANGLE, { x: 10.1, y: y + 0.19, w: 0.32, h: 0.32, fill: { color: C.accent1 }, line: { color: C.text1, width: 1 }, objectName: nm(2, "plug") });
+  box(s, { x: 10.55, y, w: 1.9, h: 0.7, text: TOYS[i], fill: C.background2, size: 13, a: 2 });
+});
+label(s, "Every toy has the same plug, so the helper needs only one cable.", 7.05, 5.0, 5.4, 0.5, { size: 13, color: C.accent4, bold: true, a: 2 });
+// Bottom line (click 3)
+box(s, { x: 0.6, y: 5.85, w: 12.1, h: 0.95, align: "left", size: 15, fill: C.accent1, margin: 0.2, a: 3,
+  text: [{ text: "The toys still work their own way inside: that part is the API. ", options: { bold: true } },
+    { text: "MCP just gives them all the same plug, so any AI helper can play with any toy." }] });
+s.addNotes("A simple way in. Click 1: with plain APIs, every toy, meaning every system, has its own special plug. The AI helper needs a different cable for each one, and every new toy means a new cable. Click 2: with MCP, every toy has the same plug, so one cable works for all of them, and any helper that has that cable can play with any toy. Click 3: the important bit. MCP does not throw APIs away. The toy still works its own way inside; that is its API. MCP is the standard plug on the outside. The next slide says the same thing in developer terms.");
+
+// ===================== 4c: MCP vs API for developers =====================
+s = content("MCP vs API for developers", "MCP does not replace your APIs. An MCP server is a thin adapter that makes them discoverable and callable by AI agents.", "Harness and MCP");
+box(s, { x: 2.55, y: 1.7, w: 5.0, h: 0.4, text: "API (REST, GraphQL, gRPC)", fill: C.accent6, bold: true, size: 14, align: "left", margin: 0.1 });
+box(s, { x: 7.6, y: 1.7, w: 5.1, h: 0.4, text: "MCP (Model Context Protocol)", fill: C.accent1, bold: true, size: 14, align: "left", margin: 0.1 });
+const devRows = [
+  ["What it is", "An interface a service offers to programs", "A standard protocol for offering tools and data to AI apps"],
+  ["Who calls it", "Your code, written in advance for that one API", "The harness, when the model asks for a tool at run time"],
+  ["Discovery", "Read the docs, generate an SDK, hard-code endpoints", "tools/list returns names, descriptions and JSON Schemas"],
+  ["Contract", "Different per API: paths, auth, paging, errors", "Same for every server: JSON-RPC 2.0, initialize, tools/call"],
+  ["Transport, auth", "Whatever the API chose: HTTPS, API keys, OAuth", "stdio locally; Streamable HTTP with OAuth remotely"],
+  ["Integration effort", "N apps × M APIs, each a custom client", "Wrap each API once; every MCP host can use it"],
+];
+devRows.forEach((r, i) => {
+  const y = 2.15 + i * 0.48, a = i + 1;
+  box(s, { x: 0.6, y, w: 1.9, h: 0.44, text: r[0], fill: C.text1, color: C.background1, bold: true, size: 12, align: "left", margin: 0.1, a });
+  box(s, { x: 2.55, y, w: 5.0, h: 0.44, text: r[1], fill: C.background2, size: 12, align: "left", margin: 0.1, a });
+  box(s, { x: 7.6, y, w: 5.1, h: 0.44, text: r[2], fill: C.background1, line: C.accent1, lineW: 1.5, size: 12, align: "left", margin: 0.1, a });
+});
+// adapter diagram (click 7)
+box(s, { x: 0.6, y: 5.2, w: 2.6, h: 0.6, text: "Harness (MCP client)", fill: C.accent1, bold: true, size: 12, a: 7 });
+box(s, { x: 5.25, y: 5.2, w: 2.85, h: 0.6, text: "MCP server = thin adapter", fill: C.text1, color: C.background1, bold: true, size: 12, a: 7 });
+box(s, { x: 10.1, y: 5.2, w: 2.6, h: 0.6, text: "Rating engine API", fill: C.background1, line: C.text1, bold: true, size: 12, a: 7 });
+arrow(s, 3.2, 5.5, 5.25, 5.5, { a: 7 });
+arrow(s, 8.1, 5.5, 10.1, 5.5, { a: 7 });
+label(s, "MCP: tools/call get_quote", 3.25, 5.53, 2.0, 0.28, { size: 10, align: "center", color: C.text1, a: 7 });
+label(s, "REST: POST /v1/quotes", 8.15, 5.53, 1.95, 0.28, { size: 10, align: "center", color: C.accent3, a: 7 });
+// when to use (click 8)
+box(s, { x: 0.6, y: 6.0, w: 5.95, h: 0.85, align: "left", valign: "middle", size: 12, fill: C.background2, margin: 0.14, a: 8,
+  text: [{ text: "Call the API directly ", options: { bold: true } }, { text: "when your own code knows exactly what to call: an app backend, a batch job, an integration." }] });
+box(s, { x: 6.75, y: 6.0, w: 5.95, h: 0.85, align: "left", valign: "middle", size: 12, fill: C.accent1, margin: 0.14, a: 8,
+  text: [{ text: "Use MCP ", options: { bold: true } }, { text: "when an AI agent should decide what to call, across many systems, from any MCP-capable tool." }] });
+s.addNotes("Clicks 1 to 6 compare the two row by row. An API is an interface a service offers to programs; you write code against it in advance. MCP is a protocol for offering tools and data to AI apps; the harness calls it at run time because the model asked. With an API you discover what it does by reading docs or generating an SDK; with MCP, tools/list returns every tool with a description and a JSON Schema the model can read. Every API has its own contract; every MCP server has the same one, JSON-RPC 2.0 with initialize, tools/list and tools/call. Transport is stdio for a local server or Streamable HTTP with OAuth for a remote one. And instead of N apps times M APIs, you wrap each API once. Click 7: in practice an MCP server is a thin adapter. tools/call get_quote becomes POST /v1/quotes on the existing rating API. Click 8: so it is not either-or. Call the API directly when your own code knows exactly what to call. Use MCP when an AI agent should choose.");
+
 // ===================== 5: Harness ↔ MCP servers =====================
 s = content("The harness connects to MCP servers", "One line of config per server. At start-up the harness starts one client per server and learns its tools.", "Harness and MCP");
 panel(s, 0.6, 1.75, 5.85, 4.55, { a: 1, line: C.accent6 });
