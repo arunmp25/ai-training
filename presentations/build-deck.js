@@ -253,37 +253,31 @@ roles.forEach(([t, d], i) => {
 });
 s.addNotes("MCP, the Model Context Protocol, is an open standard introduced by Anthropic in late 2024 and now supported across many AI apps. Click 1: without a standard, every AI app needs a custom integration with every system. Three apps and three systems means nine integrations to build and maintain. Click 2: with MCP, each app speaks MCP once and each system gets one MCP server. Three plus three, six connectors. This is why Guidewire chose MCP for its Developer Assistant. Click 3: a server can offer tools (actions), resources (data) and prompts (templates). Tools are by far the most used. Click 4: the vocabulary. The host is the AI app or harness. Inside it, one client per server. The server is the connector. Messages are JSON-RPC 2.0, over stdio for a local server or HTTP for a remote one.");
 
-// ===================== 4b: MCP vs API, like you're five =====================
-s = content("MCP vs API, explained like you’re five", "Imagine your AI helper wants to play with lots of different toys.", "Harness and MCP");
-const TOYS = ["Toy car", "Teddy bear", "Train"], TY = [2.45, 3.3, 4.15];
-// Left: API (click 1)
-panel(s, 0.6, 1.75, 5.9, 3.85, { a: 1 });
-label(s, "API: every toy has its own special plug", 0.85, 1.85, 5.4, 0.4, { size: 15, bold: true, a: 1 });
-box(s, { x: 0.9, y: 2.95, w: 1.5, h: 0.9, text: "AI helper", fill: C.accent1, bold: true, size: 14, a: 1 });
-const plugs = [[pres.shapes.OVAL, C.accent3], [pres.shapes.ISOSCELES_TRIANGLE, C.accent5], [pres.shapes.RECTANGLE, C.accent4]];
-TY.forEach((y, i) => {
-  arrow(s, 2.4, 3.4, 3.85, y + 0.35, { a: 1, noHead: true, color: plugs[i][1], width: 2.5 });
-  s.addShape(plugs[i][0], { x: 3.85, y: y + 0.19, w: 0.32, h: 0.32, fill: { color: plugs[i][1] }, line: { type: "none" }, objectName: nm(1, "plug") });
-  box(s, { x: 4.3, y, w: 1.9, h: 0.7, text: TOYS[i], fill: C.background1, line: C.accent6, size: 13, a: 1 });
+// ===================== 4b: Why not just REST? =====================
+s = content("Why not just give the model our REST endpoints?", "You can: function calling works with any endpoint. It stops scaling with many AI apps, many systems and many endpoints.", "Harness and MCP");
+const WHY = [
+  ["Glue code in every app", "each AI app (your chatbot, Claude Code, Copilot) writes its own tool schemas, HTTP calls, auth and error handling for every endpoint.", "written once in the server; every MCP host reuses it with one line of config."],
+  ["Hard-coded tool lists", "the tools are baked into each app, so a new or changed endpoint means a code change and a redeploy everywhere.", "the harness asks tools/list when it connects, and a server can announce changes."],
+  ["Endpoints aren’t model-friendly", "hundreds of fine-grained endpoints, big OpenAPI specs, paging and raw IDs flood the context and confuse tool choice.", "a few task-level tools (get_quote) with clear descriptions and trimmed results."],
+  ["Security and control", "your app holds every API key, and the model can reach whatever you wired up.", "auth sits with each server (OAuth for remote ones), and the harness allows, asks or denies per tool."],
+];
+WHY.forEach(([t, rest, mcp], i) => {
+  const x = 0.6 + (i % 2) * 6.15, y = 1.75 + Math.floor(i / 2) * 1.75, a = i + 1;
+  panel(s, x, y, 5.95, 1.6, { a });
+  numDot(s, i + 1, x + 0.15, y + 0.15, { a });
+  label(s, [
+    { text: t, options: { bold: true, fontSize: 15, breakLine: true } },
+    { text: "With raw REST: ", options: { bold: true, color: C.accent5 } }, { text: rest, options: { breakLine: true } },
+    { text: "With MCP: ", options: { bold: true, color: C.accent4 } }, { text: mcp },
+  ], x + 0.7, y + 0.12, 5.1, 1.38, { size: 12, valign: "top", a });
 });
-label(s, "The helper needs a different cable for every toy. New toy? New cable.", 0.85, 5.0, 5.4, 0.5, { size: 13, color: C.accent5, bold: true, a: 1 });
-// Right: MCP (click 2)
-panel(s, 6.8, 1.75, 5.9, 3.85, { a: 2, fill: C.background1, line: C.text1, lineW: 1.25 });
-label(s, "MCP: one plug fits every toy", 7.05, 1.85, 5.4, 0.4, { size: 15, bold: true, a: 2 });
-box(s, { x: 7.1, y: 2.95, w: 1.5, h: 0.9, text: "AI helper", fill: C.accent1, bold: true, size: 14, a: 2 });
-arrow(s, 8.6, 3.4, 9.4, 3.4, { a: 2, noHead: true, width: 2.5 });
-box(s, { x: 9.4, y: 2.45, w: 0.5, h: 2.4, text: "MCP", fill: C.text1, color: C.background1, bold: true, size: 11, margin: 0, a: 2 });
-TY.forEach((y, i) => {
-  arrow(s, 9.9, y + 0.35, 10.1, y + 0.35, { a: 2, noHead: true, width: 2.5 });
-  s.addShape(pres.shapes.RECTANGLE, { x: 10.1, y: y + 0.19, w: 0.32, h: 0.32, fill: { color: C.accent1 }, line: { color: C.text1, width: 1 }, objectName: nm(2, "plug") });
-  box(s, { x: 10.55, y, w: 1.9, h: 0.7, text: TOYS[i], fill: C.background2, size: 13, a: 2 });
-});
-label(s, "Every toy has the same plug, so the helper needs only one cable.", 7.05, 5.0, 5.4, 0.5, { size: 13, color: C.accent4, bold: true, a: 2 });
-// Bottom line (click 3)
-box(s, { x: 0.6, y: 5.85, w: 12.1, h: 0.95, align: "left", size: 15, fill: C.accent1, margin: 0.2, a: 3,
-  text: [{ text: "The toys still work their own way inside: that part is the API. ", options: { bold: true } },
-    { text: "MCP just gives them all the same plug, so any AI helper can play with any toy." }] });
-s.addNotes("A simple way in. Click 1: with plain APIs, every toy, meaning every system, has its own special plug. The AI helper needs a different cable for each one, and every new toy means a new cable. Click 2: with MCP, every toy has the same plug, so one cable works for all of them, and any helper that has that cable can play with any toy. Click 3: the important bit. MCP does not throw APIs away. The toy still works its own way inside; that is its API. MCP is the standard plug on the outside. The next slide says the same thing in developer terms.");
+box(s, { x: 0.6, y: 5.35, w: 5.95, h: 1.5, align: "left", valign: "top", size: 13, fill: C.background1, line: C.accent6, margin: 0.16, a: 5,
+  text: [{ text: "Plain function calling over REST is fine when", options: { bold: true, breakLine: true } },
+    { text: "you have one app and a handful of endpoints, and you own both sides." }] });
+box(s, { x: 6.75, y: 5.35, w: 5.95, h: 1.5, align: "left", valign: "top", size: 13, fill: C.accent1, margin: 0.16, a: 5,
+  text: [{ text: "MCP pays off when", options: { bold: true, breakLine: true } },
+    { text: "several AI tools need the same systems, there are many systems, or a vendor ships the tools for you, like the Guidewire Developer Assistant." }] });
+s.addNotes("A fair question: why not describe each REST endpoint as a tool and give the list to the model? You can. Function calling works with any endpoint. Clicks 1 to 4 show where it stops scaling. One: glue code. Every AI app has to write its own tool schemas, HTTP calls, auth and error handling for every endpoint, and the next app writes it all again. An MCP server writes it once. Two: the tool list is hard-coded in each app, so every API change means a redeploy everywhere. With MCP the harness asks tools/list when it connects. Three: raw endpoints are built for programs, not models. Hundreds of endpoints, big specs and paged, ID-heavy responses fill the context and lead to wrong tool choices. A good MCP server offers a few task-level tools with clear descriptions. Four: security. With raw REST your app holds every key. With MCP, auth sits with each server and the harness can allow, ask or deny each tool. Click 5: so it is a judgement. One app and a few endpoints you own: plain function calling is fine. Many AI tools, many systems, or a vendor supplying the tools, as Guidewire does: MCP pays off.");
 
 // ===================== 4c: MCP vs API for developers =====================
 s = content("MCP vs API for developers", "MCP does not replace your APIs. An MCP server is a thin adapter that makes them discoverable and callable by AI agents.", "Harness and MCP");

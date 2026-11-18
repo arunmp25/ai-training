@@ -51,6 +51,7 @@ table.cmp tr{opacity:0;transform:translateX(-14px);transition:opacity .4s ease, 
 #help{position:fixed;left:14px;bottom:12px;color:#888;font:12px Arial;z-index:90}
 .stepdots{position:absolute;left:50%;transform:translateX(-50%);top:683px;display:flex;gap:4px}
 #help{transition:opacity 1s}#help.gone{opacity:0}
+.el.late{transition-delay:.6s !important}
 .stepdots i{width:6px;height:6px;border-radius:50%;background:var(--lg)}
 .stepdots i.done{background:var(--dk)}
 .dark .stepdots i.done{background:var(--y)}
@@ -328,42 +329,24 @@ S.label("<i>Tools are by far the most used.</i>", 9.0, 4.95, 3.7, 0.3, { size: 1
   S.onStep((k, fwd) => { if (fwd && k === 1) setTimeout(() => count(nm, 9), 200); if (fwd && k === 2) setTimeout(() => count(np, 6), 200); });
 }
 
-// 4b MCP vs API, like you're five
-S = makeSlide({ title: "MCP vs API, explained like you’re five", sub: "Imagine your AI helper wants to play with lots of different toys.",
-  notes: "A simple way in. <b>Click 1:</b> with plain APIs, every toy, meaning every system, has its own special plug. The AI helper needs a different cable for each one, and every new toy means a new cable. <b>Click 2:</b> with MCP, every toy has the same plug, so one cable works for all of them. Watch one cable reach every toy. <b>Click 3:</b> the important bit. MCP does not throw APIs away. The toy still works its own way inside; that is its API. MCP is the standard plug on the outside. The next slide says the same thing in developer terms." });
-{
-  const TOYS = ["Toy car", "Teddy bear", "Train"], TY = [2.45, 3.3, 4.15];
-  const PL = [["blue", "50%", ""], ["orange", "0", "polygon(50% 0,100% 100%,0 100%)"], ["green", "0", ""]];
-  S.panel(0.6, 1.75, 5.9, 3.85, { step: 1 });
-  S.label("<b>API: every toy has its own special plug</b>", 0.85, 1.85, 5.4, 0.4, { size: 15, step: 1 });
-  S.box({ x: 0.9, y: 2.95, w: 1.5, h: 0.9, html: "<b>AI helper</b>", fill: "y", size: 14, step: 1 });
-  TY.forEach((y, i) => {
-    S.arrow(2.4, 3.4, 3.85, y + 0.35, { step: 1, noHead: true, color: PL[i][0], width: 3, delay: 150 + i * 250 });
-    const p = S.box({ x: 3.85, y: y + 0.19, w: 0.32, h: 0.32, html: "", fill: PL[i][0], r: 0, pad: 0, step: 1 });
-    p.style.borderRadius = PL[i][1]; if (PL[i][2]) p.style.clipPath = PL[i][2];
-    S.box({ x: 4.3, y, w: 1.9, h: 0.7, html: TOYS[i], fill: "w", line: "lg", size: 13, step: 1 });
-  });
-  S.label("<b>The helper needs a different cable for every toy. New toy? New cable.</b>", 0.85, 5.0, 5.4, 0.5, { size: 13, color: "orange", step: 1 });
-  S.panel(6.8, 1.75, 5.9, 3.85, { step: 2, fill: "w", line: "dk", lineW: 1.6 });
-  S.label("<b>MCP: one plug fits every toy</b>", 7.05, 1.85, 5.4, 0.4, { size: 15, step: 2 });
-  S.box({ x: 7.1, y: 2.95, w: 1.5, h: 0.9, html: "<b>AI helper</b>", fill: "y", size: 14, step: 2 });
-  S.arrow(8.6, 3.4, 9.4, 3.4, { step: 2, noHead: true, width: 3, flow: true });
-  S.box({ x: 9.4, y: 2.45, w: 0.5, h: 2.4, html: "<b>MCP</b>", fill: "dk", color: "w", size: 11, pad: 0, step: 2 });
-  TY.forEach((y, i) => {
-    S.arrow(9.9, y + 0.35, 10.1, y + 0.35, { step: 2, noHead: true, width: 3 });
-    S.box({ x: 10.1, y: y + 0.19, w: 0.32, h: 0.32, html: "", fill: "y", line: "dk", r: 0, pad: 0, step: 2 });
-    S.box({ x: 10.55, y, w: 1.9, h: 0.7, html: TOYS[i], fill: "bg2", size: 13, step: 2 });
-  });
-  S.label("<b>Every toy has the same plug, so the helper needs only one cable.</b>", 7.05, 5.0, 5.4, 0.5, { size: 13, color: "green", step: 2 });
-  S.box({ x: 0.6, y: 5.85, w: 12.1, h: 0.95, align: "left", size: 15, fill: "y", step: 3, padX: 18,
-    html: "<b>The toys still work their own way inside: that part is the API.</b> MCP just gives them all the same plug, so any AI helper can play with any toy." });
-  const SL = S;
-  SL.onStep((k, fwd) => {
-    if (!fwd) return;
-    if (k === 1) TY.forEach((y, i) => setTimeout(() => packet(SL, [[2.4, 3.4], [3.85, y + 0.35]], 700), 900 + i * 500));
-    if (k === 2) TY.forEach((y, i) => setTimeout(() => packet(SL, [[8.6, 3.4], [9.65, 3.4], [9.65, y + 0.35], [10.5, y + 0.35]], 380), 700 + i * 450));
-  });
-}
+// 4b Why not just REST?
+S = makeSlide({ title: "Why not just give the model our REST endpoints?", sub: "You can: function calling works with any endpoint. It stops scaling with many AI apps, many systems and many endpoints.",
+  notes: "A fair question: why not describe each REST endpoint as a tool and give the list to the model? You can. Function calling works with any endpoint. <b>Clicks 1 to 4</b> show where it stops scaling. <b>One, glue code:</b> every AI app writes its own tool schemas, HTTP calls, auth and error handling for every endpoint, and the next app writes it all again; an MCP server writes it once. <b>Two, hard-coded tool lists:</b> every API change means a redeploy in every app; with MCP the harness asks tools/list when it connects. <b>Three, model-friendliness:</b> hundreds of endpoints, big specs and paged, ID-heavy responses fill the context and lead to wrong tool choices; a good MCP server offers a few task-level tools with clear descriptions. <b>Four, security:</b> with raw REST your app holds every key; with MCP, auth sits with each server and the harness allows, asks or denies each tool. <b>Click 5:</b> it is a judgement. One app and a few endpoints you own: plain function calling is fine. Many AI tools, many systems, or a vendor supplying the tools, as Guidewire does: MCP pays off." });
+[["Glue code in every app", "each AI app (your chatbot, Claude Code, Copilot) writes its own tool schemas, HTTP calls, auth and error handling for every endpoint.", "written once in the server; every MCP host reuses it with one line of config."],
+ ["Hard-coded tool lists", "the tools are baked into each app, so a new or changed endpoint means a code change and a redeploy everywhere.", "the harness asks <span class='mono'>tools/list</span> when it connects, and a server can announce changes."],
+ ["Endpoints aren’t model-friendly", "hundreds of fine-grained endpoints, big OpenAPI specs, paging and raw IDs flood the context and confuse tool choice.", "a few task-level tools (<span class='mono'>get_quote</span>) with clear descriptions and trimmed results."],
+ ["Security and control", "your app holds every API key, and the model can reach whatever you wired up.", "auth sits with each server (OAuth for remote ones), and the harness allows, asks or denies per tool."]].forEach(([t, rest, mcp], i) => {
+  const x = 0.6 + (i % 2) * 6.15, y = 1.75 + Math.floor(i / 2) * 1.75, step = i + 1;
+  S.panel(x, y, 5.95, 1.6, { step });
+  S.dot(i + 1, x + 0.15, y + 0.15, { step });
+  S.label(`<b style="font-size:20px">${t}</b>`, x + 0.7, y + 0.1, 5.1, 0.33, { step, valign: "top" });
+  S.label(`<b style="color:var(--orange)">With raw REST:</b> ${rest}`, x + 0.7, y + 0.44, 5.1, 0.63, { size: 12, step, valign: "top" });
+  S.label(`<b style="color:var(--green)">With MCP:</b> ${mcp}`, x + 0.7, y + 1.08, 5.1, 0.48, { size: 12, step, valign: "top", cls: "late" });
+});
+S.box({ x: 0.6, y: 5.35, w: 5.95, h: 1.5, align: "left", valign: "top", size: 13, fill: "w", line: "lg", pad: 14, step: 5,
+  html: "<b>Plain function calling over REST is fine when</b><br>you have one app and a handful of endpoints, and you own both sides." });
+S.box({ x: 6.75, y: 5.35, w: 5.95, h: 1.5, align: "left", valign: "top", size: 13, fill: "y", pad: 14, step: 5,
+  html: "<b>MCP pays off when</b><br>several AI tools need the same systems, there are many systems, or a vendor ships the tools for you, like the Guidewire Developer Assistant." });
 
 // 4c MCP vs API for developers
 S = makeSlide({ title: "MCP vs API for developers", sub: "MCP does not replace your APIs. An MCP server is a thin adapter that makes them discoverable and callable by AI agents.",
