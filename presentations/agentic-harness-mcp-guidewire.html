@@ -1,0 +1,550 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Agentic Harness, MCP and Guidewire</title>
+<style>
+:root{
+  --y:#FFE600; --dk:#2E2E38; --dk2:#1A1A24; --g:#747480; --lg:#C4C4CD; --bg2:#F6F6FA; --w:#FFFFFF;
+  --blue:#188CE5; --green:#2DB757; --orange:#FF6D00;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:#111116;font-family:Arial,Helvetica,sans-serif;overflow:hidden}
+#stage{position:absolute;left:50%;top:50%;width:1280px;height:720px;transform-origin:0 0;}
+.slide{position:absolute;inset:0;background:var(--w);color:var(--dk);opacity:0;visibility:hidden;transition:opacity .45s ease, visibility 0s linear .45s;overflow:hidden}
+.slide.active{opacity:1;visibility:visible;transition:opacity .45s ease}
+.slide.dark{background:var(--dk);color:var(--w)}
+.el{position:absolute;display:flex;flex-direction:column;opacity:0;transform:translateY(10px) scale(.98);
+  transition:opacity .45s ease, transform .45s cubic-bezier(.2,.8,.2,1), background-color .3s, box-shadow .3s;}
+.el.on{opacity:1;transform:none}
+.el > div{width:100%}
+.ttl{font-size:42.7px;font-weight:bold}
+.mono{font-family:"Courier New",Courier,monospace}
+.foot{position:absolute;left:58px;top:677px;font-size:13.3px;color:var(--g)}
+.num{position:absolute;right:58px;top:677px;font-size:13.3px;color:var(--g)}
+svg.ln{position:absolute;left:0;top:0;width:1280px;height:720px;pointer-events:none;overflow:visible}
+svg.ln .reveal{stroke-dasharray:var(--L);stroke-dashoffset:var(--L);transition:stroke-dashoffset .6s ease}
+svg.ln.on .reveal{stroke-dashoffset:0}
+svg.ln .flow{opacity:0;stroke-dasharray:3 14;animation:march 1s linear infinite;transition:opacity .4s ease .6s}
+svg.ln.on .flow{opacity:1}
+@keyframes march{to{stroke-dashoffset:-17}}
+.cur{background:rgba(255,230,0,.6);border-radius:3px;font-weight:bold;box-shadow:0 0 0 2px rgba(255,230,0,.6)}
+.packet{position:absolute;left:0;top:0;width:12px;height:12px;margin:-6px 0 0 -6px;border-radius:50%;background:var(--y);
+  box-shadow:0 0 0 2px var(--dk),0 0 12px 3px rgba(255,230,0,.8);pointer-events:none;z-index:50}
+.hot{box-shadow:0 0 0 4px var(--y),0 0 22px 6px rgba(255,230,0,.75) !important}
+table.cmp{border-collapse:collapse;width:100%;font-size:18.7px}
+table.cmp td,table.cmp th{border:1px solid var(--lg);padding:0 8px;height:38px;text-align:left}
+table.cmp tr{opacity:0;transform:translateX(-14px);transition:opacity .4s ease, transform .4s ease}
+.on table.cmp tr{opacity:1;transform:none}
+.on table.cmp tr:nth-child(2){transition-delay:.12s}.on table.cmp tr:nth-child(3){transition-delay:.24s}
+.on table.cmp tr:nth-child(4){transition-delay:.36s}.on table.cmp tr:nth-child(5){transition-delay:.48s}
+.ping{position:absolute;width:12px;height:12px;border-radius:50%;background:var(--y);box-shadow:0 0 0 2px var(--dk);opacity:0;transition:opacity .4s ease .5s}
+.on .ping,.ping.on{opacity:1}
+#notes{position:fixed;left:0;right:0;bottom:0;max-height:38vh;overflow:auto;background:rgba(26,26,36,.96);color:#fff;
+  font-size:17px;line-height:1.5;padding:16px 24px 20px;transform:translateY(100%);transition:transform .3s ease;z-index:100;border-top:3px solid var(--y)}
+#notes.open{transform:none}
+#notes b{color:var(--y)}
+#hud{position:fixed;right:14px;bottom:12px;display:flex;gap:6px;z-index:90;opacity:.25;transition:opacity .2s}
+#hud:hover{opacity:1}
+#hud button{background:#2E2E38;color:#fff;border:1px solid #555;border-radius:6px;padding:6px 10px;font:13px Arial;cursor:pointer}
+#help{position:fixed;left:14px;bottom:12px;color:#888;font:12px Arial;z-index:90}
+.stepdots{position:absolute;left:50%;transform:translateX(-50%);top:683px;display:flex;gap:4px}
+#help{transition:opacity 1s}#help.gone{opacity:0}
+.stepdots i{width:6px;height:6px;border-radius:50%;background:var(--lg)}
+.stepdots i.done{background:var(--dk)}
+.dark .stepdots i.done{background:var(--y)}
+@media (prefers-reduced-motion: reduce){ .el,svg.ln .reveal,table.cmp tr{transition:none} svg.ln .flow{animation:none} }
+</style>
+</head>
+<body>
+<div id="stage"></div>
+<svg width="0" height="0" style="position:absolute">
+  <defs id="markers"></defs>
+</svg>
+<div id="notes"></div>
+<div id="hud"><button id="bPrev" title="Back (←)">◀</button><button id="bPlay" title="Auto-play (P)">▶ Play</button><button id="bNotes" title="Speaker notes (N)">Notes</button><button id="bFull" title="Full screen (F)">⛶</button><button id="bNext" title="Next (→ or Space)">▶</button></div>
+<div id="help">→ / Space: next · ←: back · N: notes · P: play · F: full screen</div>
+
+<script>
+/* ===================== engine ===================== */
+const I = v => v * 96;                 // inches → px (deck is 13.333 × 7.5 in)
+const PT = v => v * 4 / 3;             // points → px
+const COL = { dk:"#2E2E38", w:"#FFFFFF", y:"#FFE600", g:"#747480", lg:"#C4C4CD", bg2:"#F6F6FA", blue:"#188CE5", green:"#2DB757", orange:"#FF6D00", dk2:"#1A1A24" };
+const css = c => COL[c] || c;
+const stage = document.getElementById("stage");
+const SLIDES = [];
+let uid = 0;
+
+// arrow markers, one per colour
+document.getElementById("markers").innerHTML = Object.entries(COL).map(([k, v]) =>
+  `<marker id="m-${k}" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="${v}"/></marker>`).join("");
+
+function makeSlide({ title, sub, dark, notes, section }) {
+  const el = document.createElement("section");
+  el.className = "slide" + (dark ? " dark" : "");
+  stage.appendChild(el);
+  const S = { el, steps: 0, notes, hooks: [], items: [], dark };
+  SLIDES.push(S);
+  const add = (node, step) => {
+    node.dataset.step = step || 0;
+    S.steps = Math.max(S.steps, step || 0);
+    el.appendChild(node); S.items.push(node); return node;
+  };
+  S.add = add;
+  S.box = o => {
+    const d = document.createElement("div");
+    d.className = "el box" + (o.cls ? " " + o.cls : "");
+    Object.assign(d.style, {
+      left: I(o.x) + "px", top: I(o.y) + "px", width: I(o.w) + "px", height: I(o.h) + "px",
+      background: o.fill === "none" ? "transparent" : css(o.fill || "bg2"), color: css(o.color || "dk"),
+      border: o.line ? `${o.lineW || 1.3}px ${o.dash ? "dashed" : "solid"} ${css(o.line)}` : "none",
+      borderRadius: (o.r === undefined ? 6 : o.r) + "px", fontSize: PT(o.size || 14) + "px", fontWeight: o.bold ? "bold" : "normal",
+      textAlign: o.align || "center", justifyContent: { top: "flex-start", bottom: "flex-end" }[o.valign] || "center",
+      padding: (o.pad === undefined ? 8 : o.pad) + "px " + (o.padX === undefined ? (o.pad === undefined ? 10 : o.pad) : o.padX) + "px", lineHeight: 1.22,
+    });
+    if (o.round) d.style.borderRadius = "50%";
+    const h = String(o.html);
+    d.innerHTML = `<div>${/<(table|ul)/.test(h) ? h.replace(/\n\s*/g, "") : h.replace(/\n/g, "<br>")}</div>`;
+    if (o.id) d.id = o.id;
+    return add(d, o.step);
+  };
+  S.label = (html, x, y, w, h, o = {}) => S.box(Object.assign({ x, y, w, h, html, fill: "none", pad: 0, r: 0, align: "left", size: 12 }, o));
+  S.arrow = (x1, y1, x2, y2, o = {}) => {
+    const id = "mk" + (++uid);
+    const X1 = I(x1), Y1 = I(y1), X2 = I(x2), Y2 = I(y2);
+    const L = Math.hypot(X2 - X1, Y2 - Y1) + 20;
+    const c = o.color || "dk", wd = o.width || 1.8;
+    const s = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    s.setAttribute("class", "ln"); s.setAttribute("viewBox", "0 0 1280 720");
+    s.innerHTML = `<defs><mask id="${id}" maskUnits="userSpaceOnUse" x="-50" y="-50" width="1380" height="820">
+        <line class="reveal" style="--L:${L}" x1="${X1}" y1="${Y1}" x2="${X2}" y2="${Y2}" stroke="#fff" stroke-width="16" stroke-linecap="square"/></mask></defs>
+      <line mask="url(#${id})" x1="${X1}" y1="${Y1}" x2="${X2}" y2="${Y2}" stroke="${css(c)}" stroke-width="${wd}"
+        ${o.dash ? `stroke-dasharray="6 4"` : ""} ${o.noHead ? "" : `marker-end="url(#m-${c})"`}/>
+      ${o.flow ? `<line class="flow" x1="${X1}" y1="${Y1}" x2="${X2}" y2="${Y2}" stroke="${css(o.flow === true ? "y" : o.flow)}" stroke-width="4" stroke-linecap="round"/>` : ""}`;
+    if (o.delay) s.querySelector(".reveal").style.transitionDelay = o.delay + "ms";
+    s.dataset.step = o.step || 0; S.steps = Math.max(S.steps, o.step || 0);
+    el.appendChild(s); S.items.push(s); return s;
+  };
+  S.panel = (x, y, w, h, o = {}) => S.box(Object.assign({ x, y, w, h, html: "", fill: "bg2" }, o));
+  S.dot = (n, x, y, o = {}) => S.box(Object.assign({ x, y, w: 0.42, h: 0.42, html: String(n), fill: "y", bold: true, size: 13, round: true, pad: 0 }, o));
+  S.onStep = fn => S.hooks.push(fn);
+
+  if (!dark && title) {
+    const t = S.label(title, 0.6, 0.35, 12.1, 0.75, { size: 32, bold: true });
+    if (sub) S.label(sub, 0.6, 1.08, 12.1, 0.45, { size: 16, color: "g", valign: "top" });
+    const f = document.createElement("div"); f.className = "foot"; f.textContent = "Agentic harnesses, MCP and the Guidewire Developer Assistant"; el.appendChild(f);
+    const n = document.createElement("div"); n.className = "num"; n.textContent = SLIDES.length; el.appendChild(n);
+  }
+  if (dark) {
+    S.box({ x: 0.6, y: 2.05, w: 0.55, h: 0.55, html: "", fill: "y", r: 0 });
+    const t = S.label(title, 0.6, 2.85, 11.5, 2.1, { size: 44, bold: true, color: "w", valign: "top" });
+    t.style.lineHeight = "1.1";
+    if (sub) S.label(sub, 0.6, 5.1, 11.0, 1.0, { size: 20, color: "lg", valign: "top" });
+  }
+  return S;
+}
+
+// moving packet between two points (inches)
+function packet(S, pts, dur = 650) {
+  const p = document.createElement("div"); p.className = "packet"; S.el.appendChild(p);
+  const frames = pts.map(([x, y]) => ({ transform: `translate(${I(x)}px,${I(y)}px)` }));
+  const a = p.animate(frames, { duration: dur * (pts.length - 1), easing: "ease-in-out" });
+  a.onfinish = () => p.remove();
+  return a;
+}
+
+// Sequence diagram: colour = protocol, dashed = response, one click per message
+function sequence(S, lanes, msgs, o) {
+  const KIND = { mcp: "dk", api: "blue", local: "g" };
+  lanes.forEach(ln => S.box({ x: ln.x - ln.w / 2, y: o.top, w: ln.w, h: 0.5, html: ln.name, fill: ln.fill, color: ln.color || "dk", bold: true, size: 12 }));
+  (o.frames || []).forEach(f => {
+    const y1 = o.y(f.from) - 0.27, y2 = o.y(f.to) + 0.08;
+    S.box({ x: f.x1, y: y1, w: f.x2 - f.x1, h: y2 - y1, html: "", fill: "rgba(255,109,0,.06)", line: "orange", lineW: 2, r: 4, step: f.a });
+    S.label(f.text, f.x2 - 3.6, y1 + 0.03, 3.5, 0.22, { size: 10, bold: true, color: "orange", align: "right", step: f.a });
+  });
+  lanes.forEach(ln => S.arrow(ln.x, o.top + 0.5, ln.x, o.bottom, { color: "lg", width: 1.2, dash: true, noHead: true }));
+  (o.tags || []).forEach(t => S.box({ x: 0.6, y: o.y(t.at) - 0.27, w: o.tagW || 1.05, h: 0.3, html: t.text, fill: t.fill || "bg2", size: 10, bold: true, pad: 0, step: t.a }));
+  const X = Object.fromEntries(lanes.map(l => [l.id, l.x]));
+  const first = o.firstClick || 1;
+  const labels = msgs.map((m, i) => {
+    const y = o.y(i), step = first + i, x1 = X[m.from], x2 = X[m.to];
+    m._y = y; m._x1 = x1; m._x2 = x2;
+    if (m.from === m.to) return S.box({ x: x1 - 1.0, y: y - 0.21, w: 2.0, h: 0.23, html: `${i + 1}. ${m.text}`, fill: "y", size: 10, bold: true, pad: 0, step });
+    const col = KIND[m.kind || "mcp"];
+    S.arrow(x1, y, x2, y, { color: col, dash: m.ret, width: 1.6, step });
+    const lx = Math.min(x1, x2) + 0.08, lw = Math.abs(x2 - x1) - 0.16;
+    return S.label(`<span>${i + 1}. ${m.text}</span>`, lx, y - (o.labelH + 0.02), lw, o.labelH, { size: o.size, align: x2 > x1 ? "left" : "right", color: col, step });
+  });
+  let detail = null;
+  if (o.detail) detail = S.box(Object.assign({ html: "", fill: "dk", color: "w", align: "left", size: 11.5, pad: 8, padX: 14, cls: "mono" }, o.detail));
+  S.onStep((k, forward) => {
+    labels.forEach(l => { const sp = l.querySelector("span") || l.firstChild; sp.classList.remove("cur"); });
+    const i = k - first;
+    if (i >= 0 && i < msgs.length) {
+      const l = labels[i]; (l.querySelector("span") || l.firstChild).classList.add("cur");
+      const m = msgs[i];
+      if (forward && m.from !== m.to) packet(S, [[m._x1, m._y], [m._x2, m._y]], 600);
+      if (detail) detail.firstChild.innerHTML = `<span style="color:var(--y);font-family:Arial;font-weight:bold">${i + 1} · ${m.tag || ""}</span>&nbsp;&nbsp;${m.json || ""}`;
+    } else if (detail) {
+      detail.firstChild.innerHTML = `<span style="color:var(--y);font-family:Arial;font-weight:bold">Press → to step through. Each step shows the real message here.</span>`;
+    }
+  });
+}
+
+/* ===================== slides ===================== */
+let S;
+
+// 1 Title
+S = makeSlide({ dark: true, title: "From chat to agentic harness to MCP, and how the Guidewire Developer Assistant plugs in",
+  sub: "How agents run the loop, call tools and RAG, connect to MCP servers, and use Guidewire cookbooks and knowledge",
+  notes: "Today we follow one idea from start to finish. First, how an agent harness differs from a chat assistant. Then the agentic loop, with tool calls and RAG lookups. Then what MCP is, how a harness connects to MCP servers, and the message sequence. Finally, how Guidewire uses MCP to deliver its Developer Assistants: cookbooks and a knowledge base built on embeddings. Press → to build each slide; N shows these notes." });
+
+// 2 Chat vs harness
+S = makeSlide({ title: "Chat-based agents vs agentic harness", sub: "The model can be the same. The difference is who runs the loop: you, or the harness.",
+  notes: "<b>Click 1:</b> the chat model. You ask, it answers with text or code, and you copy, paste, run and check it yourself. Watch the dot: you are the loop, and you are the safety gate. <b>Click 2:</b> the agentic harness. You give a goal. The harness calls the model, runs the tools it asks for (files, APIs, RAG search, MCP servers), feeds the results back and repeats until the task is done, applying permissions on every action. <b>Click 3:</b> the differences in one table. Same model, different car: the harness adds the steering, the brakes and the tools." });
+S.panel(0.6, 1.75, 5.9, 2.95, { step: 1 });
+S.label("Chat-based agent: you are the loop", 0.85, 1.85, 5.4, 0.4, { size: 15, bold: true, step: 1 });
+S.box({ x: 0.85, y: 2.4, w: 1.9, h: 0.7, html: "You ask a question", fill: "w", line: "lg", size: 12, step: 1 });
+S.box({ x: 4.35, y: 2.4, w: 1.9, h: 0.7, html: "<b>Chat model</b>", fill: "lg", size: 13, step: 1 });
+S.box({ x: 4.35, y: 3.5, w: 1.9, h: 0.7, html: "Text answer or code", fill: "w", line: "lg", size: 12, step: 1 });
+S.box({ x: 0.85, y: 3.5, w: 1.9, h: 0.7, html: "You copy, paste, run and check", fill: "w", line: "lg", size: 12, step: 1 });
+S.arrow(2.75, 2.75, 4.35, 2.75, { step: 1 });
+S.arrow(5.3, 3.1, 5.3, 3.5, { step: 1, delay: 150 });
+S.arrow(4.35, 3.85, 2.75, 3.85, { step: 1, delay: 300 });
+S.arrow(1.8, 3.5, 1.8, 3.1, { step: 1, color: "orange", delay: 450 });
+S.label("next message, by hand", 1.9, 3.15, 2.3, 0.3, { size: 11, color: "orange", step: 1, cls: "it" });
+S.label("e.g. Claude.ai or ChatGPT in a browser tab", 0.85, 4.3, 5.4, 0.3, { size: 11, color: "g", step: 1 });
+const chatDot = S.box({ x: 0, y: 0, w: 0.13, h: 0.13, html: "", fill: "orange", round: true, pad: 0, step: 1 });
+chatDot.animate([
+  { left: I(1.8) + "px", top: I(2.68) + "px" }, { left: I(5.25) + "px", top: I(2.68) + "px" },
+  { left: I(5.25) + "px", top: I(3.8) + "px" }, { left: I(1.8) + "px", top: I(3.8) + "px" }, { left: I(1.8) + "px", top: I(2.68) + "px" }],
+  { duration: 6000, iterations: Infinity });
+S.panel(6.8, 1.75, 5.9, 2.95, { step: 2, fill: "w", line: "dk", lineW: 1.6 });
+S.label("Agentic harness: the harness runs the loop", 7.05, 1.85, 5.4, 0.4, { size: 15, bold: true, step: 2 });
+S.box({ x: 7.05, y: 2.4, w: 1.55, h: 0.7, html: "You give a goal", fill: "bg2", size: 12, step: 2 });
+S.box({ x: 7.05, y: 3.5, w: 1.55, h: 0.7, html: "<b>Result for your review</b>", fill: "green", color: "w", size: 12, step: 2 });
+S.panel(8.95, 2.35, 3.5, 1.9, { step: 2, fill: "y" });
+S.label("<b>Harness</b>", 9.1, 2.42, 1.5, 0.3, { size: 12, step: 2 });
+S.box({ x: 9.15, y: 2.8, w: 1.3, h: 0.6, html: "<b>Model</b>", fill: "dk", color: "w", size: 12, step: 2 });
+S.box({ x: 10.95, y: 2.8, w: 1.3, h: 0.6, html: "<b>Tools · RAG · MCP</b>", fill: "w", size: 11, pad: 3, step: 2 });
+S.arrow(10.45, 2.95, 10.95, 2.95, { step: 2, width: 1.5 });
+S.arrow(10.95, 3.25, 10.45, 3.25, { step: 2, width: 1.5, dash: true });
+const ping = S.box({ x: 0, y: 0, w: 0.13, h: 0.13, html: "", fill: "dk", round: true, pad: 0, step: 2 });
+ping.animate([{ left: I(10.3) + "px", top: I(2.89) + "px" }, { left: I(10.95) + "px", top: I(2.89) + "px" }, { left: I(10.95) + "px", top: I(3.19) + "px" }, { left: I(10.3) + "px", top: I(3.19) + "px" }, { left: I(10.3) + "px", top: I(2.89) + "px" }],
+  { duration: 1600, iterations: Infinity });
+S.label("<i>repeats until the task is done</i>", 9.15, 3.55, 3.1, 0.3, { size: 11, step: 2 });
+S.label("<i>permissions on every action</i>", 9.15, 3.85, 3.1, 0.3, { size: 11, step: 2 });
+S.arrow(8.6, 2.75, 8.95, 2.75, { step: 2 });
+S.arrow(8.95, 3.85, 8.6, 3.85, { step: 2, delay: 300 });
+S.label("e.g. Claude Code, Agent SDK, Copilot agent mode", 7.05, 4.3, 5.4, 0.3, { size: 11, color: "g", step: 2 });
+S.label(`<table class="cmp"><tr><th style="width:150px"></th><th style="background:var(--lg)">Chat-based agent</th><th style="background:var(--y)">Agentic harness</th></tr>
+  <tr><td><b>Actions</b></td><td>Suggests; you copy, paste and run</td><td>Runs tools itself: files, APIs, shell, RAG, MCP</td></tr>
+  <tr><td><b>Context</b></td><td>Only what you paste in</td><td>Fetches what it needs and manages its own context</td></tr>
+  <tr><td><b>Memory</b></td><td>The conversation</td><td>Project instructions and memory files (e.g. CLAUDE.md)</td></tr>
+  <tr><td><b>Guard rails</b></td><td>You check every reply</td><td>Permissions, approvals, hooks, sandbox</td></tr></table>`, 0.6, 4.85, 12.1, 2.05, { step: 3, valign: "top" });
+
+// 3 Agentic loop
+S = makeSlide({ title: "Plan → Act → Observe → Done? → repeat", sub: "One task takes many runs of the loop. Each run is one model call; the tool or RAG result changes the next step.",
+  notes: "This is the loop from Topic 14 of the course. <b>Click 1:</b> the cycle. The model plans the next step, the harness acts on it by running a tool, a RAG lookup or an MCP call, the result goes back into the context, and the model checks whether it is done. <b>Clicks 2 to 7:</b> one task, six runs. Watch the dot go round once per run. Run 1 searches the code. Run 2 is a RAG lookup: the underwriting guidelines say <i>under</i> 25. Run 3 reads the code and finds the off-by-one. Run 4 proves it with a failing test. Run 5 needs approval to edit a file: the harness enforces that. Run 6 runs the full suite and, with nothing left to do, the model replies with end_turn. The agent did not know the plan in advance. Each observation changed the next step." });
+const nodeHTML = (t, sub) => `<b style="font-size:20px">${t}</b><br><span class="sub" style="font-size:13.3px">${sub}</span>`;
+const nPlan = S.box({ x: 2.5, y: 1.8, w: 1.8, h: 0.8, html: nodeHTML("Plan", "model decides next step"), fill: "y", step: 1 });
+const nAct = S.box({ x: 4.5, y: 3.35, w: 1.8, h: 0.8, html: nodeHTML("Act", "tool call · RAG · MCP"), fill: "dk", color: "w", step: 1 });
+const nObs = S.box({ x: 2.5, y: 4.9, w: 1.8, h: 0.8, html: nodeHTML("Observe", "result added to context"), fill: "bg2", step: 1 });
+const nDone = S.box({ x: 0.5, y: 3.35, w: 1.8, h: 0.8, html: nodeHTML("Done?", "any tool_use left?"), fill: "green", color: "w", step: 1 });
+S.arrow(4.3, 2.4, 5.2, 3.35, { step: 1, width: 2.4 });
+S.arrow(5.2, 4.15, 4.3, 5.0, { step: 1, width: 2.4, delay: 150 });
+S.arrow(2.5, 5.3, 1.4, 4.15, { step: 1, width: 2.4, delay: 300 });
+S.arrow(1.4, 3.35, 2.5, 2.2, { step: 1, width: 2.4, color: "orange", delay: 450 });
+S.label("<b>No → repeat</b>", 0.6, 2.45, 1.6, 0.3, { size: 11, color: "orange", step: 1 });
+const centre = S.label("<i>The harness keeps going while the model asks for a tool</i>", 2.35, 3.3, 2.1, 0.95, { size: 11, align: "center", color: "g", step: 1 });
+S.box({ x: 0.6, y: 5.95, w: 5.7, h: 0.8, align: "left", size: 12, fill: "bg2", step: 1,
+  html: "<b>Yes → stop.</b> The reply has no tool_use (stop_reason: end_turn), or the harness hits a turn, time or cost limit." });
+S.label("<b>Task:</b> drivers aged exactly 25 are charged the under-25 surcharge. Find and fix it.", 6.75, 1.75, 5.95, 0.5, { size: 13, valign: "top" });
+const LOOPS = [
+  ["Tool", 'grep("UNDER_25", path: "rating/")', "Found in driver_factors.py, line 88", "bg2", "dk"],
+  ["RAG", 'search_guidelines("under-25 surcharge")', "Manual §4.2: applies to drivers under 25", "blue", "w"],
+  ["Tool", 'read_file("driver_factors.py")', "if driver.age &lt;= 25: 25-year-olds included", "bg2", "dk"],
+  ["Tool", "edit test, run pytest", "1 failed: a 25-year-old got the surcharge", "bg2", "dk"],
+  ["Approve", "edit_file: change &lt;= to &lt;", "Harness asks; the developer approves", "orange", "w"],
+  ["Done", 'run("pytest -q")', "312 passed → end_turn with a summary", "green", "w"],
+];
+LOOPS.forEach((r, i) => {
+  const y = 2.35 + i * 0.74, step = 2 + i;
+  S.dot(i + 1, 6.75, y + 0.1, { step });
+  S.box({ x: 7.3, y: y + 0.08, w: 0.95, h: 0.46, html: r[0], fill: r[3], color: r[4], bold: true, size: 11, pad: 0, step });
+  S.label(`<b class="mono">${r[1]}</b><br><span style="color:var(--g)">→ ${r[2]}</span>`, 8.4, y, 4.3, 0.64, { size: 12, step });
+});
+{
+  const SL = S, ring = [[3.4, 2.2], [5.4, 3.75], [3.4, 5.3], [1.4, 3.75]], nodes = [nPlan, nAct, nObs, nDone];
+  SL.onStep((k, fwd) => {
+    const run = k - 1;
+    const actSub = nAct.querySelector(".sub");
+    if (run >= 1) {
+      centre.firstChild.innerHTML = `<b style="font-size:26px;color:var(--dk)">Run ${run}</b><br>of 6`;
+      actSub.textContent = LOOPS[run - 1][0] === "RAG" ? "RAG lookup" : LOOPS[run - 1][0] === "Approve" ? "tool + approval" : LOOPS[run - 1][0] === "Done" ? "final tool call" : "tool call";
+      if (fwd) {
+        const last = run === 6;
+        const pts = last ? [...ring] : [...ring, ring[0]];
+        packet(SL, pts, 450);
+        nodes.forEach((n, j) => { setTimeout(() => { n.classList.add("hot"); setTimeout(() => n.classList.remove("hot"), 420); }, j * 450); });
+      }
+    } else {
+      centre.firstChild.innerHTML = "<i>The harness keeps going while the model asks for a tool</i>";
+      actSub.textContent = "tool call · RAG · MCP";
+    }
+  });
+}
+
+// 4 What is MCP
+S = makeSlide({ title: "What is MCP?", sub: "The Model Context Protocol is an open standard for connecting AI apps to tools and data. Think of it as USB-C for AI.",
+  notes: "MCP, the Model Context Protocol, is an open standard introduced by Anthropic in late 2024 and now supported across many AI apps. <b>Click 1:</b> without a standard, every AI app needs a custom integration with every system: three apps and three systems means nine. <b>Click 2:</b> with MCP, each app speaks MCP once and each system gets one MCP server: three plus three, six. This is why Guidewire chose MCP for its Developer Assistant. <b>Click 3:</b> a server can offer tools (actions), resources (data) and prompts (templates). Tools are by far the most used. <b>Click 4:</b> the vocabulary: host, client, server, and JSON-RPC 2.0 over stdio or HTTP." });
+const APPS = ["Claude Code", "Copilot", "Your own app"], SYSS = ["Policy admin", "Rating engine", "Guidelines"], YS = [2.4, 3.25, 4.1];
+S.label("<b>Without a standard: N × M</b>", 0.6, 1.8, 3.9, 0.4, { size: 15, step: 1 });
+YS.forEach((y, i) => {
+  S.box({ x: 0.6, y, w: 1.3, h: 0.6, html: `<b>${APPS[i]}</b>`, fill: "bg2", size: 11, pad: 2, step: 1 });
+  S.box({ x: 3.1, y, w: 1.3, h: 0.6, html: SYSS[i], fill: "w", line: "lg", size: 11, pad: 2, step: 1 });
+});
+let li = 0;
+YS.forEach(y1 => YS.forEach(y2 => S.arrow(1.9, y1 + 0.3, 3.1, y2 + 0.3, { step: 1, noHead: true, color: "orange", width: 1.3, delay: 200 + (li++) * 90 })));
+const nm = S.label('<b><span class="cnt">9</span> custom integrations</b> (3 × 3) to build and maintain', 0.6, 4.85, 3.8, 0.5, { size: 12, color: "orange", valign: "top", step: 1 });
+S.label("<b>With MCP: N + M</b>", 4.8, 1.8, 3.9, 0.4, { size: 15, step: 2 });
+YS.forEach((y, i) => {
+  S.box({ x: 4.8, y, w: 1.3, h: 0.6, html: `<b>${APPS[i]}</b>`, fill: "bg2", size: 11, pad: 2, step: 2 });
+  S.box({ x: 7.3, y, w: 1.3, h: 0.6, html: SYSS[i], fill: "w", line: "lg", size: 11, pad: 2, step: 2 });
+  S.arrow(6.1, y + 0.3, 6.35, y + 0.3, { step: 2, noHead: true, width: 2, flow: "dk" });
+  S.arrow(7.05, y + 0.3, 7.3, y + 0.3, { step: 2, noHead: true, width: 2, flow: "dk" });
+});
+S.box({ x: 6.35, y: 2.4, w: 0.7, h: 2.3, html: "<b>MCP</b>", fill: "y", size: 14, pad: 0, step: 2 });
+const np = S.label('<b><span class="cnt">6</span> standard connectors</b> (3 + 3). Build once, use anywhere.', 4.8, 4.85, 3.8, 0.5, { size: 12, color: "green", valign: "top", step: 2 });
+S.label("<b>What a server offers</b>", 9.0, 1.8, 3.7, 0.4, { size: 15, step: 3 });
+[["Tools", "Actions the model can call, e.g. get_quote", "y"], ["Resources", "Data the app can read, e.g. a policy document", "bg2"], ["Prompts", "Ready-made templates, e.g. “explain a quote”", "bg2"]].forEach(([t, d, f], i) =>
+  S.box({ x: 9.0, y: 2.4 + i * 0.85, w: 3.7, h: 0.72, align: "left", fill: f, step: 3, html: `<b style="font-size:18.7px">${t}</b><br><span style="font-size:14.7px">${d}</span>` }));
+S.label("<i>Tools are by far the most used.</i>", 9.0, 4.95, 3.7, 0.3, { size: 11, color: "g", step: 3 });
+[["Host", "the AI app or harness, e.g. Claude Code"], ["Client", "one connection per server, inside the host"], ["Server", "the connector that exposes a system"], ["Wire", "JSON-RPC 2.0 over stdio (local) or HTTP (remote)"]].forEach(([t, d], i) =>
+  S.box({ x: 0.6 + i * 3.06, y: 5.6, w: 2.9, h: 1.15, align: "left", valign: "top", fill: i ? "bg2" : "dk", color: i ? "dk" : "w", step: 4, html: `<b style="font-size:20px">${t}</b><br><span style="font-size:16px">${d}</span>` }));
+{
+  const count = (lbl, to) => { const c = lbl.querySelector(".cnt"); let n = 0; c.textContent = 0; const t = setInterval(() => { c.textContent = ++n; if (n >= to) clearInterval(t); }, 110); };
+  S.onStep((k, fwd) => { if (fwd && k === 1) setTimeout(() => count(nm, 9), 200); if (fwd && k === 2) setTimeout(() => count(np, 6), 200); });
+}
+
+// 5 Harness ↔ MCP servers
+S = makeSlide({ title: "The harness connects to MCP servers", sub: "One line of config per server. At start-up the harness starts one client per server and learns its tools.",
+  notes: "<b>Click 1:</b> the harness, the MCP host. It runs the loop, holds the permissions and has its own built-in tools. <b>Clicks 2 to 4:</b> each MCP server it is configured with, for example in a .mcp.json file, gets its own MCP client. A local server runs as a process over stdio. A remote server is a URL behind a login over HTTP. A knowledge base server can offer RAG search as a tool. The moving dots are JSON-RPC messages. <b>Click 5:</b> the server's tools appear to the model next to the built-in ones. The model never talks to a server directly; the harness is always in the middle and applies the same permissions." });
+S.panel(0.6, 1.75, 5.85, 4.55, { step: 1, line: "lg" });
+S.label("<b>Agent harness (MCP host), e.g. Claude Code</b>", 0.85, 1.85, 5.4, 0.4, { size: 14, step: 1 });
+S.box({ x: 0.85, y: 2.4, w: 2.6, h: 1.1, html: "<b>Agentic loop</b><br>calls the model (Claude API)", fill: "y", size: 13, step: 1 });
+S.box({ x: 0.85, y: 3.75, w: 2.6, h: 1.0, html: "<b>Permissions</b><br>allow · ask · deny", fill: "w", line: "lg", size: 13, step: 1 });
+S.box({ x: 0.85, y: 5.0, w: 2.6, h: 1.0, html: "<b>Built-in tools</b><br>read, edit, run", fill: "w", line: "lg", size: 13, step: 1 });
+[["Policy admin server", "local process · stdio", 2.4], ["Rating engine server", "remote · HTTP + login", 3.75], ["Knowledge base server", "RAG search over guidelines", 5.0]].forEach(([n, t, y], i) => {
+  const step = 2 + i;
+  S.box({ x: 3.75, y, w: 2.45, h: 1.0, html: "<b>MCP client</b>", fill: "dk", color: "w", size: 13, step });
+  S.box({ x: 8.0, y, w: 4.7, h: 1.0, align: "left", fill: "w", line: "dk", step, pad: 12, html: `<b style="font-size:18.7px">${n}</b><br><span style="color:var(--g);font-size:16px">${t} · tools, resources, prompts</span>` });
+  S.arrow(6.2, y + 0.5, 8.0, y + 0.5, { step, flow: true });
+  S.label("JSON-RPC", 6.3, y + 0.12, 1.6, 0.3, { size: 11, color: "g", align: "center", step });
+});
+S.box({ x: 0.6, y: 6.45, w: 12.1, h: 0.5, align: "left", size: 13, fill: "y", step: 5, padX: 14,
+  html: "The model never talks to a server. The harness finds the tools at start-up, then checks permissions on every call." });
+
+// 6 MCP sequence
+S = makeSlide({ title: "How the MCP integration works, step by step", sub: "Dark: MCP JSON-RPC · Blue: Claude Messages API · Dashed: a response · The real message appears at the bottom",
+  notes: "Each click adds one message and shows its real JSON at the bottom. <b>Steps 1 to 5</b> are the connection, once, at start-up: initialize agrees the protocol version and capabilities, notifications/initialized confirms, then tools/list fetches every tool with its JSON schema. <b>Step 6:</b> the user asks. <b>Step 7:</b> the harness sends the message and the tool definitions to the model. <b>Step 8:</b> the model replies with tool_use. <b>Step 9:</b> the harness checks permissions. <b>Steps 10–11:</b> tools/call to the MCP server and the result. <b>Step 12:</b> back to the model as tool_result. The orange frame is the loop: 7 to 12 repeat for every tool the model asks for. <b>Step 13:</b> end_turn, and <b>step 14</b> the answer goes to the user." });
+{
+  const lanes = [
+    { id: "U", name: "User", x: 2.6, w: 1.6, fill: "bg2" },
+    { id: "H", name: "Harness (MCP client)", x: 5.3, w: 2.4, fill: "y" },
+    { id: "S", name: "Rating MCP server", x: 8.45, w: 2.3, fill: "dk", color: "w" },
+    { id: "M", name: "Model (Claude API)", x: 11.45, w: 2.3, fill: "blue", color: "w" },
+  ];
+  const q = s => s.replace(/</g, "&lt;");
+  const msgs = [
+    { from: "H", to: "S", text: "initialize (protocolVersion, capabilities)", tag: "MCP request", json: q('{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-11-25","capabilities":{},"clientInfo":{"name":"claude-code"}}}') },
+    { from: "S", to: "H", text: "serverInfo, capabilities", ret: true, tag: "MCP response", json: q('{"jsonrpc":"2.0","id":1,"result":{"protocolVersion":"2025-11-25","capabilities":{"tools":{}},"serverInfo":{"name":"rating-engine"}}}') },
+    { from: "H", to: "S", text: "notifications/initialized", tag: "MCP notification", json: q('{"jsonrpc":"2.0","method":"notifications/initialized"}') },
+    { from: "H", to: "S", text: "tools/list", tag: "MCP request", json: q('{"jsonrpc":"2.0","id":2,"method":"tools/list"}') },
+    { from: "S", to: "H", text: "tools: get_quote, get_policy (+ schemas)", ret: true, tag: "MCP response", json: q('{"jsonrpc":"2.0","id":2,"result":{"tools":[{"name":"get_quote","description":"Price a policy change","inputSchema":{"type":"object",...}},{"name":"get_policy",...}]}}') },
+    { from: "U", to: "H", text: "“Add a driver aged 18”", kind: "local", tag: "User prompt", json: q('"Add an 18-year-old driver to policy MTR-55120. What is the new premium?"') },
+    { from: "H", to: "M", text: "messages + tool definitions", kind: "api", tag: "Messages API request", json: q('POST /v1/messages {"model":"claude-sonnet-5-5","tools":[{"name":"mcp__rating__get_quote",...}],"messages":[{"role":"user","content":"Add an 18-year-old driver..."}]}') },
+    { from: "M", to: "H", text: "tool_use: get_quote {driver_age: 18}", kind: "api", ret: true, tag: "Messages API response", json: q('{"stop_reason":"tool_use","content":[{"type":"tool_use","id":"toolu_01","name":"mcp__rating__get_quote","input":{"policy":"MTR-55120","driver_age":18}}]}') },
+    { from: "H", to: "H", text: "permission check", tag: "Harness", json: q('settings.json  "permissions": {"allow": ["mcp__rating__get_quote"]}  → allowed, no prompt needed') },
+    { from: "H", to: "S", text: "tools/call get_quote", tag: "MCP request", json: q('{"jsonrpc":"2.0","id":3,"method":"tools/call","params":{"name":"get_quote","arguments":{"policy":"MTR-55120","driver_age":18}}}') },
+    { from: "S", to: "H", text: "result: premium ₹44,750", ret: true, tag: "MCP response", json: q('{"jsonrpc":"2.0","id":3,"result":{"content":[{"type":"text","text":"premium: 44750 INR (was 18400)"}]}}') },
+    { from: "H", to: "M", text: "tool_result", kind: "api", tag: "Messages API request", json: q('{"role":"user","content":[{"type":"tool_result","tool_use_id":"toolu_01","content":"premium: 44750 INR (was 18400)"}]}') },
+    { from: "M", to: "H", text: "end_turn: answer text", kind: "api", ret: true, tag: "Messages API response", json: q('{"stop_reason":"end_turn","content":[{"type":"text","text":"Adding an 18-year-old driver raises the premium from ₹18,400 to ₹44,750."}]}') },
+    { from: "H", to: "U", text: "“₹44,750, was ₹18,400”", kind: "local", ret: true, tag: "Answer", json: q('"The new premium for MTR-55120 is ₹44,750, up from ₹18,400. Most of the rise is the young-driver loading."') },
+  ];
+  const y = i => (i < 5 ? 2.55 + i * 0.26 : 3.95 + (i - 5) * 0.26 + (i >= 6 ? 0.07 : 0) + (i >= 12 ? 0.07 : 0));
+  sequence(S, lanes, msgs, {
+    top: 1.7, bottom: 6.22, y, labelH: 0.2, size: 10.5,
+    frames: [{ from: 6, to: 11, x1: 3.9, x2: 12.7, text: "loop · while stop_reason = tool_use", a: 7 }],
+    tags: [{ at: 0, text: "Connect", fill: "y", a: 1 }, { at: 5, text: "Use", fill: "bg2", a: 6 }],
+    detail: { x: 0.6, y: 6.32, w: 12.1, h: 0.62 },
+  });
+}
+
+// 7 Divider
+S = makeSlide({ dark: true, title: "Guidewire Developer Assistant", sub: "Guidewire’s product knowledge, delivered to your agentic harness as MCP servers",
+  notes: "Now we apply everything to Guidewire. Guidewire did not build another chat window. It packaged its product knowledge as MCP servers, so the agentic coding tool your developers already use can call it whenever a task touches Guidewire code, configuration or APIs." });
+
+// 8 What it provides
+S = makeSlide({ title: "What the Developer Assistant gives your harness", sub: "Read-only access to curated Guidewire knowledge, through an MCP server, from the agentic coding tool you already use.",
+  notes: "<b>Click 1:</b> Developer Assistants by area: Gosu, Integrations and Jutro, plus one for Functions. Each is grounded in Guidewire's own material, not public web data. <b>Click 2:</b> cookbooks: step-by-step recipes for implementing Guidewire components the right way for your release. <b>Click 3:</b> the knowledge base: docs, best practices and patterns stored as curated embeddings and searched by meaning. That is RAG, as in the loop slide. <b>Click 4:</b> the 41 per cent figure is Guidewire's own benchmark, so treat it as a vendor claim and measure it on our own tasks. Read-only, and it runs on your own AI credentials." });
+S.label("<b>Assistants by area</b>", 0.6, 1.75, 5.5, 0.4, { size: 16, step: 1 });
+[["Gosu", "InsuranceSuite code, entities, PCF pages, display keys, tests"], ["Integrations", "Integration Gateway routes, mappings and Java classes"], ["Jutro", "Digital experiences with the right design-system components"], ["Functions", "Serverless extensions"]].forEach(([n, d], i) =>
+  S.box({ x: 0.6 + (i % 2) * 2.85, y: 2.25 + Math.floor(i / 2) * 1.75, w: 2.65, h: 1.55, align: "left", valign: "top", fill: "bg2", step: 1, pad: 12, html: `<b style="font-size:21px">${n}</b><br><span style="font-size:17px">${d}</span>` }));
+S.label("<b>Two kinds of knowledge</b>", 6.6, 1.75, 6.1, 0.4, { size: 16, step: 2 });
+S.box({ x: 6.6, y: 2.25, w: 6.1, h: 1.55, align: "left", valign: "top", fill: "y", step: 2, pad: 12, html: '<b style="font-size:21px">Cookbooks</b><br><span style="font-size:17px">Proven recipes for implementing Guidewire components step by step, matched to your release. The agent gets the right pattern in one call instead of by trial and error.</span>' });
+S.box({ x: 6.6, y: 4.0, w: 6.1, h: 1.55, align: "left", valign: "top", fill: "dk", color: "w", step: 3, pad: 12, html: '<b style="font-size:21px">Knowledge base as embeddings</b><br><span style="font-size:17px">Guidewire docs, best practices and patterns stored as curated embeddings. The agent searches by meaning (RAG) and gets the closest passages back.</span>' });
+const pct = S.label('<b style="font-size:42.7px"><span class="cnt">41</span>%</b>', 0.6, 5.8, 1.6, 0.9, { step: 4 });
+S.label("faster on Gosu tasks in Guidewire’s own tests, using cookbook patterns", 2.25, 5.8, 2.3, 0.9, { size: 12, color: "g", step: 4 });
+S.label('<b style="font-size:26.7px">Read-only</b>', 4.7, 5.8, 1.6, 0.9, { step: 4 });
+S.label("it returns knowledge; your harness makes every edit", 6.35, 5.8, 2.3, 0.9, { size: 12, color: "g", step: 4 });
+S.label('<b style="font-size:26.7px">Your AI</b>', 8.8, 5.8, 1.6, 0.9, { step: 4 });
+S.label("runs on your own AI credentials, in your harness", 10.45, 5.8, 2.3, 0.9, { size: 12, color: "g", step: 4 });
+S.onStep((k, fwd) => { if (fwd && k === 4) { const c = pct.querySelector(".cnt"); let n = 0; const t = setInterval(() => { n += 1; c.textContent = n; if (n >= 41) clearInterval(t); }, 22); } });
+
+// 9 Architecture
+S = makeSlide({ title: "How the harness connects to the Developer Assistant", sub: "A local MCP server on the workstation, backed by the Developer Assistant service on Guidewire Cloud Platform.",
+  notes: "<b>Click 1:</b> on the workstation is everything you already own: the developer, the agent harness, model access through your own AI credentials, and your project, which the harness edits locally. <b>Click 2:</b> Guidewire adds a local MCP server, configured in the harness like any other MCP server, plus an optional IntelliJ or Guidewire Studio plugin. <b>Click 3:</b> the local server talks to the Developer Assistant service on Guidewire Cloud Platform. <b>Click 4:</b> behind it are the cookbooks, the knowledge base of curated embeddings, and docs and best practice. Watch a request travel there and back. <b>Click 5:</b> it is read-only. It returns knowledge, and the harness makes every edit." });
+S.panel(0.6, 1.75, 6.3, 4.65, { line: "lg" });
+S.label("<b>Developer workstation</b>", 0.85, 1.85, 4, 0.35, { size: 14 });
+S.box({ x: 0.85, y: 2.3, w: 2.6, h: 0.9, html: "Model API<br>your AI credentials", fill: "w", line: "blue", dash: true, size: 12, step: 1 });
+S.box({ x: 4.05, y: 2.3, w: 2.6, h: 0.9, html: "Developer + IDE<br>one prompt with the intent", fill: "w", line: "lg", size: 12, step: 1 });
+const gHarn = S.box({ x: 0.85, y: 3.65, w: 2.6, h: 1.1, html: "<b>Agent harness</b><br>e.g. Claude Code", fill: "y", size: 14, step: 1 });
+S.box({ x: 0.85, y: 5.2, w: 2.6, h: 0.95, html: "Your project<br>InsuranceSuite config", fill: "w", line: "lg", size: 12, step: 1 });
+S.arrow(2.15, 3.65, 2.15, 3.2, { step: 1, flow: "blue" });
+S.label("Messages API", 2.25, 3.25, 1.5, 0.35, { size: 10, color: "blue", step: 1 });
+S.arrow(4.6, 3.2, 3.2, 3.65, { step: 1 });
+S.arrow(2.15, 4.75, 2.15, 5.2, { step: 1 });
+S.label("edits locally", 2.25, 4.8, 1.3, 0.35, { size: 10, color: "g", step: 1 });
+const gMcp = S.box({ x: 4.05, y: 3.65, w: 2.6, h: 1.1, html: "<b>Guidewire MCP server</b><br>(local)", fill: "dk", color: "w", size: 14, step: 2 });
+S.box({ x: 4.05, y: 5.2, w: 2.6, h: 0.95, html: "IntelliJ / Studio plugin<br>(optional)", fill: "w", line: "lg", size: 12, step: 2 });
+S.arrow(3.45, 4.2, 4.05, 4.2, { step: 2, flow: true });
+S.arrow(5.35, 4.75, 5.35, 5.2, { step: 2 });
+S.panel(8.3, 1.75, 4.4, 4.65, { step: 3, fill: "w", line: "dk", lineW: 1.6 });
+S.label("<b>Guidewire Cloud Platform</b>", 8.55, 1.85, 4, 0.35, { size: 14, step: 3 });
+const gSvc = S.box({ x: 8.55, y: 2.3, w: 3.9, h: 0.9, html: "<b>Developer Assistant service</b><br>version-aware", fill: "dk", color: "w", size: 13, step: 3 });
+S.arrow(6.65, 4.2, 8.3, 2.75, { width: 2.4, step: 3, flow: true });
+S.label("HTTPS · authenticated · read-only", 6.8, 4.3, 1.45, 0.6, { size: 10, color: "g", step: 3 });
+const gCook = S.box({ x: 8.55, y: 3.5, w: 3.9, h: 0.8, html: "<b>Cookbooks:</b> recipes for Guidewire components", fill: "y", size: 12, step: 4 });
+const gKb = S.box({ x: 8.55, y: 4.45, w: 3.9, h: 0.8, html: "<b>Knowledge base:</b> curated embeddings", fill: "bg2", line: "blue", size: 12, step: 4 });
+S.box({ x: 8.55, y: 5.4, w: 3.9, h: 0.8, html: "Docs, best practices, patterns", fill: "bg2", line: "lg", size: 12, step: 4 });
+S.box({ x: 0.6, y: 6.5, w: 12.1, h: 0.45, align: "left", size: 13, fill: "y", step: 5, padX: 14, html: "You keep the harness, the model and the guard rails. Guidewire maintains the knowledge." });
+{
+  const SL = S;
+  const flash = (n, t) => setTimeout(() => { n.classList.add("hot"); setTimeout(() => n.classList.remove("hot"), 500); }, t);
+  SL.onStep((k, fwd) => {
+    if (!fwd || k !== 4) return;
+    const path = [[3.45, 4.2], [4.05, 4.2], [6.65, 4.2], [8.3, 2.75], [10.5, 3.2], [10.5, 3.9], [10.5, 4.85], [10.5, 3.2], [8.3, 2.75], [6.65, 4.2], [3.45, 4.2]];
+    setTimeout(() => packet(SL, path, 380), 500);
+    flash(gHarn, 500); flash(gMcp, 900); flash(gSvc, 1700); flash(gCook, 2100); flash(gKb, 2500); flash(gSvc, 3300); flash(gMcp, 4100); flash(gHarn, 4300);
+  });
+}
+
+// 10 GW sequence
+S = makeSlide({ title: "A Gosu change with the Developer Assistant", sub: "“Add a policy number field to claim search.”  Dark: MCP · Blue: Messages API · Grey: local · Dashed: response",
+  notes: "Each click adds one message. <b>Connect:</b> the harness starts the local Guidewire MCP server and lists its tools; the local server authenticates to the Developer Assistant service. The developer gives one intent. <b>Run 1:</b> the model reads and searches the project with built-in tools. <b>Run 2:</b> it asks for the cookbook recipe; the call goes harness → local MCP server → cloud service, and the recipe for your release comes back. <b>Run 3:</b> it searches the knowledge base: a vector search over curated embeddings returns the closest passages. <b>Runs 4–6:</b> it edits the entity, PCF and display keys locally, builds and runs the tests with permission prompts, then replies end_turn. The developer reviews one coherent change set. Tool names are illustrative." });
+{
+  const lanes = [
+    { id: "D", name: "Developer", x: 2.45, w: 1.4, fill: "bg2" },
+    { id: "H", name: "Agent harness", x: 4.55, w: 1.8, fill: "y" },
+    { id: "G", name: "GW MCP (local)", x: 6.8, w: 1.8, fill: "dk", color: "w" },
+    { id: "W", name: "GW DA service", x: 9.05, w: 1.8, fill: "g", color: "w" },
+    { id: "M", name: "Model", x: 11.6, w: 1.5, fill: "blue", color: "w" },
+  ];
+  const msgs = [
+    { from: "H", to: "G", text: "initialize · tools/list" },
+    { from: "G", to: "W", text: "authenticate" },
+    { from: "G", to: "H", text: "tools: cookbook + KB search", ret: true },
+    { from: "D", to: "H", text: "“Add policy no. field”", kind: "local" },
+    { from: "H", to: "M", text: "goal + tool list", kind: "api" },
+    { from: "M", to: "H", text: "tool_use: read, grep project files", kind: "api", ret: true },
+    { from: "H", to: "M", text: "tool_result: matching files", kind: "api" },
+    { from: "M", to: "H", text: "tool_use: search_cookbooks", kind: "api", ret: true },
+    { from: "H", to: "G", text: "tools/call" },
+    { from: "G", to: "W", text: "cookbook lookup" },
+    { from: "W", to: "G", text: "recipe for your release", ret: true },
+    { from: "G", to: "H", text: "recipe: entity, PCF, keys", ret: true },
+    { from: "H", to: "M", text: "tool_result: recipe", kind: "api" },
+    { from: "M", to: "H", text: "tool_use: search_knowledge", kind: "api", ret: true },
+    { from: "H", to: "G", text: "tools/call" },
+    { from: "G", to: "W", text: "vector search (embeddings)" },
+    { from: "W", to: "G", text: "top-k passages", ret: true },
+    { from: "G", to: "H", text: "passages", ret: true },
+    { from: "H", to: "M", text: "tool_result: passages", kind: "api" },
+    { from: "M", to: "H", text: "Runs 4–6: edit, build, test, then end_turn", kind: "api", ret: true },
+    { from: "H", to: "D", text: "change set for review", kind: "local", ret: true },
+  ];
+  const y = i => 2.45 + i * 0.2 + (i >= 3 ? 0.1 : 0) + (i >= 4 ? 0.1 : 0) + (i >= 20 ? 0.1 : 0);
+  sequence(S, lanes, msgs, {
+    top: 1.65, bottom: 6.92, y, labelH: 0.18, size: 10, tagW: 1.0,
+    frames: [{ from: 4, to: 19, x1: 3.95, x2: 12.7, text: "loop · repeats until end_turn", a: 5 }],
+    tags: [{ at: 0, text: "Connect", fill: "y", a: 1 }, { at: 4, text: "Run 1", a: 5 }, { at: 6, text: "Run 2", a: 7 }, { at: 12, text: "Run 3", a: 13 }, { at: 18, text: "Runs 4–6", a: 19 }],
+  });
+  S.label("<i>Tool names are illustrative</i>", 9.7, 6.72, 3.0, 0.25, { size: 10, color: "g", align: "right" });
+}
+
+// 11 Takeaways
+S = makeSlide({ title: "What to remember",
+  notes: "Three things to take away. The harness runs the loop many times for one task. MCP is the standard plug: connect, list tools, call them, with the harness in the middle. And the Guidewire Developer Assistant is Guidewire's knowledge on that plug: cookbooks and an embeddings knowledge base. Detailed setup steps and exact tool names are in Guidewire's Developer Assistant documentation, which needs a Guidewire login. A good next step: connect it in a sandbox project and try one real backlog task." });
+[["Harness, not chat", "The harness runs the loop many times: model call, tool or RAG lookup, result, repeat, until end_turn."],
+ ["MCP is the plug", "Initialize, list tools, then call them. The harness sits in the middle and applies your permissions."],
+ ["Guidewire brings the know-how", "The Developer Assistant supplies cookbooks and an embeddings knowledge base over MCP. You keep your tools and governance."]].forEach(([h, d], i) => {
+  const x = 0.6 + i * 4.1, step = i + 1;
+  S.dot(i + 1, x, 1.5, { step });
+  S.label(`<b>${h}</b>`, x, 2.05, 3.8, 0.5, { size: 18, valign: "top", step });
+  S.label(d, x, 2.6, 3.8, 1.6, { size: 15, valign: "top", step });
+});
+S.box({ x: 0.6, y: 4.9, w: 12.1, h: 1.75, align: "left", valign: "top", fill: "bg2", size: 12, pad: 16, html:
+  `<b>Sources</b><ul style="margin:6px 0 0;padding-left:20px;line-height:1.55">
+   <li><a href="https://www.guidewire.com/resources/blog/developers/accelerating-p-c-delivery-with-developer-assistants-from-guidewire" target="_blank" rel="noopener">Guidewire blog: Accelerating P&amp;C delivery with Developer Assistants from Guidewire</a></li>
+   <li><a href="https://docs.guidewire.com/cloud/qusar/whatsnew/topics/gwcp-release_highlights.html" target="_blank" rel="noopener">Guidewire Cloud Platform, What’s new in Qusar (release highlights)</a></li>
+   <li><a href="https://www.guidewire.com/products/technology/insurance-ai-from-guidewire" target="_blank" rel="noopener">Guidewire: Insurance AI from Guidewire</a></li>
+   <li><a href="https://modelcontextprotocol.io" target="_blank" rel="noopener">Model Context Protocol specification: modelcontextprotocol.io</a></li></ul>` });
+
+/* ===================== navigation ===================== */
+let cur = 0, step = 0, timer = null;
+SLIDES.forEach(s => {
+  // stagger items that share a step
+  const byStep = {};
+  s.items.forEach(n => { const k = n.dataset.step; byStep[k] = (byStep[k] || 0) + 1; const d = Math.min(byStep[k] - 1, 12) * 35; if (n.classList.contains("el")) n.style.transitionDelay = d + "ms"; });
+  if (s.steps) { const d = document.createElement("div"); d.className = "stepdots"; d.innerHTML = "<i></i>".repeat(s.steps); s.el.appendChild(d); s.dots = d; }
+});
+function render(fwd) {
+  const s = SLIDES[cur];
+  SLIDES.forEach((x, i) => x.el.classList.toggle("active", i === cur));
+  s.items.forEach(n => n.classList.toggle("on", +n.dataset.step <= step));
+  if (s.dots) [...s.dots.children].forEach((d, i) => d.classList.toggle("done", i < step));
+  s.hooks.forEach(h => h(step, fwd));
+  document.getElementById("notes").innerHTML = `<b>Slide ${cur + 1} of ${SLIDES.length}${s.steps ? ` · step ${step} of ${s.steps}` : ""}</b><br>${s.notes || ""}`;
+  history.replaceState(null, "", "#" + (cur + 1));
+}
+function enter(i, atEnd) {
+  const s = SLIDES[cur]; s.items.forEach(n => n.classList.remove("on"));
+  cur = i; step = atEnd ? SLIDES[i].steps : 0;
+  SLIDES[i].items.forEach(n => n.classList.remove("on"));
+  requestAnimationFrame(() => requestAnimationFrame(() => render(!atEnd)));
+}
+function next() { if (step < SLIDES[cur].steps) { step++; render(true); } else if (cur < SLIDES.length - 1) enter(cur + 1); else stop(); }
+function prev() { if (step > 0) { step--; render(false); } else if (cur > 0) enter(cur - 1, true); }
+function play() { if (timer) return stop(); timer = setInterval(next, 1800); document.getElementById("bPlay").textContent = "❚❚ Pause"; }
+function stop() { clearInterval(timer); timer = null; document.getElementById("bPlay").textContent = "▶ Play"; }
+function toggleNotes() { document.getElementById("notes").classList.toggle("open"); }
+function full() { if (!document.fullscreenElement) document.documentElement.requestFullscreen?.(); else document.exitFullscreen?.(); }
+addEventListener("keydown", e => {
+  if (["ArrowRight", "PageDown", " ", "Enter"].includes(e.key)) { e.preventDefault(); next(); }
+  else if (["ArrowLeft", "PageUp", "Backspace"].includes(e.key)) { e.preventDefault(); prev(); }
+  else if (e.key === "Home") enter(0); else if (e.key === "End") enter(SLIDES.length - 1, true);
+  else if (e.key.toLowerCase() === "n") toggleNotes(); else if (e.key.toLowerCase() === "p") play(); else if (e.key.toLowerCase() === "f") full();
+});
+stage.addEventListener("click", e => { if (e.target.closest("a")) return; (e.clientX > innerWidth / 3 ? next : prev)(); });
+document.getElementById("bNext").onclick = next; document.getElementById("bPrev").onclick = prev;
+document.getElementById("bPlay").onclick = play; document.getElementById("bNotes").onclick = toggleNotes; document.getElementById("bFull").onclick = full;
+function fit() { const k = Math.min(innerWidth / 1280, innerHeight / 720); stage.style.transform = `scale(${k}) translate(-50%,-50%)`; stage.style.transformOrigin = "0 0"; stage.style.left = "50%"; stage.style.top = "50%"; stage.style.transform = `translate(-50%,-50%) scale(${k})`; stage.style.transformOrigin = "center"; }
+addEventListener("resize", fit); fit();
+const start = Math.max(0, Math.min(SLIDES.length - 1, (parseInt(location.hash.slice(1)) || 1) - 1));
+cur = start; render(true);
+setTimeout(() => document.getElementById("help").classList.add("gone"), 6000);
+</script>
+</body>
+</html>
