@@ -177,6 +177,44 @@ s.addTable([
   border: { type: "solid", pt: 0.75, color: HEX.accent6 }, fill: { color: HEX.lt1 }, valign: "middle", margin: 0.06 });
 s.addNotes("Click 1: the chat model. You ask, it answers with text or code, and you copy, paste, run and check it yourself. You are the loop, and you are the safety gate. Click 2: the agentic harness. You give a goal. The harness calls the model, runs the tools it asks for (files, APIs, RAG search, MCP servers), feeds the results back and repeats until the task is done, applying permissions on every action. You get a result to review. Click 3: the differences in one table. Same model, different car: the harness adds the steering, the brakes and the tools.");
 
+// ===================== 2b: What is a harness? =====================
+s = content("What is an agentic harness?", "Agent = model + harness. The model is the engine; the harness is the rest of the car that lets it do real work.", "Harness and MCP");
+panel(s, 0.6, 1.75, 5.6, 3.8, { a: 1, fill: C.accent1 });
+label(s, "Harness", 0.8, 1.85, 2.0, 0.35, { size: 14, bold: true, a: 1 });
+box(s, { x: 2.35, y: 2.05, w: 2.1, h: 0.75, text: [{ text: "Model", options: { bold: true, breakLine: true } }, { text: "e.g. claude-sonnet-5-5", options: { fontSize: 10 } }], fill: C.text1, color: C.background1, size: 15, a: 1 });
+const PARTS = [
+  ["Agentic loop", "calls the model again and again until done"],
+  ["Tools", "files, shell, search, web, RAG"],
+  ["Context and memory", "CLAUDE.md, AGENTS.md, compaction"],
+  ["Permissions", "allow, ask or deny; sandbox"],
+  ["Extensions", "MCP servers, skills, hooks, subagents"],
+  ["Interface", "terminal, IDE, web, Slack, CI"],
+];
+PARTS.forEach(([t, d], i) => {
+  const x = 0.8 + (i % 2) * 2.65, y = 3.0 + Math.floor(i / 2) * 0.82;
+  box(s, { x, y, w: 2.55, h: 0.72, align: "left", size: 11, fill: C.background1, margin: 0.1, a: 1,
+    text: [{ text: t, options: { bold: true, fontSize: 12, breakLine: true } }, { text: d, options: { color: C.accent2 } }] });
+});
+label(s, "Examples, by where they run", 6.45, 1.75, 6.25, 0.35, { size: 15, bold: true, a: 2 });
+const HARN = [
+  ["Terminal", [["Claude Code", "Anthropic"], ["Codex CLI", "OpenAI"], ["Gemini CLI", "Google"]], 2],
+  ["IDE", [["GitHub Copilot agent mode", "GitHub"], ["Cursor", "Anysphere"], ["Cline", "open source"]], 2],
+  ["Cloud and background", [["Copilot coding agent", "GitHub: issue → PR"], ["Claude Code on the web", "Anthropic"], ["Devin", "Cognition"]], 3],
+  ["Anywhere, or your own", [["Factory Droids", "Factory: CLI, IDE, Slack, web"], ["Claude Agent SDK", "build your own"], ["Your own", "any model + loop"]], 3],
+];
+HARN.forEach(([cat, items, a], r) => {
+  const y = 2.2 + r * 0.84;
+  box(s, { x: 6.45, y, w: 1.5, h: 0.72, text: cat, fill: C.text1, color: C.background1, bold: true, size: 11, margin: 0.05, a });
+  items.forEach(([n, v], j) => {
+    box(s, { x: 8.05 + j * 1.57, y, w: 1.5, h: 0.72, size: 10, fill: C.background2, margin: 0.04, a,
+      text: [{ text: n, options: { bold: true, fontSize: 11, breakLine: true } }, { text: v, options: { color: C.accent2 } }] });
+  });
+});
+box(s, { x: 0.6, y: 5.8, w: 12.1, h: 1.05, align: "left", size: 13, fill: C.background1, line: C.text1, margin: 0.16, a: 4,
+  text: [{ text: "Same parts, different trade-offs. ", options: { bold: true } },
+    { text: "They differ in where they run, how much they do on their own and how you customise them. They all act as MCP hosts, so one MCP server, like the Guidewire Developer Assistant, can plug into any of them." }] });
+s.addNotes("People say agent, assistant, copilot and harness for overlapping things, so here is the definition we use. An agent is a model plus a harness. The model only reads text and writes text. Click 1: the harness is everything around it. It runs the loop, calling the model again and again. It runs the tools the model asks for: files, the shell, search, the web, RAG. It manages context and memory: project instruction files like CLAUDE.md or AGENTS.md, and compaction when the window fills. It enforces permissions and the sandbox. It loads extensions: MCP servers, skills, hooks and subagents. And it gives you an interface: terminal, IDE, web, Slack or CI. Click 2: examples you may know. In the terminal, Claude Code, OpenAI's Codex CLI and Google's Gemini CLI. In the IDE, GitHub Copilot agent mode, Cursor and Cline. Click 3: harnesses that work in the background, like the Copilot coding agent, which takes an issue and opens a pull request, Claude Code on the web, and Devin. Factory's Droids run across the command line, IDE, Slack and the web. With the Claude Agent SDK you can build your own. Click 4: they share the same parts and differ in trade-offs. Because they all act as MCP hosts, a tool written once as an MCP server works in all of them. That is the bridge to the rest of the deck.");
+
 // ===================== 3: Agentic loop (from v3 Topic 14) =====================
 s = content("Plan → Act → Observe → Done? → repeat", "One task takes many runs of the loop. Each run is one model call; the tool or RAG result changes the next step.", "Harness and MCP");
 // cycle (click 1)

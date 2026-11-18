@@ -245,6 +245,36 @@ S.label(`<table class="cmp"><tr><th style="width:150px"></th><th style="backgrou
   <tr><td><b>Memory</b></td><td>The conversation</td><td>Project instructions and memory files (e.g. CLAUDE.md)</td></tr>
   <tr><td><b>Guard rails</b></td><td>You check every reply</td><td>Permissions, approvals, hooks, sandbox</td></tr></table>`, 0.6, 4.85, 12.1, 2.05, { step: 3, valign: "top" });
 
+// 2b What is a harness?
+S = makeSlide({ title: "What is an agentic harness?", sub: "Agent = model + harness. The model is the engine; the harness is the rest of the car that lets it do real work.",
+  notes: "People say agent, assistant, copilot and harness for overlapping things, so here is the definition we use. An agent is a model plus a harness. The model only reads text and writes text. <b>Click 1:</b> the harness is everything around it. It runs the loop, calling the model again and again. It runs the tools the model asks for: files, the shell, search, the web, RAG. It manages context and memory: project instruction files like CLAUDE.md or AGENTS.md, and compaction when the window fills. It enforces permissions and the sandbox. It loads extensions: MCP servers, skills, hooks and subagents. And it gives you an interface: terminal, IDE, web, Slack or CI. <b>Click 2:</b> examples you may know. In the terminal, Claude Code, OpenAI's Codex CLI and Google's Gemini CLI. In the IDE, GitHub Copilot agent mode, Cursor and Cline. <b>Click 3:</b> harnesses that work in the background, like the Copilot coding agent, which takes an issue and opens a pull request, Claude Code on the web, and Devin. Factory's Droids run across the command line, IDE, Slack and the web. With the Claude Agent SDK you can build your own. <b>Click 4:</b> they share the same parts and differ in trade-offs. Because they all act as MCP hosts, a tool written once as an MCP server works in all of them. That is the bridge to the rest of the deck." });
+S.panel(0.6, 1.75, 5.6, 3.8, { step: 1, fill: "y" });
+S.label("<b>Harness</b>", 0.8, 1.85, 2.0, 0.35, { size: 14, step: 1 });
+const hModel = S.box({ x: 2.35, y: 2.05, w: 2.1, h: 0.75, html: "<b>Model</b><br><span style='font-size:13px'>e.g. claude-sonnet-5-5</span>", fill: "dk", color: "w", size: 15, step: 1 });
+[["Agentic loop", "calls the model again and again until done"], ["Tools", "files, shell, search, web, RAG"],
+ ["Context and memory", "CLAUDE.md, AGENTS.md, compaction"], ["Permissions", "allow, ask or deny; sandbox"],
+ ["Extensions", "MCP servers, skills, hooks, subagents"], ["Interface", "terminal, IDE, web, Slack, CI"]].forEach(([t, d], i) => {
+  const x = 0.8 + (i % 2) * 2.65, y = 3.0 + Math.floor(i / 2) * 0.82;
+  const b = S.box({ x, y, w: 2.55, h: 0.72, align: "left", size: 11, fill: "w", pad: 6, padX: 10, step: 1,
+    html: `<b style="font-size:16px">${t}</b><br><span style="color:var(--g)">${d}</span>` });
+  b.style.transitionDelay = (250 + i * 120) + "ms";
+});
+S.label("<b>Examples, by where they run</b>", 6.45, 1.75, 6.25, 0.35, { size: 15, step: 2 });
+[["Terminal", [["Claude Code", "Anthropic"], ["Codex CLI", "OpenAI"], ["Gemini CLI", "Google"]], 2],
+ ["IDE", [["GitHub Copilot agent mode", "GitHub"], ["Cursor", "Anysphere"], ["Cline", "open source"]], 2],
+ ["Cloud and background", [["Copilot coding agent", "GitHub: issue → PR"], ["Claude Code on the web", "Anthropic"], ["Devin", "Cognition"]], 3],
+ ["Anywhere, or your own", [["Factory Droids", "Factory: CLI, IDE, Slack, web"], ["Claude Agent SDK", "build your own"], ["Your own", "any model + loop"]], 3]].forEach(([cat, items, step], r) => {
+  const y = 2.2 + r * 0.84, base = (r % 2) * 350;
+  S.box({ x: 6.45, y, w: 1.5, h: 0.72, html: `<b>${cat}</b>`, fill: "dk", color: "w", size: 11, pad: 4, step }).style.transitionDelay = base + "ms";
+  items.forEach(([n, v], j) => {
+    S.box({ x: 8.05 + j * 1.57, y, w: 1.5, h: 0.72, size: 10, fill: "bg2", pad: 3, step,
+      html: `<b style="font-size:14.7px">${n}</b><br><span style="color:var(--g)">${v}</span>` }).style.transitionDelay = (base + 100 + j * 90) + "ms";
+  });
+});
+const hBar = S.box({ x: 0.6, y: 5.8, w: 12.1, h: 1.05, align: "left", size: 13, fill: "w", line: "dk", pad: 14, step: 4,
+  html: "<b>Same parts, different trade-offs.</b> They differ in where they run, how much they do on their own and how you customise them. They all act as MCP hosts, so one MCP server, like the Guidewire Developer Assistant, can plug into any of them." });
+S.onStep(k => { hModel.classList.toggle("hot", k === 1); hBar.classList.toggle("hot", k === 4); });
+
 // 3 Agentic loop
 S = makeSlide({ title: "Plan → Act → Observe → Done? → repeat", sub: "One task takes many runs of the loop. Each run is one model call; the tool or RAG result changes the next step.",
   notes: "This is the loop from Topic 14 of the course. <b>Click 1:</b> the cycle. The model plans the next step, the harness acts on it by running a tool, a RAG lookup or an MCP call, the result goes back into the context, and the model checks whether it is done. <b>Clicks 2 to 7:</b> one task, six runs. Watch the dot go round once per run. Run 1 searches the code. Run 2 is a RAG lookup: the underwriting guidelines say <i>under</i> 25. Run 3 reads the code and finds the off-by-one. Run 4 proves it with a failing test. Run 5 needs approval to edit a file: the harness enforces that. Run 6 runs the full suite and, with nothing left to do, the model replies with end_turn. The agent did not know the plan in advance. Each observation changed the next step." });
