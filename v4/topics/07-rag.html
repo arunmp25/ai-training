@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Topic 8 · RAG: grounding AI in your data</title>
+<link rel="stylesheet" href="../assets/style.css?v=4.2">
+<link rel="stylesheet" href="../assets/widgets.css?v=4.2">
+<link rel="stylesheet" href="../assets/story.css?v=4.2">
+<style>
+  .pipe { display: grid; gap: 10px; }
+  .pipe-row { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+  .pipe-row .lbl { width: 110px; font-size: 12px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+  .pbox { --c: var(--c-knowledge); padding: 10px 12px; border-radius: 6px; border: 1px solid var(--line); background: var(--card); font-weight: 700; font-size: 14px; color: var(--muted); transition: all .3s; }
+  .pbox.lit { color: var(--text); border-color: var(--c); background: color-mix(in srgb, var(--c) 22%, var(--card)); box-shadow: 0 0 16px color-mix(in srgb, var(--c) 40%, transparent); }
+  .parrow { color: var(--muted); }
+  .doc { display: grid; gap: 6px; }
+  .doc.many { grid-template-columns: 1fr 1fr; }
+  .chunk { --c: var(--accent); border: 2px dashed color-mix(in srgb, var(--c) 60%, transparent); border-radius: 6px; padding: 6px 10px; font-size: 13.5px; transition: all .3s; }
+  .chunk.hit { border-style: solid; border-width: 3px; background: color-mix(in srgb, var(--c) 16%, var(--card)); }
+  .chunk .key { background: color-mix(in srgb, var(--warn) 30%, transparent); border-radius: 4px; }
+  .emb svg { width: 100%; max-height: 50vh; aspect-ratio: 1.6; height: auto; background: var(--card); border-radius: 6px; border: 1px solid var(--line); }
+  .emb .pt { cursor: help; }
+  .res { font-size: 14px; display: grid; gap: 6px; }
+  .res div { padding: 8px 10px; border-radius: 8px; background: var(--card); border: 1px solid var(--line); }
+  .res .sim { float: right; font-weight: 800; color: var(--good); }
+</style>
+</head>
+<body class="deck" data-id="07">
+
+<section class="slide title-slide" data-title="Welcome">
+  <div class="big-emoji">📚</div>
+  <div class="eyebrow">Session 2 · Topic 8</div>
+  <h1>RAG: an open-book exam for AI</h1>
+  <p class="sub"><b>R</b>etrieval-<b>A</b>ugmented <b>G</b>eneration. Before answering, look up the relevant pages in <i>your</i> documents and put them on the desk.</p>
+  <aside class="notes"><span class="tag time">⏱ 30 sec</span><p class="say"><b>🎤 Say</b> RAG is an open-book exam for AI. Before answering, look up the relevant pages in your own documents and put them on the desk.</p><ul><li>One-line definition: RAG = <b>search</b> your documents, then <b>add</b> the results to the prompt, then <b>generate</b> the answer.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="The problem">
+  <div class="eyebrow">Why we need it</div>
+  <h2>The model has never read your company’s documents</h2>
+  <p class="sub">An employee asks the HR assistant a simple question. Compare the two.</p>
+  <div id="withWithout"></div>
+  <aside class="notes"><span class="tag time">⏱ 2 min</span><p class="say"><b>🎤 Say</b> The model has never read your company’s documents. Without RAG it gives a confident generic answer. With RAG it quotes your actual policy and says where it came from.</p><ul><li>Without RAG it gives a confident <i>generic</i> answer: a hallucination about <i>your</i> policy.</li><li>With RAG it quotes the actual policy and cites it, so people can check.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="How RAG works">
+  <div class="eyebrow">The pipeline</div>
+  <h2>Two phases: prepare once, look up on every question</h2>
+  <p class="sub">Step through it.</p>
+  <div class="pipe" id="pipe"></div>
+  <div class="split wide-right" style="margin-top:14px"><div id="pipeCtrl"></div><div id="pipeLog" style="max-height:260px"></div></div>
+  <aside class="notes"><span class="tag time">⏱ 3 min</span><p class="say"><b>🎤 Say</b> RAG has two phases: prepare the documents once in advance, then look things up on every question.</p><ul><li>Indexing happens ahead of time (and again whenever documents change). Querying happens in a second, on every question.</li><li>The model itself never changes. We just give it better pages to read.</li></ul></aside>
+</section>
+
+<section class="slide seq-slide" data-title="Sequence: RAG has two phases: index once, retrieve">
+  <div class="eyebrow">Sequence diagram</div>
+  <h2>RAG has two phases: index once, retrieve on every question</h2>
+  <p class="sub">The 20,000-page manual is prepared in advance. At question time only a few chunks reach the model.</p>
+  <div id="seqRag"></div>
+  <aside class="notes"><span class="tag time">⏱ 3 min</span><p class="say"><b>🎤 Say</b> Here is the same thing as a sequence diagram. Indexing happens offline. At question time, the app searches and hands the model only a few chunks. The model never searches anything itself.</p><ul><li>Step through with → or the clicker. Each step shows the real message on the right.</li><li>The model never searches anything. Your app does the search and hands the model a reading pack.</li><li>Steps 1 to 3 happen in a batch job, not during the chat.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="Chunking">
+  <div class="eyebrow">Step 1 matters most</div>
+  <h2>Chunking: how you cut the document decides the answer</h2>
+  <p class="sub">Question: <b>“How many days can I work from home, and which days?”</b> Change the chunk size and see what gets retrieved. Yellow = the sentences with the answer.</p>
+  <div class="row" style="margin-bottom:12px"><div id="chunkTabs"></div></div>
+  <div class="split wide-left">
+    <div class="doc" id="doc"></div>
+    <div class="stack-v"><div class="card" id="chunkAns"></div></div>
+  </div>
+  <aside class="notes"><span class="tag time">⏱ 3 min</span><p class="say"><b>🎤 Say</b> How you cut the documents decides the answer. Chunks too small split the answer in half. Chunks too big add noise and cost.</p><ul><li>Too small: the answer is split across chunks, so only half is retrieved and the answer is incomplete.</li><li>Too big: correct, but lots of irrelevant text, more cost and more distraction (Topic 4).</li><li>Just right: whole thoughts kept together. In practice teams also add overlap between chunks.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="Chunking strategies">
+  <div class="eyebrow">Chunking, properly</div>
+  <h2>Chunk size and overlap: see the boundaries move</h2>
+  <p class="sub">Real systems measure chunks in <b>tokens</b> (often 200–800) and let neighbouring chunks <b>overlap</b> so a thought cut at a boundary still appears whole in one chunk. Drag the sliders.</p>
+  <div class="split wide-left">
+    <div class="stack-v">
+      <div class="row"><div class="grow"><div class="label">Chunk size: <span id="csLbl"></span> words</div><input type="range" id="cs" min="8" max="60" value="16"></div>
+        <div class="grow"><div class="label">Overlap: <span id="ovLbl"></span> words</div><input type="range" id="ov" min="0" max="15" value="0"></div></div>
+      <div class="card" id="ovText" style="font-size:15px;line-height:2.1"></div>
+    </div>
+    <div class="stack-v">
+      <div class="card" id="ovStats"></div>
+      <div id="strats"></div>
+    </div>
+  </div>
+  <aside class="notes"><span class="tag time">⏱ 3 min</span><p class="say"><b>🎤 Say</b> Overlap means neighbouring chunks share a few lines, so a sentence cut at a boundary still appears whole in one chunk.</p><ul><li>It starts at size 16, overlap 0: the “Tuesday or Thursday” sentence is cut across two chunks. Drag overlap to ~8 and it’s whole again. Then try size 40: whole, but each chunk carries lots of unrelated text.</li><li>Strategies on the right: most teams start with <b>structure-aware</b> (split on headings/paragraphs) plus a token limit and ~10–20% overlap.</li><li>Every chunk keeps <b>metadata</b>: source, section, date, who may see it. That powers citations and permission filters (Topic 10).</li></ul></aside>
+</section>
+
+<section class="slide" data-title="The augmented prompt">
+  <div style="position:absolute;right:clamp(24px,5vw,72px);top:40px"><button class="btn bts-btn" data-bts="augmented">🎬 Behind the scenes</button></div>
+  <div class="eyebrow">The “A” in RAG</div>
+  <h2>What the model actually receives</h2>
+  <p class="sub">Retrieval doesn’t change the model. It changes the <b>prompt</b>. Toggle the instructions and see how the answer changes.</p>
+  <div class="split">
+    <div class="stack-v">
+      <div class="toggle-row"><span class="switch" id="swCite"></span><b>Require citations</b></div>
+      <div class="toggle-row"><span class="switch" id="swOnly"></span><b>“Use only these sources; say if the answer isn’t there”</b></div>
+      <div class="toggle-row"><span class="switch" id="swOff"></span><b>Ask something the documents don’t cover</b></div>
+      <pre class="code" id="augPrompt" style="max-height:42vh;overflow:auto"></pre>
+    </div>
+    <div class="stack-v"><div class="label">Model’s answer</div><div id="augAns"></div></div>
+  </div>
+  <aside class="notes"><span class="tag time">⏱ 3 min</span><p class="say"><b>🎤 Say</b> Retrieval does not change the model. It changes the prompt: instructions, numbered sources and then the question.</p><ul><li>Point out the structure: instructions, then numbered sources with their metadata, then the question. That’s Topic 6 (tags) applied to retrieval.</li><li>Turn on “off-topic question” with “use only these sources” OFF: the model fills the gap from memory, which is a hallucination with a citation-shaped wrapper. Turn it ON and it admits it doesn’t know.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="RAG vs fine-tuning">
+  <div class="eyebrow">Choosing</div>
+  <h2>RAG, fine-tuning, or just paste it in?</h2>
+  <p class="sub">For each situation, pick the best approach.</p>
+  <div id="choose"></div>
+  <aside class="notes"><span class="tag time">⏱ 3 min</span><p class="say"><b>🎤 Say</b> RAG, fine-tuning or just paste it in? As a rule: RAG for knowledge, fine-tuning for behaviour, and paste it in for a one-off document that fits.</p><ul><li>Rule of thumb: <b>RAG for knowledge</b> (facts that change and need citations), <b>fine-tuning for behaviour</b> (style, format at huge scale), and <b>paste it in</b> for one-off documents that fit in the window.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="The deep dive ahead">
+  <div class="eyebrow">Under the hood</div>
+  <h2>Two questions we skipped</h2>
+  <p class="sub">The pipeline had two magic boxes. The next two topics open them.</p>
+  <div class="cols-3" style="grid-template-columns:1fr 1fr">
+    <div class="card" style="border-top:4px solid var(--c-knowledge)"><div class="big-emoji" style="font-size:40px">📍</div><h3 style="margin:8px 0">07b · Embeddings and cosine similarity</h3><p class="muted">How does text become numbers? How do we measure that two pieces of text “mean the same thing”? Vectors, dimensions, cosine vs dot product vs distance, with a worked example.</p></div>
+    <div class="card" style="border-top:4px solid var(--c-knowledge)"><div class="big-emoji" style="font-size:40px">🗄️</div><h3 style="margin:8px 0">07c · Vector databases and retrieval</h3><p class="muted">Where do millions of vectors live, and how do we search them in milliseconds? Records and metadata, ANN indexes (HNSW), top-k, filters, hybrid search, re-ranking, evaluation and failure modes.</p></div>
+  </div>
+  <aside class="notes"><span class="tag time">⏱ 30 sec</span><p class="say"><b>🎤 Say</b> We skipped over two boxes: how a computer searches by meaning, and where all those vectors are stored. The next two topics cover them.</p></aside>
+</section>
+
+<section class="slide" data-title="Quick check">
+  <div class="eyebrow">Quick check</div>
+  <h2>Did it click?</h2>
+  <div id="quiz"></div>
+  <aside class="notes"><span class="tag time">⏱ 1 min</span><p class="say"><b>🎤 Say</b> Quick check.</p></aside>
+</section>
+
+<section class="slide" data-title="Takeaways">
+  <div class="eyebrow">Takeaways</div>
+  <h2>What to remember</h2>
+  <div class="cols-3" style="margin:10px 0 24px">
+    <div class="card"><b>📖 Open-book exam</b><p>RAG retrieves relevant chunks of your documents and adds them to the prompt. The model stays the same.</p></div>
+    <div class="card"><b>✂️ Chunking decides the answer</b><p>Whole thoughts per chunk, sensible size, a little overlap, metadata on every chunk.</p></div>
+    <div class="card"><b>🧾 Instruct the use</b><p>“Use only these sources, cite them, say when it isn’t there” turns retrieval into trustworthy answers.</p></div>
+  </div>
+  <div class="row"><a class="btn primary" data-nexttopic>Next →</a></div>
+  <aside class="notes"><span class="tag time">⏱ 30 sec</span><p class="say"><b>🎤 Say</b> Keyword search only finds the words you typed. Next, how does a computer search by meaning?</p><ul><li>Bridge: “Keyword search only finds the words you typed. How does a computer search by <i>meaning</i>? Next: searching by meaning.”</li></ul></aside>
+</section>
+
+<script src="../assets/course.js?v=4.2"></script>
+<script src="../assets/widgets.js?v=4.2"></script>
+<script>
+const { $, $$, cv } = W;
+
+W.tabs($("#withWithout"), [
+  { label: "❌ Without RAG", html: `<div class="split">
+    <div class="stack-v"><div class="bubble user" style="max-width:100%">How many days a week can I work from home?</div>
+      <div class="bubble ai" style="max-width:100%;border-color:var(--bad)">Most companies allow 2–3 days of remote work per week, though this varies. Many offer full flexibility on Fridays. Check with your manager for specifics!</div></div>
+    <div class="callout" style="--c:var(--bad)">⚠ Sounds helpful, but it’s a <b>generic guess</b>. “Fridays” is invented. It has never seen your policy, so it predicted a plausible answer (Topic 3).</div></div>` },
+  { label: "✅ With RAG", html: `<div class="split">
+    <div class="stack-v"><div class="bubble user" style="max-width:100%">How many days a week can I work from home?</div>
+      <div class="bubble sys" style="max-width:100%;text-align:left">📎 Retrieved: <i>“Employees may work from home up to 2 days per week. Remote days must be Tuesday or Thursday unless your manager approves otherwise.”</i> (Remote Work Policy v3, §2)</div>
+      <div class="bubble ai" style="max-width:100%">You can work from home <b>up to 2 days per week</b>, on <b>Tuesdays or Thursdays</b> unless your manager agrees otherwise. <span class="muted">[Remote Work Policy v3, §2]</span></div></div>
+    <div class="callout" style="--c:var(--good)">✅ Grounded in <b>your</b> policy, specific, and <b>cited</b> so anyone can check it. Update the policy and the answers update too, with no retraining.</div></div>` },
+]);
+
+/* ---- pipeline ---- */
+const BOXES = { idx: [["docs", "📄 Your documents"], ["chunk", "✂️ Chunk"], ["embed1", "📍 Embed"], ["db", "🗄️ Vector database"]],
+                q: [["q", "❓ Question"], ["embed2", "📍 Embed"], ["search", "🔎 Find similar chunks"], ["aug", "🧳 Add to prompt"], ["gen", "💬 Answer + citations"]] };
+$("#pipe").innerHTML = `<div class="pipe-row"><span class="lbl">Phase 1 · Prepare (once)</span>${BOXES.idx.map(([k, l], i) => `${i ? '<span class="parrow">→</span>' : ""}<span class="pbox" data-k="${k}">${l}</span>`).join("")}</div>
+  <div class="pipe-row"><span class="lbl">Phase 2 · Every question</span>${BOXES.q.map(([k, l], i) => `${i ? '<span class="parrow">→</span>' : ""}<span class="pbox" data-k="${k}" style="--c:var(--c-model)">${l}</span>`).join("")}</div>`;
+const light = (k) => $$("#pipe .pbox").forEach((b) => b.classList.toggle("lit", b.dataset.k === k));
+W.stepper({
+  ctrl: $("#pipeCtrl"), log: $("#pipeLog"), interval: 2600,
+  onReset: () => light(null),
+  steps: [
+    { who: "Collect", c: "knowledge", html: "Gather the source documents: policies, wikis, PDFs, help articles, tickets.", onEnter: () => light("docs") },
+    { who: "Chunk", c: "knowledge", html: "Cut them into bite-sized pieces (a paragraph or so), each tagged with its source.", onEnter: () => light("chunk") },
+    { who: "Embed", c: "knowledge", html: "Turn each chunk into an <b>embedding</b>: a list of numbers representing its meaning.", onEnter: () => light("embed1") },
+    { who: "Store", c: "knowledge", html: "Save all the embeddings in a <b>vector database</b>, ready to search by meaning.", onEnter: () => light("db") },
+    { who: "Question arrives", c: "model", html: "“How many days can I work from home?”", onEnter: () => light("q") },
+    { who: "Embed the question", c: "model", html: "The question is turned into an embedding too, so it lands on the same meaning map.", onEnter: () => light("embed2") },
+    { who: "Retrieve", c: "model", html: "Find the 3–5 chunks whose meaning is closest to the question.", onEnter: () => light("search") },
+    { who: "Augment", c: "model", html: "Put those chunks into the prompt: <i>“Answer using only these sources. Cite them.”</i>", onEnter: () => light("aug") },
+    { who: "Generate", c: "good", html: "The model answers from the sources and cites them. ✅", onEnter: () => light("gen") },
+  ],
+});
+
+/* ---- chunking ---- */
+const PARAS = [
+  ["Remote Work Policy (v3, Jan 2026).", "This policy applies to all full-time employees."],
+  ["Employees may work from home up to 2 days per week.", "Remote days must be Tuesday or Thursday unless your manager approves otherwise."],
+  ["Your home workspace must be safe, quiet and private.", "Company laptops must use the VPN at all times."],
+  ["Home internet costs are reimbursed up to €30 per month.", "Claims go through the Expenses app."],
+];
+const FLAT = PARAS.flatMap((p, pi) => p.map((s) => ({ s, pi })));
+const KEY = new Set([2, 3]);
+function renderChunks(mode) {
+  let chunks;
+  if (mode === 0) chunks = FLAT.map((_, i) => [i]);
+  else if (mode === 1) chunks = PARAS.map((_, pi) => FLAT.map((x, i) => (x.pi === pi ? i : -1)).filter((i) => i >= 0));
+  else chunks = [FLAT.map((_, i) => i)];
+  const hit = chunks.findIndex((c) => c.includes(2));
+  const colors = ["model", "knowledge", "autonomy", "action", "context", "trust", "model", "knowledge"];
+  $("#doc").classList.toggle("many", chunks.length > 4);
+  $("#doc").innerHTML = chunks.map((c, k) => `<div class="chunk ${k === hit ? "hit" : ""}" style="--c:${cv(colors[k % colors.length])}">
+      <div class="label" style="margin-bottom:4px">Chunk ${k + 1}${k === hit ? " · ⭐ retrieved" : ""}</div>
+      ${c.map((i) => (KEY.has(i) ? `<span class="key">${FLAT[i].s}</span>` : FLAT[i].s)).join(" ")}</div>`).join("");
+  const got = chunks[hit], hasAll = [...KEY].every((k) => got.includes(k));
+  const size = got.length;
+  $("#chunkAns").innerHTML = `<div class="label">Retrieved: ${size} sentence${size > 1 ? "s" : ""}</div>` +
+    (mode === 0 ? `<div class="bubble ai" style="max-width:100%;border-color:var(--warn)">You can work from home up to 2 days per week.</div><p style="color:var(--warn)">⚠ <b>Incomplete.</b> “Which days” was in the next chunk, which wasn’t retrieved.</p>`
+     : mode === 1 ? `<div class="bubble ai" style="max-width:100%">Up to <b>2 days per week</b>, on <b>Tuesday or Thursday</b> (unless your manager approves otherwise).</div><p style="color:var(--good)">✅ <b>Complete and focused.</b> The whole thought stayed together.</p>`
+     : `<div class="bubble ai" style="max-width:100%">Up to 2 days per week on Tuesday or Thursday. Remember to use the VPN, and you can claim €30 for internet…</div><p style="color:var(--warn)">🟡 <b>Correct, but bloated:</b> ${size}× the text, more cost, and it wanders off-topic.</p>`);
+}
+W.tabs($("#chunkTabs"), [{ label: "🔹 Small (1 sentence)" }, { label: "🔷 Medium (paragraph)" }, { label: "⬛ Large (whole doc)" }], { onChange: (i) => renderChunks(i) });
+
+/* ---- chunk size + overlap ---- */
+const OVTXT = "Remote Work Policy, version 3, January 2026. This policy applies to all full-time employees. Employees may work from home up to 2 days per week. Remote days must be Tuesday or Thursday unless your manager approves otherwise. Your home workspace must be safe, quiet and private. Company laptops must use the VPN at all times. Home internet costs are reimbursed up to 30 euros per month through the Expenses app.".split(" ");
+const KEYSTART = OVTXT.indexOf("Remote", 5), KEYEND = OVTXT.indexOf("otherwise.") ; // the "which days" sentence
+const PAL = ["model", "knowledge", "autonomy", "action", "context", "trust"];
+function renderOverlap() {
+  const size = +$("#cs").value, ov = Math.min(+$("#ov").value, size - 2), stepN = size - ov;
+  $("#csLbl").textContent = size; $("#ovLbl").textContent = ov;
+  const chunks = []; for (let st = 0; st < OVTXT.length; st += stepN) { chunks.push([st, Math.min(OVTXT.length, st + size)]); if (st + size >= OVTXT.length) break; }
+  const whole = chunks.findIndex(([a, b]) => a <= KEYSTART && b > KEYEND);
+  // colour each word by the first chunk containing it, underline overlap
+  $("#ovText").innerHTML = OVTXT.map((w, i) => {
+    const owners = chunks.map(([a, b], k) => (i >= a && i < b ? k : -1)).filter((k) => k >= 0);
+    const k = owners[0], key = i >= KEYSTART && i <= KEYEND;
+    const starts = chunks.findIndex(([a]) => a === i);
+    return `${starts >= 0 ? `<sup style="color:${cv(PAL[starts % 6])};font-weight:800">[${starts + 1}</sup>` : ""}<span style="background:color-mix(in srgb, ${cv(PAL[k % 6])} ${owners.length > 1 ? 45 : 18}%, transparent);border-radius:4px;padding:2px 1px;${key ? "outline:2px solid var(--warn);" : ""}${owners.length > 1 ? "text-decoration:underline dotted;" : ""}">${w}</span>`;
+  }).join(" ");
+  const cut = whole < 0;
+  $("#ovStats").innerHTML = `<div class="kv"><b>Chunks</b><span>${chunks.length}</span><b>Words stored</b><span>${chunks.reduce((t, [a, b]) => t + b - a, 0)} (text is ${OVTXT.length} words, ${ov ? Math.round((chunks.reduce((t, [a, b]) => t + b - a, 0) / OVTXT.length - 1) * 100) + "% extra from overlap" : "no duplication"})</span>
+    <b>“Which days” sentence</b><span style="color:${cut ? "var(--bad)" : "var(--good)"};font-weight:700">${cut ? "✂️ cut across chunks: retrieval gets half of it" : "✅ whole inside chunk " + (whole + 1)}</span></div>
+    <p class="muted" style="margin:8px 0 0;font-size:13px">Yellow outline = the sentence we need. Darker, dotted words = stored in two chunks (overlap).</p>`;
+}
+$("#cs").oninput = $("#ov").oninput = renderOverlap; renderOverlap();
+const STRATS = [
+  ["📏", "Fixed size", "Cut every N tokens. Simple, but cuts mid-sentence: pair it with overlap.", "model"],
+  ["📑", "Structure-aware", "Split on headings, paragraphs, list items, then cap the size. <b>Best default.</b>", "knowledge"],
+  ["🧠", "Semantic", "Start a new chunk where the meaning shifts. Better boundaries, more compute.", "context"],
+  ["🪆", "Small-to-big", "Search small precise chunks, give the model the parent section.", "autonomy"],
+];
+$("#strats").innerHTML = `<div class="label">Chunking strategies</div>` + STRATS.map(([i, t, d, c]) => `<div style="border-left:4px solid ${cv(c)};padding:6px 10px;margin-bottom:6px;background:var(--card);border-radius:8px;font-size:13.5px"><b>${i} ${t}</b> · <span class="muted">${d}</span></div>`).join("");
+
+/* ---- augmented prompt ---- */
+const SRC = `<sources>
+ [1] Remote Work Policy v3 · §2 · updated 2026-01-10
+     "Employees may work from home up to 2 days per week.
+      Remote days must be Tuesday or Thursday unless your
+      manager approves otherwise."
+ [2] Remote Work Policy v3 · §5 · updated 2026-01-10
+     "Home internet costs are reimbursed up to €30/month."
+ [3] Leave Policy · §1 · updated 2025-11-02
+     "Annual leave: 24 days per year."
+</sources>`;
+const aug = { cite: true, only: true, off: false };
+function renderAug() {
+  const q = aug.off ? "Can I work from another country for a month?" : "How many days a week can I work from home?";
+  const ins = ["You are the ACME HR assistant."]
+    .concat(aug.only ? ["Answer ONLY from the sources below. If they don’t contain the answer, say so and suggest who to ask."] : ["Use the sources below to help answer."])
+    .concat(aug.cite ? ["Cite sources as [n] after each claim."] : []);
+  $("#augPrompt").innerHTML = `<span style="color:var(--c-context)">&lt;instructions&gt;\n ${ins.join("\n ")}\n&lt;/instructions&gt;</span>\n\n<span style="color:var(--c-knowledge)">${SRC.replace(/</g, "&lt;")}</span>\n\n<span style="color:var(--accent)">&lt;question&gt;${q}&lt;/question&gt;</span>`;
+  let a, note, c;
+  if (!aug.off) {
+    a = `You can work from home <b>up to 2 days per week</b>, on <b>Tuesday or Thursday</b> unless your manager approves otherwise.${aug.cite ? ' <span class="muted">[1]</span>' : ""}`;
+    note = aug.cite ? "✅ Grounded and checkable: anyone can open source [1]." : "🟡 Correct, but nobody can verify where it came from."; c = aug.cite ? "good" : "warn";
+  } else if (aug.only) {
+    a = `I couldn’t find a policy on working from another country in the documents I have. Please check with HR (hr@acme.com) before planning this.`;
+    note = "✅ Honest: retrieval found nothing relevant, and the bot says so."; c = "good";
+  } else {
+    a = `Yes, ACME allows up to 30 days of working abroad per year, as long as your manager approves.${aug.cite ? ' <span class="muted">[1]</span>' : ""}`;
+    note = `❌ Invented from general knowledge${aug.cite ? ", and the citation [1] doesn’t even say this" : ""}. This is why “use only these sources” matters.`; c = "bad";
+  }
+  $("#augAns").innerHTML = `<div class="bubble user" style="max-width:100%">${q}</div><div class="bubble ai" style="max-width:100%;margin-top:10px;border-color:${cv(c)}">${a}</div><div class="callout" style="--c:${cv(c)};margin-top:10px">${note}</div>`;
+}
+W.switch($("#swCite"), true, (v) => { aug.cite = v; renderAug(); });
+W.switch($("#swOnly"), true, (v) => { aug.only = v; renderAug(); });
+W.switch($("#swOff"), false, (v) => { aug.off = v; renderAug(); });
+renderAug();
+
+W.classify($("#choose"), [
+  { text: "HR policies that change every month; answers must quote the current version.", a: 0, why: "Changing facts plus citations is the RAG sweet spot. Update the documents, not the model." },
+  { text: "Analyse one 40-page contract the legal team sent this morning.", a: 2, why: "One document that fits in the context window? Just attach it. No pipeline needed." },
+  { text: "A support bot over 50,000 help-centre articles.", a: 0, why: "Far too much to paste. Retrieve the few relevant articles per question." },
+  { text: "Classify millions of tickets into our 40 categories, very consistently and cheaply.", a: 1, why: "Teaching a consistent <i>behaviour</i> at huge scale is where fine-tuning can pay off (good prompts with examples may be enough first)." },
+  { text: "Make every answer sound like our brand voice.", a: 1, why: "Style is behaviour, not knowledge. Try a strong prompt with examples first; fine-tune if that’s not enough at scale." },
+  { text: "Compare this quarter’s sales deck with last quarter’s.", a: 2, why: "Two specific documents: attach both." },
+], [{ label: "📚 RAG", c: "knowledge" }, { label: "🔧 Fine-tuning", c: "action" }, { label: "📎 Just paste / attach it", c: "context" }], { cols: 2 });
+
+W.quiz($("#quiz"), [
+  { q: "What does RAG change about the model?", o: ["It retrains it on your documents", "Nothing: it adds relevant documents to the prompt at question time", "It increases its temperature", "It makes the model bigger"], a: 1, e: "RAG is about context: the model is unchanged and simply gets better pages to read." },
+  { q: "Why do neighbouring chunks often overlap?", o: ["To save storage", "So a sentence cut at a boundary still appears whole in one chunk", "To make the model faster", "Overlap is a mistake"], a: 1, e: "A small overlap (10–20%) protects thoughts that straddle a chunk boundary." },
+  { q: "Retrieval found nothing relevant. What should a well-instructed RAG bot do?", o: ["Answer from general knowledge", "Say it couldn’t find the answer in the documents", "Retry with higher temperature", "Invent a citation"], a: 1, e: "“Use only these sources; say if it isn’t there” prevents confident gap-filling." },
+  { q: "The RAG bot gave half an answer. Most likely cause?", o: ["The model is too small", "The answer was split across chunks and only one was retrieved", "Temperature was too low", "The question was too short"], a: 1, e: "Chunking problems are the number one cause of incomplete RAG answers." },
+]);
+
+/* ===== v3 story ===== */
+W.BTS.augmented = {
+  title: "The augmented prompt: retrieved chunks + the question",
+  sub: "Retrieval happens in your code before the model is called. The model never sees the 20,000 pages, only these three chunks.",
+  parts: [
+    { label: "1 · Your code searches the manual (not the model)", c: "knowledge", json: `search("Do we cover a thatched cottage in a flood zone?", top_k = 3)
+→ §14.2 Thatched roofs        (score 0.89)
+→ §22.7 Flood zones and excess (score 0.84)
+→ §22.1 Flood definitions      (score 0.71)` },
+    { label: "2 · Request to the model", c: "accent", json: `{
+  "model": "claude-sonnet-5-5",
+  "max_tokens": 400,
+  "system": "You answer brokers' underwriting questions for HarborShield.
+             Use ONLY the documents provided. Cite the section for every claim.
+             If the answer is not in the documents, say so. Never guess.",
+  "messages": [{
+    "role": "user",
+    "content": "<documents>
+  <doc section='14.2' title='Thatched roofs' updated='2026-03-01'>
+    Thatched properties are acceptable subject to a current fire-safety certificate...
+  </doc>
+  <doc section='22.7' title='Flood zones and excess' updated='2026-06-15'>
+    Properties in flood zone 3 carry a compulsory excess of ₹25,000...
+  </doc>
+  <doc section='22.1' title='Flood definitions'> ... </doc>
+</documents>
+<question>Do we cover a thatched cottage in a flood zone?</question>"
+  }]
+}`, note: "That’s the whole trick: R (retrieve) happens in your code, A (augment) is pasting the chunks into the prompt, G (generate) is the model answering from them." },
+  ],
+};
+</script>
+<script>W.seq(document.getElementById("seqRag"), {"actors": [{"id": "user", "name": "Customer", "icon": "🙋", "c": "accent"}, {"id": "app", "name": "Your app", "icon": "🖥️", "c": "autonomy"}, {"id": "emb", "name": "Embedding model", "icon": "🔢", "c": "context"}, {"id": "vdb", "name": "Vector DB", "icon": "🗄️", "c": "knowledge"}, {"id": "model", "name": "Model", "icon": "🧠", "c": "model"}], "steps": [{"sep": "Offline: indexing (once, then on every update)"}, {"from": "app", "to": "app", "label": "Split manual into chunks", "note": "20,000 pages become about 60,000 chunks of a few hundred tokens each, with some overlap."}, {"from": "app", "to": "emb", "label": "Embed each chunk", "note": "Each chunk becomes a vector: a list of numbers that captures its meaning (next topic).", "code": "POST /embeddings\n{ \"model\": \"your-embedding-model\",\n  \"input\": [\"Section 4.2: Young drivers under 21 attract a loading of...\"] }"}, {"from": "app", "to": "vdb", "label": "Store vectors + metadata", "code": "{ \"id\": \"uw-manual-4.2-c3\",\n  \"vector\": [0.021, -0.113, 0.087, ...],   // 1,024 numbers\n  \"metadata\": { \"doc\": \"Underwriting manual\", \"section\": \"4.2\", \"product\": \"motor\" } }"}, {"sep": "Online: every question"}, {"from": "user", "to": "app", "label": "“Are young drivers loaded?”"}, {"from": "app", "to": "emb", "label": "Embed the question", "note": "The question goes through the same embedding model, so it lands in the same space as the chunks."}, {"from": "app", "to": "vdb", "label": "Find the top 5 nearest chunks", "code": "{ \"vector\": [0.019, -0.120, 0.091, ...],\n  \"top_k\": 5,\n  \"filter\": { \"product\": \"motor\" } }"}, {"from": "vdb", "to": "app", "label": "5 chunks + scores", "code": "[ { \"id\": \"uw-manual-4.2-c3\", \"score\": 0.91, \"text\": \"Young drivers under 21...\" },\n  { \"id\": \"uw-manual-4.2-c4\", \"score\": 0.87, \"text\": \"...the loading is waived if...\" }, ... ]", "ret": true}, {"from": "app", "to": "model", "label": "Question + chunks + “cite sources”", "note": "The augmented prompt: only about 2,500 tokens instead of 12 million.", "code": "{ \"system\": \"Answer only from the provided extracts. Cite the section.\",\n  \"messages\": [{ \"role\": \"user\", \"content\":\n    \"<extracts>\\n[4.2] Young drivers under 21 attract a loading...\\n</extracts>\\n\\nAre young drivers loaded?\" }] }"}, {"from": "model", "to": "app", "label": "Grounded answer with citation", "ret": true}, {"from": "app", "to": "user", "label": "“Yes, see section 4.2”", "ret": true}], "frames": []});</script>
+<script src="../assets/deck.js?v=4.2"></script>
+</body>
+</html>

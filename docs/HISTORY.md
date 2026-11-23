@@ -17,7 +17,7 @@ AI-architect style training for a whole team on concepts (RAG, tools, MCP, agent
 - Tools split into two: tools (08) and a deep dive (08b): schemas, the message exchange, parallel calls, tool choice, errors, structured output, tool design.
 - User verdict: “good but becomes dry very easily”.
 
-## Version 3 (latest, `v3/`)
+## Version 3 (previous, `v3/`)
 ### The request
 - Start session 1 by decoding AI jargon and layering it out.
 - Give it a story line the audience can follow, with humour. Agents like Claude Code and GitHub Copilot as one line; building with APIs as another.
@@ -50,6 +50,33 @@ The user asked for relatable or funny references only, no Day labels (sessions o
 
 ### Git
 - Repository initialised and pushed to https://github.com/arunmp25/ai-training on `main` (first commit 2026-11-13).
+
+## Version 4 (latest, `v4/`)
+### The request (2026-11-21)
+- In the opening section on how AI interaction works, add a slide on prompt structure: system prompt, user prompt and so on.
+- Add sample Python programs for tool calls, each with its sequence diagram and the request that is sent.
+- Create v4 as a copy of v3 and make the changes there. Use the EY official theme, keeping light and dark.
+
+### What was built
+- `v4/` copied from v3; every v3 slide kept (188 → 194 slides).
+- **EY theme:** EY Yellow on EY dark grey in dark mode, white and light grey in light mode, EY secondary colours for the six layers, Arial-family font, square corners, yellow progress bar, eyebrow blocks and a slanted yellow beam on title slides. The EY logo is not used.
+- **Topic 2:** “The parts of a request” (click each part: settings, system prompt, tools, user turn, assistant turn, latest message, response, plus an annotated Behind the scenes drawer) and “Python: the same request in code” (a code walkthrough of `first_call.py`).
+- **Topic 11:** “Python: a tool call in code” (`tool_call.py`, 7 steps with both requests and responses in full) and “Sequence: The Python program, request by request”.
+- **Topic 12:** “Python: the tool loop” (`tool_loop.py`: two parallel tool calls, one fails with `is_error`, the model retries) and “Sequence: The Python loop, request by request”.
+- New widget `W.codeWalk` and Python colouring `W.py`. Runnable samples in `v4/code/`.
+- Topic minutes: Topic 2 10 → 16, Topic 11 10 → 17, Topic 12 12 → 19.
+- Root picker lists v4 as latest. `AI-Training-v4.zip` packaged.
+
+### Follow-up: MCP comparisons (2026-11-21)
+- The user asked for a slide on the difference between a regular tool call and MCP, and asked whether any slide compared API and MCP (none in the course did; only the Guidewire deck in `presentations/`).
+- **Topic 13** gained “Tool call vs MCP” (a side-by-side table, and the same call on the wire both ways: steps 2 and 4 are identical) and “API vs MCP” (a side-by-side table, a ten-line FastMCP server wrapping the rating engine API, and “Why not just REST?”). Two quiz questions added. Topic 13 minutes 10 → 16. Asset links bumped to `?v=4.1`. v4 now has 196 slides.
+
+### Follow-up: agents and agent patterns (2026-11-21)
+- The user asked for a section on AI agents before the harness topic: how an agent differs from prompting, examples in LangChain and LangGraph, and agent patterns (orchestrator, workflow and others). “Animations are a must.”
+- **New Topic 15 “AI agents: from prompt to agent”** (`10b-ai-agents.html`, 12 slides): animated prompt vs chain vs agent (`W.arch`, three flows), a comparison table, the six parts of an agent, frameworks, a LangChain `create_agent` walkthrough with a sequence diagram, the LangGraph graph animated, the LangGraph code walkthrough, and when to use which.
+- **New Topic 16 “Agent design patterns”** (`10c-agent-patterns.html`, 14 slides): the workflow-to-agent map, then eight animated patterns with the claims example: prompt chaining, routing, parallelisation (sectioning and voting), orchestrator–workers, evaluator–optimiser, ReAct and plan-and-execute, multi-agent (supervisor and handoff), human in the loop. LangGraph code tabs (conditional edges, `Send`, `interrupt`), a “which pattern?” exercise and a quiz.
+- Harness, customising and safety moved from Topics 15–17 to 17–19 and into a new **Session 4** (“Harnesses, customisation and safety”). Session 3 is now “Connectors and agents” (Topics 13–16). All cross-references renumbered; the roadmap in Topic 1 now says four sessions (and “TOPIC” instead of a leftover “EPISODE”); the final recap in Topic 19 includes the two new topics.
+- `W.arch` gained an upward edge (`"u"`). New sample programs `code/langchain_agent.py` and `code/langgraph_agent.py` (syntax-checked, not run against the API). v4 now has 222 slides.
 
 ## Known loose ends
 - Three v2 slides still scroll slightly at 1280×720: Topic 15 “The landscape” and “Which harness?”, Topic 16 “Which one?”. A few others overflow by a few pixels; the jargon dictionary scrolls by design.

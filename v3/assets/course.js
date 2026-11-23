@@ -16,7 +16,7 @@ window.COURSE = {
     "08":  { n: 11, file: "08-tools.html", title: "Tools and function calling", l: "action", blurb: "Live prices from a rating engine: how a model asks for tools and your app acts." },
     "08b": { n: 12, file: "08b-tools-deep-dive.html", title: "Tools deep dive", l: "action", blurb: "Schemas, the message exchange, parallel calls, tool choice, errors, tool design." },
     "09":  { n: 13, file: "09-mcp.html", title: "MCP: the universal connector", l: "action", blurb: "One rating server, every AI app: hosts, clients, servers, local vs remote, trust." },
-    "10":  { n: 14, file: "10-agentic-loop.html", title: "The agentic loop", l: "autonomy", blurb: "A coding agent fixes an off-by-one bug. Plan, act, observe, repeat. The autonomy dial." },
+    "10":  { n: 14, file: "10-agentic-loop.html", title: "The agentic loop", l: "autonomy", blurb: "A coding agent fixes an off-by-one bug. Plan, act, observe, repeat. The autonomy dial. A multi-agent application, end to end." },
     "11":  { n: 15, file: "11-agent-harnesses.html", title: "Agent harnesses", l: "autonomy", blurb: "Claude Code, GitHub Copilot and others: same engine, different car." },
     "12":  { n: 16, file: "12-customizing-the-harness.html", title: "Customising the harness", l: "autonomy", blurb: "Instruction files, skills, subagents, hooks, permissions, plugins: house rules for agents." },
     "13":  { n: 17, file: "13-safety-and-evals.html", title: "Safety, trust and evals", l: "trust", blurb: "The pirate claim: prompt injection, the lethal trifecta, defences, evals, tracing." },
@@ -28,7 +28,7 @@ window.COURSE = {
       days: [
         { d: "Session 1", theme: "How AI works and how to talk to it",  items: [["00", 14], ["01", 10], ["02", 12], ["03", 12], ["04", 10], ["05", 14]] },
         { d: "Session 2", theme: "Knowledge and tools",                 items: [["06", 12], ["07", 12], ["07b", 16], ["07c", 16], ["08", 10], ["08b", 12]] },
-        { d: "Session 3", theme: "Connectors, agents and the harness",  items: [["09", 10], ["10", 12], ["11", 12], ["12", 18], ["13", 16]] },
+        { d: "Session 3", theme: "Connectors, agents and the harness",  items: [["09", 10], ["10", 17], ["11", 12], ["12", 18], ["13", 16]] },
       ],
     },
   },

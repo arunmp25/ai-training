@@ -4,9 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Topic 13 · MCP: the universal connector</title>
-<link rel="stylesheet" href="../assets/style.css?v=3.2">
-<link rel="stylesheet" href="../assets/widgets.css?v=3.2">
-<link rel="stylesheet" href="../assets/story.css?v=3.2">
+<link rel="stylesheet" href="../assets/style.css?v=3.3">
+<link rel="stylesheet" href="../assets/widgets.css?v=3.3">
+<link rel="stylesheet" href="../assets/story.css?v=3.3">
 <style>
   #nm { width: 100%; height: 340px; background: var(--card); border: 1px solid var(--line); border-radius: 14px; }
   .count { font-size: 44px; font-weight: 800; }
@@ -132,8 +132,8 @@
   <aside class="notes"><span class="tag time">⏱ 30 sec</span><p class="say"><b>🎤 Say</b> AI can now know things and do things. What if it decides for itself what to do next? That is an agent.</p><ul><li>Bridge: “It can know things (RAG) and do things (tools/MCP). What if it decides by itself what to do next? That’s an agent.”</li></ul></aside>
 </section>
 
-<script src="../assets/course.js?v=3.2"></script>
-<script src="../assets/widgets.js?v=3.2"></script>
+<script src="../assets/course.js?v=3.3"></script>
+<script src="../assets/widgets.js?v=3.3"></script>
 <script>
 const { $, $$ } = W;
 
@@ -247,6 +247,6 @@ W.BTS.mcp = {
 };
 </script>
 <script>W.seq(document.getElementById("seqMcp"), {"actors": [{"id": "host", "name": "Host + MCP client", "icon": "🖥️", "c": "autonomy"}, {"id": "srv", "name": "MCP server", "icon": "🔌", "c": "context"}, {"id": "api", "name": "Rating engine", "icon": "🧮", "c": "action"}, {"id": "model", "name": "Model", "icon": "🧠", "c": "model"}], "steps": [{"sep": "At start-up"}, {"from": "host", "to": "srv", "label": "initialize", "note": "Client and server agree on a protocol version and say what each supports.", "code": "{ \"jsonrpc\": \"2.0\", \"id\": 1, \"method\": \"initialize\",\n  \"params\": { \"protocolVersion\": \"2025-06-18\",\n    \"clientInfo\": { \"name\": \"claims-assistant\", \"version\": \"1.4\" }, \"capabilities\": {} } }"}, {"from": "srv", "to": "host", "label": "capabilities: tools", "code": "{ \"jsonrpc\": \"2.0\", \"id\": 1, \"result\": {\n  \"serverInfo\": { \"name\": \"rating-engine-mcp\" },\n  \"capabilities\": { \"tools\": {} } } }", "ret": true}, {"from": "host", "to": "srv", "label": "tools/list", "code": "{ \"jsonrpc\": \"2.0\", \"id\": 2, \"method\": \"tools/list\" }"}, {"from": "srv", "to": "host", "label": "get_motor_quote, get_home_quote", "code": "{ \"jsonrpc\": \"2.0\", \"id\": 2, \"result\": { \"tools\": [\n  { \"name\": \"get_motor_quote\", \"description\": \"Live motor premium...\", \"inputSchema\": { ... } },\n  { \"name\": \"get_home_quote\",  \"description\": \"Live home premium...\",  \"inputSchema\": { ... } } ] } }", "ret": true}, {"sep": "When a user asks"}, {"from": "host", "to": "model", "label": "Question + tools (from MCP)", "note": "The host converts the MCP tools into the model’s normal tools format. The model does not know MCP exists."}, {"from": "model", "to": "host", "label": "tool_use: get_motor_quote", "ret": true}, {"from": "host", "to": "srv", "label": "tools/call", "code": "{ \"jsonrpc\": \"2.0\", \"id\": 7, \"method\": \"tools/call\",\n  \"params\": { \"name\": \"get_motor_quote\",\n    \"arguments\": { \"policy_id\": \"MTR-55120\", \"add_driver\": { \"age\": 18 } } } }"}, {"from": "srv", "to": "api", "label": "POST /rating/v3/quote", "note": "The server is a thin adapter. It calls the real system with its own credentials."}, {"from": "api", "to": "srv", "label": "{ new_annual: 44750 }", "ret": true}, {"from": "srv", "to": "host", "label": "result.content", "code": "{ \"jsonrpc\": \"2.0\", \"id\": 7, \"result\": {\n  \"content\": [{ \"type\": \"text\", \"text\": \"{\\\"new_annual\\\":44750,\\\"currency\\\":\\\"INR\\\"}\" }],\n  \"isError\": false } }", "ret": true}, {"from": "host", "to": "model", "label": "tool_result"}, {"from": "model", "to": "host", "label": "Final answer", "ret": true}], "frames": []});</script>
-<script src="../assets/deck.js?v=3.2"></script>
+<script src="../assets/deck.js?v=3.3"></script>
 </body>
 </html>

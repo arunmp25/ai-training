@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Topic 4 · Attention</title>
+<link rel="stylesheet" href="../assets/style.css?v=4.2">
+<link rel="stylesheet" href="../assets/widgets.css?v=4.2">
+<link rel="stylesheet" href="../assets/story.css?v=4.2">
+<style>
+  .noise-strip { display: flex; gap: 3px; flex-wrap: wrap; padding: 12px; border-radius: 6px; background: var(--card2); min-height: 60px; }
+  .blk { width: 22px; height: 30px; border-radius: 5px; background: var(--line); transition: all .3s; }
+  .blk.key { background: var(--good); width: 60px; }
+  .share { font-size: 42px; font-weight: 800; }
+  .curve-wrap svg { width: 100%; height: 220px; }
+</style>
+</head>
+<body class="deck" data-id="03">
+
+<section class="slide title-slide" data-title="Welcome">
+  <div class="big-emoji">🔦</div>
+  <div class="eyebrow">Session 1 · Topic 4</div>
+  <h1>Attention: how words look at each other</h1>
+  <p class="sub">The single idea that made modern AI work, and the reason <b>how you write a prompt</b> changes what you get back.</p>
+  <aside class="notes"><span class="tag time">⏱ 30 sec</span><p class="say"><b>🎤 Say</b> Attention is the idea that made modern AI work. It is also the reason the way you write a prompt changes what you get back.</p><ul><li>Frame: “No maths. We’ll just watch it happen, then turn it into prompt-writing tips.”</li></ul></aside>
+</section>
+
+<section class="slide" data-title="Who is “he”?">
+  <div class="eyebrow">Example</div>
+  <h2>Who is “he”?</h2>
+  
+  <div class="card" style="max-width:820px;font-size:17px"><div class="muted" style="font-size:13px">Subject: re: re: FW: that claim</div><p style="margin:8px 0 0">The adjuster told the claimant <b>he</b> was wrong, so <b>he</b>’s asked for a review. Please sort <b>it</b> before <b>it</b> gets worse.</p></div><div class="callout" style="--c:var(--accent);margin-top:16px;max-width:900px">Who was wrong? Who asked for the review? What is “it”? We all resolve these from the surrounding words, and so does the model. The mechanism is called <b>attention</b>.</div>
+  <aside class="notes"><span class="tag time">⏱ 2 min</span><p class="say"><b>🎤 Say</b> Who does “he” refer to in this email? We disagree, and that ambiguity is exactly what the model faces with unclear prompts.</p><ul><li>Let the room disagree about who “he” is. That ambiguity is exactly what the model faces.</li></ul></aside>
+</section>
+
+
+<section class="slide" data-title="What does “it” mean?">
+  <div class="eyebrow">A puzzle</div>
+  <h2>What does “it” refer to?</h2>
+  <p class="sub">You know instantly. The model works it out with <b>attention</b>: “it” looks back at every other word and decides which ones matter. <b>Click any word</b>, and switch between the two sentences.</p>
+  <div id="att1"></div>
+  <aside class="notes"><span class="tag time">⏱ 3 min</span><p class="say"><b>🎤 Say</b> You knew instantly what “it” meant. The model works it out with attention: each word looks back at the others and decides which ones matter.</p>
+    <ul><li>Ask the room first: “In sentence 1, what was tired? In sentence 2, what was wide?”</li>
+    <li>Change one word at the end and the meaning of “it” flips. Attention is how the model connects “it” to the right noun.</li>
+    <li>Click other words too, e.g. “tired” attends to “animal”.</li>
+    <li>(Weights are illustrative, simplified from real model behaviour.)</li></ul></aside>
+</section>
+
+<section class="slide" data-title="Same word, different meaning">
+  <div class="eyebrow">Context changes meaning</div>
+  <h2>“Bank”: river or money?</h2>
+  <p class="sub">A word’s meaning is shaped by the words around it. Click “bank” in each sentence.</p>
+  <div id="att2"></div>
+  <aside class="notes"><span class="tag time">⏱ 2 min</span><p class="say"><b>🎤 Say</b> Same word, different meaning. The words around “bank” decide whether it is a river or money. If your prompt is ambiguous, the model resolves it from whatever context you gave it.</p>
+    <ul><li>This is why <b>context is everything</b>: the same word means different things depending on what surrounds it.</li>
+    <li>Link to prompting: if your prompt is ambiguous, the model resolves it using whatever other words are around, which may not be what you meant.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="Many heads">
+  <div class="eyebrow">Many perspectives at once</div>
+  <h2>Many “attention heads”, each looking for something different</h2>
+  <p class="sub">The model runs many attention patterns in parallel: one tracks <i>who</i>, one tracks <i>what</i>, one tracks grammar… Switch heads.</p>
+  <div id="att3"></div>
+  <aside class="notes"><span class="tag time">⏱ 2 min</span><p class="say"><b>🎤 Say</b> The model runs many attention patterns at once, like a team reading the same page with different highlighters: one tracks who, one tracks what, one tracks grammar.</p>
+    <ul><li>Analogy: a team reading the same sentence, each with a different highlighter colour.</li>
+    <li>Real models have many heads in many layers stacked up, which is how they handle long, complex instructions.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="Attention is limited">
+  <div class="eyebrow">Why this matters for you · 1</div>
+  <h2>Attention is shared, so noise dilutes it</h2>
+  <p class="sub">Your key instruction (green) competes for attention with everything else in the context. Drag the slider to paste in more irrelevant text.</p>
+  <div class="split wide-left" style="align-items:center">
+    <div>
+      <div class="label">Context: <span id="nzLabel"></span></div>
+      <div class="noise-strip" id="strip"></div>
+      <input type="range" id="noise" min="0" max="60" value="4" style="margin-top:14px">
+      <div class="row" style="justify-content:space-between;font-size:13px;color:var(--muted)"><span>focused prompt</span><span>pasted the whole wiki</span></div>
+    </div>
+    <div class="card" style="text-align:center">
+      <div class="label">Share of attention on the key instruction</div>
+      <div class="share" id="share">—</div>
+      <div class="muted" id="shareNote" style="font-size:14px"></div>
+    </div>
+  </div>
+  <div class="callout" style="margin-top:16px">💡 <b>Tip:</b> more context isn’t always better. Give the model what it <i>needs</i>, not everything you <i>have</i>. (This becomes “context engineering” in Topic 7.)</div>
+  <aside class="notes"><span class="tag time">⏱ 2 min</span><p class="say"><b>🎤 Say</b> Attention is shared. The more irrelevant text you paste in, the less attention your key instruction gets.</p>
+    <ul><li>A simplified illustration, not an exact measurement, but the effect is real: irrelevant text distracts the model.</li>
+    <li>Example: pasting a 40-page document when only one paragraph is relevant.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="Position matters">
+  <div class="eyebrow">Why this matters for you · 2</div>
+  <h2>Beginnings and ends get noticed most</h2>
+  <p class="sub">Research found models tend to use information at the <b>start</b> and <b>end</b> of a long context best, and can miss things buried in the middle (“lost in the middle”). Move your key instruction.</p>
+  <div class="split wide-left" style="align-items:center">
+    <div class="curve-wrap card"><svg id="curve" viewBox="0 0 600 220"></svg>
+      <input type="range" id="pos" min="0" max="100" value="50"><div class="row" style="justify-content:space-between;font-size:13px;color:var(--muted)"><span>start of prompt</span><span>middle</span><span>end of prompt</span></div></div>
+    <div class="card" style="text-align:center"><div class="label">Chance the key detail is used</div><div class="share" id="recall">—</div><div class="muted" id="recallNote" style="font-size:14px"></div></div>
+  </div>
+  <p class="muted" style="font-size:13px;margin-top:10px">Illustrative curve. Newer models are much better at long contexts, but the habit still helps: put critical instructions at the start or end, and keep them clear.</p>
+  <aside class="notes"><span class="tag time">⏱ 2 min</span><p class="say"><b>🎤 Say</b> Models pay most attention to the start and the end of a long input and can miss details in the middle. So put the task first, the long material in the middle, and repeat the key rule at the end.</p>
+    <ul><li>Practical rule: state the task first, put long material in the middle, and repeat the key constraint at the end.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="Prompt tips from attention">
+  <div class="eyebrow">Turn it into habits</div>
+  <h2>Six prompt habits that come from attention</h2>
+  <p class="sub">Click each card to flip it.</p>
+  <div id="tips"></div>
+  <aside class="notes"><span class="tag time">⏱ 2 min</span><p class="say"><b>🎤 Say</b> These six prompt habits come straight from what we just saw: avoid ambiguity, cut noise, mind position and add structure.</p><ul><li>Each habit maps straight to what we just saw: ambiguity, noise, position, structure.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="Spot the problem">
+  <div class="eyebrow">Your turn</div>
+  <h2>What would confuse the model’s attention?</h2>
+  <div id="spot"></div>
+  <aside class="notes"><span class="tag time">⏱ 2 min</span><p class="say"><b>🎤 Say</b> Your turn: what would confuse the model’s attention in each case?</p></aside>
+</section>
+
+<section class="slide" data-title="Takeaways">
+  <div class="eyebrow">Takeaways</div>
+  <h2>What to remember</h2>
+  <div class="cols-3" style="margin:10px 0 24px">
+    <div class="card"><b>🔦 Attention</b><p>Every word looks at every other word to work out what it means <i>here</i>.</p></div>
+    <div class="card"><b>🧭 Context shapes meaning</b><p>Ambiguity gets resolved by whatever is around it. Be explicit.</p></div>
+    <div class="card"><b>🎯 Focus wins</b><p>Less noise, clear structure, key instructions at the start or end.</p></div>
+  </div>
+  <div class="row"><a class="btn primary" data-nexttopic>Next →</a></div>
+  <aside class="notes"><span class="tag time">⏱ 30 sec</span><p class="say"><b>🎤 Say</b> The model looks at everything it is given. Next question: how much can it be given? That is the context window.</p><ul><li>Bridge: “So the model looks at everything it’s given. How much can it be given? That’s the context window.”</li></ul></aside>
+</section>
+
+<script src="../assets/course.js?v=4.2"></script>
+<script src="../assets/widgets.js?v=4.2"></script>
+<script>
+const { $ } = W;
+
+W.attention($("#att1"), [
+  { label: "…because it was too tired", focus: 7,
+    tokens: ["The", "animal", "didn’t", "cross", "the", "street", "because", "it", "was", "too", "tired"],
+    weights: { 7: { 1: 0.62, 5: 0.07, 7: 0.1, 10: 0.12, 0: 0.03, 8: 0.03 }, 10: { 1: 0.38, 7: 0.34, 9: 0.12, 8: 0.06 }, 5: { 3: 0.4, 4: 0.3, 1: 0.1 } },
+    note: (s) => (s === 7 ? "“it” = <b>the animal</b>. Animals get tired, streets don’t." : "Click <b>it</b> to see the key connection.") },
+  { label: "…because it was too wide", focus: 7,
+    tokens: ["The", "animal", "didn’t", "cross", "the", "street", "because", "it", "was", "too", "wide"],
+    weights: { 7: { 5: 0.6, 1: 0.08, 7: 0.1, 10: 0.14, 4: 0.04 }, 10: { 5: 0.42, 7: 0.33, 9: 0.12 }, 5: { 3: 0.4, 4: 0.3, 1: 0.1 } },
+    note: (s) => (s === 7 ? "Now “it” = <b>the street</b>. One word changed, and attention re-routed." : "Click <b>it</b> to see the key connection.") },
+]);
+
+W.attention($("#att2"), [
+  { label: "🏞 River sentence", focus: 4, tokens: ["We", "sat", "on", "the", "bank", "of", "the", "river"],
+    weights: { 4: { 7: 0.55, 1: 0.14, 2: 0.12, 4: 0.1 } }, note: (s) => (s === 4 ? "Meaning of “bank” here → <b>🏞 the side of a river</b>" : "Click <b>bank</b>.") },
+  { label: "🏦 Money sentence", focus: 5, tokens: ["I", "paid", "the", "cash", "into", "the", "bank", "today"],
+    weights: { 6: { 3: 0.5, 1: 0.24, 4: 0.1, 6: 0.08 } }, note: (s) => (s === 6 ? "Meaning of “bank” here → <b>🏦 a financial institution</b>" : "Click <b>bank</b>.") },
+]);
+
+const T3 = ["Priya", "emailed", "the", "client", "because", "she", "needed", "the", "signed", "contract"];
+W.attention($("#att3"), [
+  { label: "Head A · who is “she”?", focus: 5, tokens: T3, weights: { 5: { 0: 0.66, 3: 0.14, 5: 0.1 } }, note: "This head links pronouns to people: <b>she → Priya</b>." },
+  { label: "Head B · needed what?", focus: 6, tokens: T3, weights: { 6: { 9: 0.55, 8: 0.22, 5: 0.12 } }, note: "This head links actions to objects: <b>needed → contract</b>." },
+  { label: "Head C · who did what?", focus: 1, tokens: T3, weights: { 1: { 0: 0.45, 3: 0.4, 1: 0.08 } }, note: "This head tracks grammar: <b>Priya → emailed → client</b>." },
+]);
+
+/* ---- noise demo ---- */
+function renderNoise() {
+  const n = +$("#noise").value;
+  const keyPos = Math.floor(n / 2);
+  let html = "";
+  for (let i = 0; i <= n; i++) html += i === keyPos ? '<div class="blk key" title="Your key instruction"></div>' : '<div class="blk" title="Irrelevant text"></div>';
+  $("#strip").innerHTML = html;
+  const share = 1.6 / (1.6 + n * 0.32);
+  $("#share").textContent = Math.round(share * 100) + "%";
+  $("#share").style.color = share > 0.5 ? "var(--good)" : share > 0.2 ? "var(--warn)" : "var(--bad)";
+  $("#nzLabel").textContent = `1 key instruction + ${n} blocks of irrelevant text`;
+  $("#shareNote").textContent = share > 0.5 ? "Focused: the instruction stands out." : share > 0.2 ? "Getting crowded." : "Your instruction is easily missed.";
+}
+$("#noise").oninput = renderNoise; renderNoise();
+
+/* ---- lost in the middle ---- */
+const f = (x) => 0.93 - 0.42 * Math.sin(Math.PI * x) ** 1.4; // illustrative U-curve
+function renderCurve() {
+  const p = +$("#pos").value / 100;
+  let d = "";
+  for (let i = 0; i <= 100; i++) { const x = i / 100; d += (i ? "L" : "M") + (20 + x * 560).toFixed(1) + "," + (200 - f(x) * 180).toFixed(1); }
+  const cx = 20 + p * 560, cy = 200 - f(p) * 180;
+  $("#curve").innerHTML = `<path d="${d}" fill="none" stroke="var(--accent)" stroke-width="4" stroke-linecap="round"/>
+    <line x1="${cx}" y1="200" x2="${cx}" y2="${cy}" stroke="var(--muted)" stroke-dasharray="4 4"/>
+    <circle cx="${cx}" cy="${cy}" r="10" fill="var(--good)" stroke="var(--bg)" stroke-width="3"/>
+    <line x1="20" y1="200" x2="580" y2="200" stroke="var(--line)" stroke-width="2"/>`;
+  const r = f(p);
+  $("#recall").textContent = Math.round(r * 100) + "%";
+  $("#recall").style.color = r > 0.8 ? "var(--good)" : r > 0.65 ? "var(--warn)" : "var(--bad)";
+  $("#recallNote").textContent = p < 0.15 ? "At the start: noticed." : p > 0.85 ? "At the end: noticed." : r < 0.65 ? "Buried in the middle: easy to miss." : "Okay, but not ideal.";
+}
+$("#pos").oninput = renderCurve; renderCurve();
+
+W.flips($("#tips"), [
+  { front: "🏷️ Name things", back: "Avoid “it”, “this”, “that one”. Say <b>“the Q3 report”</b> or <b>“the second proposal”</b>. Don’t make attention guess." },
+  { front: "✂️ Cut the noise", back: "Paste the <b>relevant section</b>, not the whole document. Irrelevant text competes for attention." },
+  { front: "📍 Put key things first or last", back: "State the task up front; if the prompt is long, <b>repeat the key constraint at the end</b>." },
+  { front: "🧱 Use structure", back: "Headings, bullet points, or tags like <code>&lt;document&gt;</code> and <code>&lt;instructions&gt;</code> help the model see what belongs together." },
+  { front: "1️⃣ One job at a time", back: "Five unrelated asks in one paragraph blur together. Split them up, or number them clearly." },
+  { front: "🧭 Give the context that resolves ambiguity", back: "“Bank” needs “river” or “cash” nearby. Your request needs its audience, purpose and background nearby too." },
+]);
+
+W.classify($("#spot"), [
+  { text: "“Read these two proposals and tell me if it is better. Also make it shorter.”", a: 0, why: "Which one is “it”? Name them: “Is proposal B better than A? Then shorten proposal B.”" },
+  { text: "You paste a 60-page handbook to ask one question about parental leave.", a: 1, why: "Most of those 60 pages are noise. Paste the parental-leave section (or use RAG, Topic 8)." },
+  { text: "A long prompt where the crucial rule (“never mention pricing”) sits in paragraph 6 of 12.", a: 2, why: "Buried in the middle. Put it at the start and repeat it at the end." },
+  { text: "“Summarise this, translate it, find errors, suggest a title, and rate it 1-10” all in one sentence.", a: 3, why: "Too many jobs blended together. Number them as separate steps, or ask in turns." },
+], [{ label: "Ambiguous reference", c: "context" }, { label: "Too much noise", c: "warn" }, { label: "Lost in the middle", c: "autonomy" }, { label: "Too many jobs at once", c: "action" }], { cols: 2 });
+
+/* ===== v3 story ===== */
+</script>
+<script src="../assets/deck.js?v=4.2"></script>
+</body>
+</html>

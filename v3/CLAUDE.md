@@ -8,9 +8,9 @@ Read the root `CLAUDE.md` first (ground rules, tone, topic id/number table). Thi
 <html lang="en"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Topic 11 · Tools and function calling</title>
-<link rel="stylesheet" href="../assets/style.css?v=3.2">
-<link rel="stylesheet" href="../assets/widgets.css?v=3.2">
-<link rel="stylesheet" href="../assets/story.css?v=3.2">
+<link rel="stylesheet" href="../assets/style.css?v=3.3">
+<link rel="stylesheet" href="../assets/widgets.css?v=3.3">
+<link rel="stylesheet" href="../assets/story.css?v=3.3">
 </head>
 <body class="deck" data-id="08">            <!-- id = key in course.js -->
 
@@ -30,10 +30,10 @@ Read the root `CLAUDE.md` first (ground rules, tone, topic id/number table). Thi
   <aside class="notes">...</aside>
 </section>
 
-<script src="../assets/course.js?v=3.2"></script>
-<script src="../assets/widgets.js?v=3.2"></script>
+<script src="../assets/course.js?v=3.3"></script>
+<script src="../assets/widgets.js?v=3.3"></script>
 <script> /* page script: W.* calls, W.BTS entries */ </script>
-<script src="../assets/deck.js?v=3.2"></script>   <!-- always last -->
+<script src="../assets/deck.js?v=3.3"></script>   <!-- always last -->
 </body></html>
 ```
 - Title slide eyebrow is always `Session S · Topic N`; `<title>` is `Topic N · Title`.
@@ -71,6 +71,22 @@ W.seq(document.getElementById("seqTool"), {
 - Long diagrams scroll inside their box with a fixed header and follow the current step.
 - Existing diagrams: Topic 2 (pressing Enter), 5 (re-sent history), 8 (RAG indexing and query), 10 (hybrid search and re-ranking), 11 (tool call), 12 (parallel calls and a failure), 13 (MCP session), 14 (agent loop), 16 (permissions and hooks), 17 (injection defences).
 
+### Architecture diagrams: `W.arch`
+Boxes and arrows with animated dots that travel along the arrows (accent = request, green = reply, red = blocked). Several named flows can share one diagram. Used once so far: Topic 14 “Architecture: A multi-agent application” (class `seq-slide arch-slide`, data in the page script as `AN`, `AE`, `AF`). A standalone copy lives at `samples/architecture-demo.html`.
+```js
+W.arch(el, {
+  vb: [1160, 640],                                     // SVG viewBox; boxes use these units
+  cols: [[90, "Client"], ...],                         // column headings (x centre)
+  nodes: { app: { x, y, w, h, c: "accent", tag: "Backend", t: "App", s: ["sub line"], d: "Shown when clicked" } },
+  edges: { "app-orch": ["app", "orch", "h", 0] },      // "h" right→left side (optional y offset), "v" bottom→top
+  obs: "Observability · traces, cost, evals",          // optional log strip along the bottom
+  flows: [{ name, intro, steps: [{ who, t, note, code, log,
+    on: ["app"], think: ["orch"], bad: ["guard"],       // glowing / pulsing / red boxes
+    p: [{ e: "app-orch" }, { e: "app-orch", r: 1, d: 1 }, { e: "...", x: 1 }] }] }], // r reply, d delay in hops, x blocked
+});
+```
+→ reveals the next step, then leaves the slide. Play runs the flow automatically.
+
 ### Behind the scenes drawer: `W.BTS`
 A button `<button class="btn bts-btn" data-bts="quote">🎬 Behind the scenes</button>` opens a side drawer with real JSON. Define the content in the page script:
 ```js
@@ -84,7 +100,7 @@ W.BTS.quote = { title: "...", sub: "...", parts: [
 `W.scene`, `W.CAST`, `W.castCards` and the `.scene`/`.cast`/`.storyline` styles are from the dropped character-story version. Nothing uses them; leave them or delete them, but do not bring characters back.
 
 ## Checklist after changing v3
-1. Bump `?v=3.2` in all v3 pages if you changed anything in `assets/`.
+1. Bump `?v=3.3` in all v3 pages if you changed anything in `assets/`.
 2. Open every changed topic at 1280×720: no console errors, no slide scroll, widgets work with → and clicks.
 3. Every slide still has a `.say` note; cross-references use the new topic numbers.
 4. Rebuild `AI-Training-v3.zip` (see root `CLAUDE.md`) and commit.

@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Guidewire Developer Assistant · From harness to MCP</title>
+<link rel="stylesheet" href="assets/style.css?v=1.0">
+<link rel="stylesheet" href="assets/widgets.css?v=1.0">
+<link rel="stylesheet" href="assets/story.css?v=1.0">
+<style>
+  /* chat vs harness table */
+  .vs { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 15px; }
+  .vs th, .vs td { padding: 9px 14px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+  .vs th { font-size: 17px; }
+  .vs td:first-child { color: var(--muted); font-weight: 700; width: 18%; white-space: nowrap; }
+  .vs .chat { background: color-mix(in srgb, var(--c-context) 8%, transparent); }
+  .vs .harn { background: color-mix(in srgb, var(--c-autonomy) 9%, transparent); }
+  .vs th.chat { border-top: 3px solid var(--c-context); border-radius: 12px 12px 0 0; }
+  .vs th.harn { border-top: 3px solid var(--c-autonomy); border-radius: 12px 12px 0 0; }
+
+  /* harness ↔ MCP wiring */
+  .wire { display: grid; grid-template-columns: 1.15fr 70px 1fr; gap: 10px; align-items: stretch; }
+  .zone { border: 2px dashed var(--line); border-radius: 16px; padding: 12px 14px 14px; }
+  .zone > .zt { font-size: 12px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
+  .box { --c: var(--accent); border: 1.5px solid color-mix(in srgb, var(--c) 60%, var(--line)); background: color-mix(in srgb, var(--c) 10%, var(--card)); border-radius: 12px; padding: 8px 11px; margin-bottom: 8px; cursor: pointer; transition: all .2s; font-size: 14px; line-height: 1.35; }
+  .box b { display: block; font-size: 15px; }
+  .box small { color: var(--muted); font-size: 12.5px; }
+  .box:hover { transform: translateY(-1px); }
+  .box.on, .box.lit { border-color: var(--c); box-shadow: 0 0 0 3px color-mix(in srgb, var(--c) 35%, transparent); }
+  .box.dim { opacity: .45; }
+  .inner { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .inner .box { margin-bottom: 0; }
+  .pipe { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; font-size: 12px; font-weight: 700; color: var(--muted); text-align: center; }
+  .pipe .ln { width: 100%; height: 4px; border-radius: 2px; background: var(--c-action); position: relative; }
+  .pipe .ln::after { content: ""; position: absolute; right: -4px; top: -5px; border: 7px solid transparent; border-left-color: var(--c-action); }
+  .pipe .ln.back::after { right: auto; left: -4px; border-left-color: transparent; border-right-color: var(--c-action); }
+  .tag2 { display: inline-block; font-size: 11px; font-weight: 800; padding: 1px 7px; border-radius: 999px; margin-left: 6px; vertical-align: 2px; }
+  .tag2.ga { background: color-mix(in srgb, var(--good) 22%, transparent); color: var(--good); }
+  .tag2.ea { background: color-mix(in srgb, var(--warn) 22%, transparent); color: var(--warn); }
+  .tag2.il { background: color-mix(in srgb, var(--muted) 22%, transparent); color: var(--muted); }
+  .arch-detail { margin-top: 12px; min-height: 92px; font-size: 15px; }
+  .arch-detail h3 { margin: 0 0 4px; }
+  .arch-detail p { margin: 4px 0; }
+  .trace-cap { font-size: 14px; margin-left: 8px; }
+
+  /* Guidewire architecture */
+  .gw { display: grid; grid-template-columns: 1.05fr 74px 1fr 60px 1.15fr; gap: 8px; align-items: stretch; }
+  .gw .zone { padding: 10px 11px 6px; }
+  .gw .box { padding: 5px 10px; margin-bottom: 5px; font-size: 13px; }
+  #gwDetail { min-height: 78px; margin-top: 8px; }
+  .gw .box b { font-size: 14px; }
+  .gw .box small { font-size: 12px; }
+  .arch-wrap { display: grid; grid-template-columns: 1fr; }
+
+  .stat { font-size: 46px; font-weight: 800; line-height: 1; }
+  .src { font-size: 13px; color: var(--muted); }
+  .src a { color: var(--accent); }
+</style>
+</head>
+<body class="deck">
+
+<!-- 1 ─────────────────────────────────────────── -->
+<section class="slide title-slide" data-title="Welcome">
+  <div class="big-emoji">🧩</div>
+  <div class="eyebrow">Guidewire Developer Assistant · Training</div>
+  <h1>From chat to harness to MCP: how AI learns Guidewire</h1>
+  <p class="sub">How an AI coding agent works, how it plugs into MCP servers, and how the Guidewire Developer Assistant uses that plug to bring Gosu, Integration and Jutro knowledge into the tools your developers already use.</p>
+  <aside class="notes"><span class="tag time">⏱ 1 min</span><p class="say"><b>🎤 Say</b> Today we follow one idea from start to finish. First, how an agent harness differs from a chat assistant. Then how a harness connects to MCP servers. Finally, how Guidewire uses that to deliver its Developer Assistants.</p><ul><li>Audience: Guidewire developers, leads and architects. Technical enough for real JSON.</li><li>Press → to step through. N shows these notes, D shows timings.</li><li>Facts about Guidewire come from Guidewire’s Qusar blog post and public release notes (see the last slide). Detailed setup docs need a Guidewire login.</li></ul></aside>
+</section>
+
+<!-- 2 ─────────────────────────────────────────── -->
+<section class="slide" data-title="Chat assistant vs agent harness">
+  <div class="eyebrow">Start here</div>
+  <h2>A chat assistant answers. An agent harness gets the work done.</h2>
+  <p class="sub">They can use the same model. The difference is everything built around it.</p>
+  <table class="vs">
+    <tr><th></th><th class="chat">💬 Chat assistant</th><th class="harn">🧰 Agent harness</th></tr>
+    <tr><td>Examples</td><td class="chat">Claude.ai, ChatGPT, Copilot Chat in a browser tab</td><td class="harn">Claude Code, GitHub Copilot agent mode, Cursor agent, Amazon Kiro</td></tr>
+    <tr><td>What it sees</td><td class="chat">Only what you paste or upload</td><td class="harn">Your repo: it opens and searches files itself</td></tr>
+    <tr><td>What it can do</td><td class="chat">Write text and code for you to copy</td><td class="harn">Edit files, run builds and tests, call tools and MCP servers</td></tr>
+    <tr><td>Who drives</td><td class="chat">You: one question, one answer, repeat</td><td class="harn">The loop: it plans, acts, checks and repeats until done</td></tr>
+    <tr><td>House rules</td><td class="chat">Whatever you type in the chat</td><td class="harn">Instruction files (CLAUDE.md), skills, hooks, permissions</td></tr>
+    <tr><td>Safety model</td><td class="chat">You copy and paste, so you are the gate</td><td class="harn">Permissions: allow, ask or deny each action</td></tr>
+  </table>
+  <div class="callout" style="--c:var(--c-autonomy);margin-top:14px"><b>Same engine, different car.</b> The model is the engine. The harness is the car around it: the steering, brakes, tools and dashboard.</div>
+  <aside class="notes"><span class="tag time">⏱ 3 min</span><p class="say"><b>🎤 Say</b> A chat assistant answers questions about your code. A harness works inside your code: it reads files, makes edits and runs the build. Many products use the same model; the harness decides what it can see and do.</p><ul><li>Ask the room: who has pasted a Gosu class into a chat window and asked “what does this do”? That is the chat model.</li><li>The last row matters later: in a harness, you control what the agent may do through permissions, not by copy and paste.</li><li>Guidewire’s Developer Assistants are built for harnesses, not for chat windows.</li></ul></aside>
+</section>
+
+<!-- 3 ─────────────────────────────────────────── -->
+<section class="slide" data-title="The agent loop">
+  <div class="eyebrow">How a harness works</div>
+  <h2>The agent loop: plan → act → observe → done? → repeat</h2>
+  <p class="sub">Step through a real-looking Guidewire task. Each pass round the loop is one model call plus one or more tool calls.</p>
+  <div id="loop"></div>
+  <aside class="notes"><span class="tag time">⏱ 4 min</span><p class="say"><b>🎤 Say</b> The harness gives the model a goal and some tools. The model picks the next step, the harness runs it and reports back, and this repeats until the model says it is done. Notice step two: the agent needs Guidewire knowledge it does not have. That gap is what the Developer Assistant fills.</p><ul><li>Use ▶ Next step or Auto-play.</li><li>The task matches Guidewire’s own Gosu demo: one prompt asks for a new claim search field, and the change touches several files.</li><li>The loop ends when the model replies without asking for a tool (stop_reason “end_turn”).</li></ul></aside>
+</section>
+
+<!-- 4 ─────────────────────────────────────────── -->
+<section class="slide seq-slide" data-title="Sequence: The loop on the wire">
+  <div class="eyebrow">Sequence diagram</div>
+  <h2>The loop on the wire</h2>
+  <p class="sub">The harness is the only one that touches your files. The model only asks.</p>
+  <div id="seqLoop"></div>
+  <aside class="notes"><span class="tag time">⏱ 3 min</span><p class="say"><b>🎤 Say</b> Here is the same loop as messages. The model never touches your files. It sends a tool request, and the harness decides whether to run it, runs it, and sends back the result. That is where permissions live.</p><ul><li>Step through with →. Click any arrow to jump to it.</li><li>The orange frame is the loop. It repeats until there is no tool request in the reply.</li><li>Built-in tools here are generic: read, search, edit, run a command.</li></ul></aside>
+</section>
+
+<!-- 5 ─────────────────────────────────────────── -->
+<section class="slide" data-title="What is an MCP server?">
+  <div class="eyebrow">MCP</div>
+  <h2>What is an MCP server?</h2>
+  <p class="sub">The <b>Model Context Protocol</b> is an open standard for plugging tools and knowledge into AI apps. An MCP server is the plug. Click each part.</p>
+  <div id="mcpParts"></div>
+  <div class="label" style="margin-top:14px">What a server can offer</div>
+  <div id="prims"></div>
+  <aside class="notes"><span class="tag time">⏱ 3 min</span><p class="say"><b>🎤 Say</b> An MCP server is a program that offers tools, data and prompt templates in one standard format. Build it once and any MCP-aware harness can use it: Claude Code, Copilot, Cursor or Kiro. That is why Guidewire chose MCP rather than building its own chatbot.</p><ul><li>Think USB-C: one plug shape for every device.</li><li>Tools are by far the most used. Resources and prompts are useful for read-only knowledge and ready-made tasks.</li><li>Without a standard, each vendor would need a plugin for each AI tool: N × M integrations. With MCP it is N + M.</li></ul></aside>
+</section>
+
+<!-- 6 ─────────────────────────────────────────── -->
+<section class="slide" data-title="How a harness connects">
+  <div style="position:absolute;right:clamp(24px,5vw,72px);top:40px"><button class="btn bts-btn" data-bts="config">🎬 Behind the scenes</button></div>
+  <div class="eyebrow">Wiring</div>
+  <h2>How a harness connects to MCP servers</h2>
+  <p class="sub">One line of config per server. Click a box, or trace a request end to end.</p>
+  <div class="wire" id="wire">
+    <div class="zone"><div class="zt">💻 Your machine · the harness</div>
+      <div class="box" data-k="dev" style="--c:var(--accent)"><b>👩‍💻 Developer</b><small>types the goal in plain English</small></div>
+      <div class="inner">
+        <div class="box" data-k="model" style="--c:var(--c-model)"><b>🧠 Model</b><small>decides the next step</small></div>
+        <div class="box" data-k="builtin" style="--c:var(--c-action)"><b>🛠️ Built-in tools</b><small>read, edit, run</small></div>
+        <div class="box" data-k="perm" style="--c:var(--c-trust)"><b>🛡️ Permissions</b><small>allow · ask · deny</small></div>
+        <div class="box" data-k="client" style="--c:var(--c-context)"><b>🔗 MCP clients</b><small>one per server</small></div>
+      </div>
+    </div>
+    <div class="pipe"><div class="ln"></div>JSON-RPC<br>over stdio or HTTP<div class="ln back"></div></div>
+    <div class="zone"><div class="zt">🔌 MCP servers</div>
+      <div class="box" data-k="srv1" style="--c:var(--c-knowledge)"><b>📚 Knowledge server</b><small>docs search, patterns, guides</small></div>
+      <div class="box" data-k="srv2" style="--c:var(--c-action)"><b>🎫 Work tracker server</b><small>tickets, comments</small></div>
+      <div class="box" data-k="srv3" style="--c:var(--c-autonomy)"><b>🐙 Code host server</b><small>pull requests, reviews</small></div>
+    </div>
+  </div>
+  <div class="row" style="margin-top:12px"><button class="btn primary" id="traceBtn">▶ Trace a request</button><span class="trace-cap muted" id="traceCap"></span></div>
+  <div class="card arch-detail" id="wireDetail"></div>
+  <aside class="notes"><span class="tag time">⏱ 4 min</span><p class="say"><b>🎤 Say</b> At start-up the harness reads its config and starts one MCP client for each server. Each client asks its server what tools it has. From then on, those tools appear to the model next to the built-in ones. The model does not know or care that MCP is involved.</p><ul><li>Press ▶ Trace a request to light up the path one hop at a time.</li><li>The Behind the scenes drawer shows a real Claude Code <code>.mcp.json</code> file.</li><li>Local servers run as a process on your machine (stdio). Remote servers are a URL, usually behind a login (HTTP).</li></ul></aside>
+</section>
+
+<!-- 7 ─────────────────────────────────────────── -->
+<section class="slide seq-slide" data-title="Sequence: An MCP session">
+  <div class="eyebrow">Sequence diagram</div>
+  <h2>An MCP session, start to finish</h2>
+  <p class="sub">The harness connects to a server, learns its tools, then uses one when the model asks.</p>
+  <div id="seqMcp"></div>
+  <aside class="notes"><span class="tag time">⏱ 4 min</span><p class="say"><b>🎤 Say</b> First the handshake: initialize, then tools/list, once per session. Later, when the model asks for a tool, the harness sends tools/call to the server and passes the result back. Every message on the right is the real JSON-RPC shape.</p><ul><li>Steps 1 to 4 happen once at start-up. The rest repeats for every tool call.</li><li>The example server is HarborShield’s rating engine (policy MTR-55120, ₹18,400 → ₹44,750 when adding an 18-year-old driver).</li><li>The only new hop compared with the loop diagram is harness ↔ MCP server.</li></ul></aside>
+</section>
+
+<!-- 8 ─────────────────────────────────────────── -->
+<section class="slide" data-title="Meet the Developer Assistants">
+  <div class="eyebrow">Guidewire Developer Assistant</div>
+  <h2>Guidewire knowledge, delivered as MCP servers</h2>
+  <p class="sub">Released in Qusar (August 2026). Each assistant is an MCP server that plugs into the harness you already use.</p>
+  <div class="split">
+    <div class="stack-v">
+      <div class="card"><b>✅ Generally available</b>
+        <p style="margin:6px 0 0"><b>Gosu</b>: code, entities, PCF pages, display keys, tests.<br><b>Integrations</b>: Integration Gateway routes, mappings, Java classes from an API file.<br><b>Jutro</b>: digital experiences with the right design-system components and UX rules.</p></div>
+      <div class="card"><b>🧪 Early access</b>
+        <p style="margin:6px 0 0">Developer Assistant for <b>Functions</b> · Product Design Assistant for <b>APD</b> · Data Curation Assistant for <b>Data Studio</b></p></div>
+    </div>
+    <div class="card"><b>What makes them “Guidewire-native”</b> (Guidewire’s four design choices)
+      <ol style="margin:8px 0 0;padding-left:20px;line-height:1.5">
+        <li><b>Purpose-built</b> for InsuranceSuite: Gosu syntax, PCF structure, Cloud APIs, best practice.</li>
+        <li><b>Grounded</b> in Guidewire’s internal docs, <b>cookbooks</b> and curated embeddings, not public web data.</li>
+        <li><b>Version-aware</b>: guidance matches your cloud release and project setup.</li>
+        <li><b>Delivered through MCP</b>, inside your toolkit, not as a separate chatbot.</li>
+      </ol></div>
+  </div>
+  <aside class="notes"><span class="tag time">⏱ 3 min</span><p class="say"><b>🎤 Say</b> Guidewire did not build another chat window. It packaged what a senior Guidewire developer knows (cookbooks, patterns, version rules) as MCP servers. Your harness calls them whenever a task touches Guidewire code, configuration or APIs.</p><ul><li>Status as of the Qusar release. Gosu was early access back in Niseko. Jutro’s MCP server was early access in Palisades.</li><li>A cookbook is a curated set of recipes: the right way to do a common Guidewire task, step by step.</li><li>Version awareness matters: a pattern correct for one release can be an anti-pattern in the next.</li></ul></aside>
+</section>
+
+<!-- 9 ─────────────────────────────────────────── -->
+<section class="slide" data-title="Architecture">
+  <div style="position:absolute;right:clamp(24px,5vw,72px);top:40px"><button class="btn bts-btn" data-bts="gwconfig">🎬 Behind the scenes</button></div>
+  <div class="eyebrow">Architecture</div>
+  <h2>Guidewire Developer Assistant: the architecture</h2>
+  <p class="sub">You keep the harness, model and governance. Guidewire maintains the knowledge. Click any box, or trace a request.</p>
+  <div class="gw" id="gw">
+    <div class="zone"><div class="zt">💻 You control</div>
+      <div class="box" data-k="g-dev" style="--c:var(--accent)"><b>👩‍💻 Developer + IDE</b><small>one prompt with the intent</small></div>
+      <div class="box" data-k="g-harn" style="--c:var(--c-autonomy)"><b>🧰 Agent harness</b><small>Claude Code · Copilot · Cursor · Kiro</small></div>
+      <div class="box" data-k="g-model" style="--c:var(--c-model)"><b>🧠 Model of your choice</b><small>your contract, your logging</small></div>
+      <div class="box" data-k="g-gov" style="--c:var(--c-trust)"><b>🛡️ Governance</b><small>allow / ask / deny · DevContainer</small></div>
+      <div class="box" data-k="g-repo" style="--c:var(--c-action)"><b>📁 Your project</b><small>InsuranceSuite config · Jutro app</small></div>
+    </div>
+    <div class="pipe"><div class="ln"></div>MCP<br><span style="font-weight:500">or CLI</span><div class="ln back"></div></div>
+    <div class="zone"><div class="zt">🔌 Developer Assistant MCP</div>
+      <div class="box" data-k="g-gosu" style="--c:var(--c-knowledge)"><b>Gosu<span class="tag2 ga">GA</span></b><small>InsuranceSuite code + config</small></div>
+      <div class="box" data-k="g-int" style="--c:var(--c-knowledge)"><b>Integrations<span class="tag2 ga">GA</span></b><small>Integration Gateway</small></div>
+      <div class="box" data-k="g-jutro" style="--c:var(--c-knowledge)"><b>Jutro<span class="tag2 ga">GA</span></b><small>Jutro Digital Platform</small></div>
+      <div class="box" data-k="g-fn" style="--c:var(--warn)"><b>Functions<span class="tag2 ea">EA</span></b><small>serverless extensions</small></div>
+      <div class="box" data-k="g-cli" style="--c:var(--muted)"><b>⌨️ Developer Assistant CLI</b><small>same tools as shell commands</small></div>
+    </div>
+    <div class="pipe"><div class="ln"></div>🔐 Okta<div class="ln back"></div></div>
+    <div class="zone"><div class="zt">☁️ Guidewire maintains</div>
+      <div class="box" data-k="g-back" style="--c:var(--c-context)"><b>⚙️ Developer Assistant backend</b><small>Guidewire services, version-aware</small></div>
+      <div class="box" data-k="g-cook" style="--c:var(--c-knowledge)"><b>📖 Cookbooks</b><small>proven recipes for common tasks</small></div>
+      <div class="box" data-k="g-rag" style="--c:var(--c-knowledge)"><b>🔎 Docs search (RAG)</b><small>curated embeddings of internal docs</small></div>
+      <div class="box" data-k="g-guides" style="--c:var(--c-knowledge)"><b>📐 Best-practice guides</b><small>cloud standards, anti-patterns</small></div>
+      <div class="box" data-k="g-tmpl" style="--c:var(--c-knowledge)"><b>🧱 Templates · SDK · UX rules</b><small>Jutro templates and components</small></div>
+    </div>
+  </div>
+  <div class="row" style="margin-top:10px"><button class="btn primary" id="gwTrace">▶ Trace a request</button><span class="trace-cap muted" id="gwCap"></span></div>
+  <div class="card arch-detail" id="gwDetail"></div>
+  <aside class="notes"><span class="tag time">⏱ 6 min</span><p class="say"><b>🎤 Say</b> Read it left to right. On the left is everything you already own: the harness, the model, your governance and your code. In the middle are the Developer Assistant MCP servers, one per area. On the right is what Guidewire maintains behind an Okta login: cookbooks, curated documentation search, best-practice guides and templates. The harness only calls across when a task touches Guidewire.</p><ul><li>Press ▶ Trace a request to walk one Gosu task across the diagram.</li><li>Your code stays on the left. The agent edits it locally with built-in tools. The Developer Assistant supplies the know-how.</li><li>Guidewire’s three stated benefits: you keep your AI environment, governance stays in your one AI stack, and you don’t maintain a Guidewire knowledge layer yourself.</li><li>Okta authentication and RAG documentation search are named in the Palisades Jutro release notes. Exact server hosting and tool names are in Guidewire’s login-only setup guide.</li></ul></aside>
+</section>
+
+<!-- 10 ─────────────────────────────────────────── -->
+<section class="slide seq-slide" data-title="Sequence: A Gosu task with the Developer Assistant">
+  <div class="eyebrow">Sequence diagram</div>
+  <h2>A Gosu change with the Developer Assistant</h2>
+  <p class="sub">“Add a policy number field to claim search.” Tool names are illustrative.</p>
+  <div id="seqGw"></div>
+  <aside class="notes"><span class="tag time">⏱ 5 min</span><p class="say"><b>🎤 Say</b> The developer gives one intent. The model reads the code, then asks the Developer Assistant for the correct Guidewire pattern. It gets back a cookbook recipe for the right release, makes the edits locally, and runs the build and tests. The developer reviews a coherent set of changes, not a guess.</p><ul><li>This mirrors Guidewire’s Gosu demo: one prompt instead of stitching together entity, configuration, display key and PCF updates by hand.</li><li>Tool names such as <code>search_cookbooks</code> are illustrative. Use the names your harness lists after connecting.</li><li>Note the permission prompt before edits: governance stays with you.</li></ul></aside>
+</section>
+
+<!-- 11 ─────────────────────────────────────────── -->
+<section class="slide" data-title="Why it matters">
+  <div class="eyebrow">Results</div>
+  <h2>Same AI tool, with and without the Developer Assistant</h2>
+  <p class="sub">Guidewire ran 33 Gosu tasks twice with the same AI coding tool.</p>
+  <div class="cols-3">
+    <div class="card" style="text-align:center;--c:var(--bad)"><div class="label">Without</div><div class="stat" style="color:var(--bad)">0 / 33</div><p>tests passed. One change compiled but stopped the server from starting, because it broke a Guidewire-specific rule.</p></div>
+    <div class="card" style="text-align:center"><div class="label">With Developer Assistant for Gosu</div><div class="stat" style="color:var(--good)">33 / 33</div><p>tests passed, with clean code ready for review.</p></div>
+    <div class="card" style="text-align:center"><div class="label">Speed</div><div class="stat" style="color:var(--accent)">41%</div><p>faster on tasks, by pulling the right pattern from cookbooks in one step instead of trial and error.</p></div>
+  </div>
+  <div class="callout" style="--c:var(--warn);margin-top:16px"><b>Read these as vendor claims.</b> They come from Guidewire’s internal benchmarks. Guidewire also says teams deliver “more than 40% faster” than with generic coding assistants. Measure on your own tasks before you rely on the numbers.</div>
+  <aside class="notes"><span class="tag time">⏱ 2 min</span><p class="say"><b>🎤 Say</b> The headline is not speed, it is correctness. A general model writes Gosu that looks right and fails on Guidewire’s rules. Grounding it in cookbooks for the right release is what turns zero passes into thirty-three.</p><ul><li>These are Guidewire’s own figures from the Qusar blog post. Be clear that they are not independent.</li><li>Good discussion point: what would a fair test on our own backlog look like?</li></ul></aside>
+</section>
+
+<!-- 12 ─────────────────────────────────────────── -->
+<section class="slide" data-title="Using it safely">
+  <div class="eyebrow">Secure usage</div>
+  <h2>The agent runs with your privileges. Set the guard rails first.</h2>
+  <p class="sub">From Guidewire’s secure usage guidelines for the Developer Assistant. Flip each card.</p>
+  <div id="sec"></div>
+  <aside class="notes"><span class="tag time">⏱ 3 min</span><p class="say"><b>🎤 Say</b> The Developer Assistant runs inside an agentic IDE, and that IDE can read files, edit code and run commands as you. Guidewire’s guidelines cover least privilege, a human approving execution, a permission baseline for Claude Code, and isolating the agent in a DevContainer.</p><ul><li>Risks the guidelines name: a prompt-injected dependency, a compromised file, or a model error.</li><li>The Behind the scenes drawer on the architecture slide shows an example allow/ask/deny file. It is illustrative, not Guidewire’s exact baseline.</li></ul></aside>
+</section>
+
+<!-- 13 ─────────────────────────────────────────── -->
+<section class="slide" data-title="Quick check">
+  <div class="eyebrow">Quick check</div>
+  <h2>Did it click?</h2>
+  <div id="quiz"></div>
+  <aside class="notes"><span class="tag time">⏱ 2 min</span><p class="say"><b>🎤 Say</b> Four quick questions to check the main ideas.</p><ul><li>Let the room answer before clicking.</li></ul></aside>
+</section>
+
+<!-- 14 ─────────────────────────────────────────── -->
+<section class="slide" data-title="Takeaways">
+  <div class="eyebrow">Takeaways</div>
+  <h2>What to remember</h2>
+  <div class="cols-3" style="margin:10px 0 18px">
+    <div class="card"><b>🧰 Harness, not chat</b><p>A harness runs the loop in your repo: it reads, edits, builds and tests. You govern it with permissions.</p></div>
+    <div class="card"><b>🔌 MCP is the plug</b><p>One standard lets any harness use any server. Tools appear to the model next to the built-in ones.</p></div>
+    <div class="card"><b>📖 Guidewire brings the know-how</b><p>Developer Assistants supply cookbooks, curated docs and version-aware rules. You keep your tools and your governance.</p></div>
+  </div>
+  <p class="src"><b>Sources:</b>
+    <a href="https://www.guidewire.com/resources/blog/developers/accelerating-p-c-delivery-with-developer-assistants-from-guidewire" target="_blank" rel="noopener">Guidewire blog: Accelerating P&amp;C Delivery with Developer Assistants (Aug 2026)</a> ·
+    <a href="https://docs.guidewire.com/cloud/qusar/whatsnew/topics/jdp-release_highlights.html" target="_blank" rel="noopener">What’s new in Jutro for Qusar</a> ·
+    <a href="https://docs.guidewire.com/cloud/palisades/whatsnew/topics/jdp-release_highlights.html" target="_blank" rel="noopener">What’s new in Jutro for Palisades</a> ·
+    <a href="https://docs.guidewire.com/glossary/ai-terms.html" target="_blank" rel="noopener">Guidewire AI glossary</a> ·
+    <a href="https://modelcontextprotocol.io" target="_blank" rel="noopener">modelcontextprotocol.io</a></p>
+  <aside class="notes"><span class="tag time">⏱ 1 min</span><p class="say"><b>🎤 Say</b> Three things to take away: harnesses do the work, MCP is how they plug in, and the Developer Assistant is Guidewire’s knowledge on that plug. Next step: connect it in a sandbox project and try one real task from the backlog.</p><ul><li>The setup guide (“Overview of Developer Assistant MCP”) is on docs.guidewire.com and needs a Guidewire login.</li></ul></aside>
+</section>
+
+<script src="assets/widgets.js?v=1.0"></script>
+<script>
+const { $, $$ } = W;
+
+/* ---- 3 · agent loop ---- */
+W.loop($("#loop"), "In HarborShield’s ClaimCenter, add a <b>policy number</b> field to the claim search screen.", [
+  { plan: "I need to find where claim search is defined.", act: "Search the project for the claim search criteria and its search screen.", observe: "Found the search criteria entity, its Gosu search logic and the PCF page." },
+  { plan: "A new criterion touches several files. What is the correct Guidewire pattern for this release?", act: "Look up the pattern in Guidewire’s documentation (later: the Developer Assistant does this in one call).", observe: "Pattern: entity extension, search logic, display key, PCF input, in that order." },
+  { plan: "Make the four changes the pattern describes.", act: "Edit the entity extension, the Gosu search method, the display key and the PCF page.", observe: "Build fails: the display key name does not match the PCF reference." },
+  { plan: "Fix the key name, then build and run the tests.", act: "Correct the display key and run the build and GUnit tests.", observe: "Build passes. All tests pass.", done: true },
+]);
+
+/* ---- 4 · loop sequence ---- */
+W.seq($("#seqLoop"), {
+  actors: [
+    { id: "dev", name: "Developer", icon: "👩‍💻", c: "accent" },
+    { id: "h", name: "Harness", icon: "🧰", c: "autonomy" },
+    { id: "m", name: "Model", icon: "🧠", c: "model" },
+    { id: "fs", name: "Files + terminal", icon: "🛠️", c: "action" },
+  ],
+  steps: [
+    { from: "dev", to: "h", label: "“Add policy no. to search”" },
+    { from: "h", to: "m", label: "Goal + tools + CLAUDE.md", note: "Every request carries the system prompt, the instruction file, the tool list and the conversation so far.", code: `{ "model": "claude-sonnet-5-5", "max_tokens": 8000,
+  "system": "You are a coding agent... (plus CLAUDE.md)",
+  "tools": [ { "name": "grep" }, { "name": "read_file" },
+             { "name": "edit_file" }, { "name": "bash" } ],
+  "messages": [ { "role": "user", "content": "Add a policy number field to claim search" } ] }` },
+    { from: "m", to: "h", label: "tool_use: grep “ClaimSearch”", ret: true, code: `{ "type": "tool_use", "id": "toolu_01", "name": "grep",
+  "input": { "pattern": "ClaimSearch", "path": "modules/configuration" } }` },
+    { from: "h", to: "fs", label: "Run grep" },
+    { from: "fs", to: "h", label: "3 matching files", ret: true },
+    { from: "h", to: "m", label: "tool_result", code: `{ "type": "tool_result", "tool_use_id": "toolu_01",
+  "content": "...ClaimSearchCriteria.etx\\n...ClaimSearchDV.pcf\\n..." }` },
+    { from: "m", to: "h", label: "tool_use: edit_file", ret: true, note: "The harness checks permissions before it runs an edit. It may ask the developer first." },
+    { from: "h", to: "fs", label: "Apply edit" },
+    { from: "m", to: "h", label: "tool_use: bash (build + tests)", ret: true },
+    { from: "h", to: "fs", label: "Run build and tests" },
+    { from: "fs", to: "h", label: "All tests pass", ret: true },
+    { from: "h", to: "m", label: "tool_result" },
+    { from: "m", to: "h", label: "end_turn: summary", ret: true, note: "No tool request in the reply, so the loop stops.", code: `{ "stop_reason": "end_turn" }` },
+    { from: "h", to: "dev", label: "Change set to review", ret: true },
+  ],
+  frames: [{ from: 2, to: 12, label: "loop · until stop_reason = end_turn", c: "warn" }],
+});
+
+/* ---- 5 · MCP parts ---- */
+W.clickInfo($("#mcpParts"), [
+  { icon: "🧰", title: "Host", sub: "the harness", c: "autonomy", html: "<p>The AI app you work in: Claude Code, Copilot, Cursor, Kiro. It owns the model connection, the loop and the permissions.</p>" },
+  { icon: "🔗", title: "MCP client", sub: "plumbing in the host", c: "context", html: "<p>A small component inside the harness that keeps one connection to one server. Five servers means five clients. You rarely think about it.</p>" },
+  { icon: "🔌", title: "MCP server", sub: "the plug", c: "action", html: "<p>A program that offers tools, resources and prompts in the standard MCP format. Built once by a vendor (like Guidewire), the community or your own team.</p>" },
+  { icon: "🏢", title: "Behind it", sub: "APIs, docs, data", c: "knowledge", html: "<p>The real system the server wraps: a rating engine, a ticket tracker, or a knowledge base of cookbooks and documentation.</p>" },
+], { layout: "flow" });
+W.clickInfo($("#prims"), [
+  { icon: "🔧", title: "Tools", sub: "functions the model can call", c: "action", html: "<p>For example <code>search_docs</code>, <code>get_quote</code>, <code>create_ticket</code>. Each has a name, a description and a JSON input schema. <b>By far the most used.</b></p>" },
+  { icon: "📄", title: "Resources", sub: "read-only content", c: "knowledge", html: "<p>Files, records, schemas or guides the harness can attach as context. Guidewire’s glossary notes that domain knowledge can be offered as an MCP resource.</p>" },
+  { icon: "📋", title: "Prompts", sub: "ready-made templates", c: "context", html: "<p>Pre-written task templates, often shown as slash commands, such as “review this Gosu class against cloud standards”.</p>" },
+], { cols: 3, side: true });
+
+/* ---- shared: clickable boxes + trace ---- */
+function boxes(root, detail, info, trace, btn, cap) {
+  const all = $$(".box", root);
+  const show = (k) => {
+    all.forEach((b) => b.classList.toggle("on", b.dataset.k === k));
+    const it = info[k];
+    detail.innerHTML = `<h3>${it[0]}</h3><p>${it[1]}</p>`;
+  };
+  all.forEach((b) => (b.onclick = () => { stop(); show(b.dataset.k); }));
+  let t = null, i = 0;
+  function stop() { clearInterval(t); t = null; btn.textContent = "▶ Trace a request"; all.forEach((b) => b.classList.remove("lit", "dim")); cap.textContent = ""; }
+  function step() {
+    if (i >= trace.length) { stop(); cap.textContent = "✅ Done. Click any box for details."; return; }
+    const [keys, text] = trace[i++];
+    all.forEach((b) => { const on = keys.includes(b.dataset.k); b.classList.toggle("lit", on); b.classList.toggle("dim", !on); b.classList.remove("on"); });
+    cap.innerHTML = `<b>${i}/${trace.length}</b> · ${text}`;
+  }
+  btn.onclick = () => { if (t) return stop(); i = 0; btn.textContent = "■ Stop"; step(); t = setInterval(step, 2300); };
+  document.addEventListener("slide:enter", () => t && stop());
+  show(all[0].dataset.k);
+}
+
+/* ---- 6 · wiring ---- */
+boxes($("#wire"), $("#wireDetail"), {
+  dev: ["👩‍💻 Developer", "Describes the outcome they want. They also approve risky actions when the harness asks."],
+  model: ["🧠 Model", "Sees one list of tools: built-in ones and MCP ones side by side. It cannot tell which is which, and it never runs anything itself."],
+  builtin: ["🛠️ Built-in tools", "Come with the harness: read and search files, edit files, run shell commands. These work on your local project."],
+  perm: ["🛡️ Permissions", "Every tool call, built-in or MCP, passes through the same rules: allow, ask the developer, or deny. MCP tools are named like <code>mcp__server__tool</code>, so rules can target them."],
+  client: ["🔗 MCP clients", "At start-up the harness reads <code>.mcp.json</code>, starts one client per server, and asks each for <code>tools/list</code>."],
+  srv1: ["📚 Knowledge server", "Offers read-only tools such as documentation search or pattern lookup. This is the shape of the Guidewire Developer Assistant."],
+  srv2: ["🎫 Work tracker server", "Lets the agent read a ticket and post a comment when the work is done."],
+  srv3: ["🐙 Code host server", "Lets the agent open a pull request or read review comments."],
+}, [
+  [["dev"], "The developer types the goal."],
+  [["model", "client"], "The harness sends the goal to the model, with built-in tools and every MCP server’s tools."],
+  [["model"], "The model asks for an MCP tool, for example a docs search."],
+  [["perm"], "The harness checks permissions: allowed, ask, or deny."],
+  [["client", "srv1"], "The MCP client sends tools/call to the knowledge server."],
+  [["srv1", "client"], "The server returns the result."],
+  [["model"], "The result goes back to the model, which plans the next step."],
+  [["builtin"], "Next it edits files with a built-in tool. Same loop, same permissions."],
+], $("#traceBtn"), $("#traceCap"));
+
+/* ---- 7 · MCP session ---- */
+W.seq($("#seqMcp"), {
+  actors: [
+    { id: "h", name: "Harness + MCP client", icon: "🧰", c: "autonomy" },
+    { id: "srv", name: "MCP server", icon: "🔌", c: "context" },
+    { id: "api", name: "Rating engine", icon: "🧮", c: "action" },
+    { id: "m", name: "Model", icon: "🧠", c: "model" },
+  ],
+  steps: [
+    { sep: "At start-up" },
+    { from: "h", to: "srv", label: "initialize", note: "Client and server agree a protocol version and say what each supports.", code: `{ "jsonrpc": "2.0", "id": 1, "method": "initialize",
+  "params": { "protocolVersion": "2025-06-18",
+    "clientInfo": { "name": "claude-code", "version": "2.x" }, "capabilities": {} } }` },
+    { from: "srv", to: "h", label: "capabilities: tools", ret: true, code: `{ "jsonrpc": "2.0", "id": 1, "result": {
+  "serverInfo": { "name": "rating-engine-mcp" },
+  "capabilities": { "tools": {} } } }` },
+    { from: "h", to: "srv", label: "tools/list", code: `{ "jsonrpc": "2.0", "id": 2, "method": "tools/list" }` },
+    { from: "srv", to: "h", label: "get_motor_quote, …", ret: true, code: `{ "jsonrpc": "2.0", "id": 2, "result": { "tools": [
+  { "name": "get_motor_quote",
+    "description": "Live annual motor premium from HarborShield's rating engine",
+    "inputSchema": { "type": "object",
+      "properties": { "policy_id": { "type": "string" } } } } ] } }` },
+    { sep: "When the model needs it" },
+    { from: "h", to: "m", label: "Request + tools (from MCP)", note: "The harness turns MCP tools into ordinary tool definitions, named like mcp__rating__get_motor_quote." },
+    { from: "m", to: "h", label: "tool_use: get_motor_quote", ret: true },
+    { from: "h", to: "srv", label: "tools/call", code: `{ "jsonrpc": "2.0", "id": 7, "method": "tools/call",
+  "params": { "name": "get_motor_quote",
+    "arguments": { "policy_id": "MTR-55120", "add_driver": { "age": 18 } } } }` },
+    { from: "srv", to: "api", label: "POST /rating/v3/quote", note: "The server is a thin adapter. It calls the real system with its own credentials." },
+    { from: "api", to: "srv", label: "{ new_annual: 44750 }", ret: true },
+    { from: "srv", to: "h", label: "result.content", ret: true, code: `{ "jsonrpc": "2.0", "id": 7, "result": {
+  "content": [{ "type": "text",
+    "text": "{\\"current_annual\\":18400,\\"new_annual\\":44750,\\"currency\\":\\"INR\\"}" }],
+  "isError": false } }` },
+    { from: "h", to: "m", label: "tool_result" },
+    { from: "m", to: "h", label: "Final answer", ret: true },
+  ],
+});
+
+/* ---- 9 · Guidewire architecture ---- */
+boxes($("#gw"), $("#gwDetail"), {
+  "g-dev": ["👩‍💻 Developer + IDE", "Works in their usual editor. Describes the outcome, such as a new search field, a new Integration Gateway route or a Jutro quote page, and reviews the proposed changes."],
+  "g-harn": ["🧰 Agent harness", "Claude Code, Copilot, Cursor or Amazon Kiro. Your primary AI environment stays the same. It sends Guidewire sub-tasks to the relevant Developer Assistant."],
+  "g-model": ["🧠 Model of your choice", "Chosen and contracted by you. Guidewire’s point: models, logging and guard rails stay centralised in your one AI stack."],
+  "g-gov": ["🛡️ Governance", "Your harness permissions (allow / ask / deny), logging and hooks. Guidewire’s secure usage guidelines recommend least privilege, a human approving execution, and isolating the agent in a DevContainer."],
+  "g-repo": ["📁 Your project", "Your InsuranceSuite configuration (Gosu, entities, PCF, display keys) or your Jutro app. The harness edits it locally with built-in tools. The Developer Assistant supplies the patterns."],
+  "g-gosu": ["Developer Assistant for Gosu <span class='tag2 ga'>GA</span>", "Explains, generates, refactors and tests Gosu. Knows PCF structure, Guidewire Cloud APIs and rules that compile but break server start-up."],
+  "g-int": ["Developer Assistant for Integrations <span class='tag2 ga'>GA</span>", "Builds Integration Gateway routes: generates Java classes from an API file, creates mapping functions and modifies existing routes using supported patterns."],
+  "g-jutro": ["Developer Assistant for Jutro <span class='tag2 ga'>GA</span>", "Uses Jutro development skills, SDK guides, UX rules and template knowledge so generated code uses the right design-system components and entity fields."],
+  "g-fn": ["Developer Assistant for Functions <span class='tag2 ea'>EA</span>", "Early access in Qusar, for serverless extensions. The Product Design Assistant (APD) and Data Curation Assistant (Data Studio) are also early access."],
+  "g-cli": ["⌨️ Developer Assistant CLI", "Exposes the same tools and resources as shell subcommands. Useful in CI pipelines and scripts, or for agents with shell access but no MCP transport. Documented for Jutro in Qusar."],
+  "g-back": ["⚙️ Developer Assistant backend", "Guidewire-hosted services behind Okta authentication. Version-aware: answers match your cloud release and project setup. Maintained and updated by Guidewire, so you don’t build your own Guidewire knowledge layer."],
+  "g-cook": ["📖 Cookbooks", "Curated, proven recipes for common Guidewire tasks. Pulling the right recipe in one step is what Guidewire credits for the Gosu assistant finishing tasks 41% faster."],
+  "g-rag": ["🔎 Documentation search (RAG)", "Retrieval over Guidewire’s internal documentation using curated embeddings, rather than public web data."],
+  "g-guides": ["📐 Best-practice guides", "Curated guidelines: cloud-friendly patterns, anti-patterns that create upgrade risk, and platform rules."],
+  "g-tmpl": ["🧱 Templates, SDK guides and UX rules", "For Jutro: knowledge from the Jutro experience templates, component usage guidance and design-system rules, served through the MCP server."],
+}, [
+  [["g-dev", "g-harn"], "The developer gives one intent to the harness."],
+  [["g-harn", "g-model", "g-repo"], "The model reads the relevant project files with built-in tools."],
+  [["g-harn", "g-gosu"], "The task touches Gosu, so the model calls the Developer Assistant for Gosu over MCP."],
+  [["g-gosu", "g-back"], "The server reaches Guidewire’s backend with an Okta-authenticated session."],
+  [["g-back", "g-cook", "g-rag", "g-guides"], "The backend finds the recipe and docs for your release."],
+  [["g-gosu", "g-harn", "g-model"], "The pattern comes back as a tool result."],
+  [["g-gov", "g-repo"], "The harness asks permission, then edits your files locally."],
+  [["g-repo", "g-dev"], "Build and tests run. The developer reviews one coherent change set."],
+], $("#gwTrace"), $("#gwCap"));
+
+/* ---- 10 · Guidewire sequence ---- */
+W.seq($("#seqGw"), {
+  actors: [
+    { id: "dev", name: "Developer", icon: "👩‍💻", c: "accent" },
+    { id: "h", name: "Harness", icon: "🧰", c: "autonomy" },
+    { id: "m", name: "Model", icon: "🧠", c: "model" },
+    { id: "da", name: "Dev Assistant MCP", icon: "🔌", c: "knowledge" },
+    { id: "gw", name: "Guidewire backend", icon: "☁️", c: "context" },
+  ],
+  steps: [
+    { sep: "At start-up" },
+    { from: "h", to: "da", label: "initialize", note: "The developer has signed in through Okta during setup." },
+    { from: "da", to: "gw", label: "Authenticated session (Okta)" },
+    { from: "h", to: "da", label: "tools/list" },
+    { from: "da", to: "h", label: "Guidewire tools", ret: true, note: "Illustrative names. The real list is whatever your harness shows after connecting.", code: `{ "result": { "tools": [
+  { "name": "search_cookbooks", "description": "Find the Guidewire recipe for a task..." },
+  { "name": "search_docs", "description": "Search Guidewire documentation for this release..." },
+  { "name": "get_best_practices", "description": "Cloud standards and anti-patterns for..." } ] } }` },
+    { sep: "The task" },
+    { from: "dev", to: "h", label: "“Add policy no. to search”" },
+    { from: "h", to: "m", label: "Goal + built-in + MCP tools" },
+    { from: "m", to: "h", label: "tool_use: read claim search", ret: true },
+    { from: "h", to: "h", label: "Read local files" },
+    { from: "m", to: "h", label: "tool_use: search_cookbooks", ret: true, code: `{ "type": "tool_use", "name": "mcp__gw_gosu__search_cookbooks",
+  "input": { "task": "Add a search criterion to ClaimCenter claim search",
+             "product": "ClaimCenter" } }` },
+    { from: "h", to: "da", label: "tools/call" },
+    { from: "da", to: "gw", label: "Find recipe for this release", note: "Version-aware retrieval over cookbooks, curated docs and best-practice guides." },
+    { from: "gw", to: "da", label: "Recipe: 4 files, in order", ret: true },
+    { from: "da", to: "h", label: "result.content", ret: true, code: `{ "result": { "content": [{ "type": "text",
+  "text": "Recipe: add search criterion\\n1. Extend ClaimSearchCriteria (.etx)\\n2. Update the Gosu search method\\n3. Add the display key\\n4. Add the input to the search PCF\\nAvoid: ..." }] } }` },
+    { from: "h", to: "m", label: "tool_result" },
+    { from: "m", to: "h", label: "tool_use: edit 4 files", ret: true },
+    { from: "h", to: "dev", label: "Allow these edits?", note: "Permissions: edits are set to “ask”. Governance stays with you." },
+    { from: "dev", to: "h", label: "Approve", ret: true },
+    { from: "h", to: "h", label: "Edit, build, run GUnit tests" },
+    { from: "h", to: "m", label: "tool_result: all pass" },
+    { from: "m", to: "h", label: "end_turn: summary", ret: true },
+    { from: "h", to: "dev", label: "Change set to review", ret: true },
+  ],
+  frames: [{ from: 6, to: 19, label: "agent loop", c: "warn" }],
+});
+
+/* ---- 12 · secure usage ---- */
+W.flips($("#sec"), [
+  { front: "🔑 Least privilege", back: "Give the agent only the access the task needs. No production credentials in the workspace.", c: "trust" },
+  { front: "✋ Human in the loop", back: "A person approves commands and edits before they run. Avoid broad “allow everything” approvals.", c: "trust" },
+  { front: "⚙️ Harden permissions", back: "Start from an allow / ask / deny baseline. Guidewire’s guidelines include one for Claude Code.", c: "action" },
+  { front: "📦 Isolate it", back: "Run the agent in a DevContainer, so a bad command only reaches the container, not your machine.", c: "action" },
+  { front: "☠️ Untrusted input", back: "A dependency or file can carry hidden instructions (prompt injection). Treat what the agent reads as data.", c: "bad" },
+  { front: "🔍 Review generated code", back: "The assistant proposes. You review, test and own the change, like any pull request.", c: "accent" },
+]);
+
+/* ---- 13 · quiz ---- */
+W.quiz($("#quiz"), [
+  { q: "What does an agent harness do that a chat assistant does not?", o: ["Uses a bigger model", "Runs a loop in your repo: reads, edits, builds and tests", "Answers faster", "Works without a model"], a: 1, e: "Same engine, different car. The harness adds tools, the loop and permissions." },
+  { q: "How does the Guidewire Developer Assistant reach your AI tool?", o: ["A separate Guidewire chatbot", "A plugin per IDE", "As an MCP server your harness connects to", "It retrains your model"], a: 2, e: "Each assistant is exposed as an MCP server. Your harness stays the same." },
+  { q: "Where are your project files edited?", o: ["In Guidewire Cloud", "Locally, by the harness’s built-in tools", "By the MCP server", "By the model directly"], a: 1, e: "The Developer Assistant supplies patterns. The harness edits your code locally, under your permissions." },
+  { q: "Why did the same AI tool pass 33/33 Gosu tests with the assistant and 0/33 without?", o: ["It used a different model", "It was grounded in version-aware cookbooks and Guidewire rules", "The tests were easier", "It ran more times"], a: 1, e: "Grounding in the right recipe for the release is the difference (Guidewire’s internal benchmark)." },
+]);
+
+/* ---- Behind the scenes ---- */
+W.BTS.config = {
+  title: "Plugging servers into Claude Code",
+  sub: "A project-level .mcp.json file. Commit it, and everyone on the team gets the same servers.",
+  parts: [
+    { label: ".mcp.json (project root)", c: "accent", json: `{
+  "mcpServers": {
+    // local server: the harness starts it as a process (stdio)
+    "docs": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-filesystem", "./docs"]
+    },
+    // remote server: a URL, usually behind a login (HTTP)
+    "tickets": {
+      "type": "http",
+      "url": "https://mcp.example.com/tickets"
+    }
+  }
+}` },
+    { label: "What the model then sees (tool names)", c: "action", json: `[ "Read", "Edit", "Bash", "Grep",            // built-in
+  "mcp__docs__read_file", "mcp__docs__search_files",
+  "mcp__tickets__get_ticket", "mcp__tickets__add_comment" ]`, note: "MCP tools are prefixed mcp__<server>__<tool>, so permission rules can target a whole server or one tool." },
+  ],
+};
+W.BTS.gwconfig = {
+  title: "Developer Assistant in Claude Code (illustrative)",
+  sub: "The shape only. Take the real command, URL and tool names from Guidewire’s “Overview of Developer Assistant MCP” (login required).",
+  parts: [
+    { label: ".mcp.json", c: "accent", json: `{
+  "mcpServers": {
+    "gw-gosu": {
+      // illustrative: use the command or URL from Guidewire's setup guide
+      "type": "http",
+      "url": "https://<developer-assistant-endpoint>/gosu"
+    }
+  }
+}`, note: "Sign-in is through Okta. Never paste tokens into the file; let the harness handle the login." },
+    { label: ".claude/settings.json: allow / ask / deny", c: "trust", json: `{
+  "permissions": {
+    "allow": [ "mcp__gw-gosu",                 // read-only knowledge lookups
+               "Read", "Grep", "Glob" ],
+    "ask":   [ "Edit", "Write",
+               "Bash(./gradlew:*)" ],           // builds and tests need approval
+    "deny":  [ "Bash(curl:*)", "Bash(git push:*)",
+               "Read(./.env)", "Read(**/secrets/**)" ]
+  }
+}`, note: "An example in the spirit of Guidewire’s secure usage guidelines, not their exact baseline." },
+  ],
+};
+</script>
+<script src="assets/deck.js?v=1.0"></script>
+</body>
+</html>

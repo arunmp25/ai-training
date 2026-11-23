@@ -645,6 +645,113 @@
     return { show };
   };
 
+  /* ---------- arch: animated architecture diagram ----------
+     W.arch(el, { vb:[w,h], cols:[[x,"Label"]], nodes:{id:{x,y,w,h,c,tag,t,s:[lines],d}}, edges:{id:[from,to,"h"|"v",yOffset]},
+                  obs:"Observability label", flows:[{ name, intro, steps:[{ who, t, on:[ids], think:[ids], bad:[ids],
+                  p:[{ e:edgeId, r:1 reply, d:delay in hops, x:1 blocked }], note, code, log }] }] })
+     Dots travel along the edges: accent = request, green = reply, red = blocked. → reveals the next step before leaving the slide. */
+  W.arch = (el, { vb = [1160, 640], cols = [], nodes, edges, flows, obs = "" }) => {
+    el.classList.add("arch");
+    const NS = "http://www.w3.org/2000/svg", SPEED = 900, [VW, VH] = vb, OY = obs ? VH - 82 : VH;
+    const mk = (tag, a, p) => { const e = document.createElementNS(NS, tag); for (const k in a) e.setAttribute(k, a[k]); p.appendChild(e); return e; };
+    el.innerHTML = `<div class="arch-dia"><svg viewBox="0 0 ${VW} ${VH}" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Architecture diagram"></svg></div>
+      <div class="arch-side">${flows.length > 1 ? `<div class="row arch-flows">${flows.map((f, i) => `<button class="btn${i ? "" : " sel"}">${f.name}</button>`).join("")}</div>` : ""}
+      <div class="arch-panel"></div>
+      <div class="arch-legend"><span><i style="background:var(--accent)"></i>Request</span><span><i style="background:var(--good)"></i>Reply</span><span><i style="background:var(--bad)"></i>Blocked</span></div>
+      <div class="row arch-ctrl"><button class="btn primary">▶ Next</button><button class="btn">⏵ Play</button><button class="btn ghost">↺ Reset</button><span class="muted"></span></div></div>`;
+    const svg = $("svg", el), panel = $(".arch-panel", el), [bNext, bPlay, bReset, cnt] = $(".arch-ctrl", el).children;
+    cols.forEach(([x, t]) => { mk("text", { x, y: 30, class: "ar-col", "text-anchor": "middle" }, svg).textContent = t; });
+    const gE = mk("g", {}, svg), gN = mk("g", {}, svg), gP = mk("g", {}, svg), PATH = {}, NODE = {};
+    for (const id in edges) {
+      const [f, t, dir, oy = 0] = edges[id], a = nodes[f], b = nodes[t];
+      let d;
+      if (dir === "v") d = `M${a.x + a.w / 2} ${a.y + a.h} L${b.x + b.w / 2} ${b.y}`;
+      else { const x1 = a.x + a.w, y1 = a.y + a.h / 2 + oy, x2 = b.x, y2 = b.y + b.h / 2, dx = (x2 - x1) / 2; d = `M${x1} ${y1} C${x1 + dx} ${y1} ${x2 - dx} ${y2} ${x2} ${y2}`; }
+      PATH[id] = mk("path", { d, class: "ar-e" }, gE);
+    }
+    for (const id in nodes) {
+      const n = nodes[id], g = mk("g", { class: "ar-n", style: `--c:${cv(n.c)}` }, gN);
+      mk("rect", { class: "ar-box", x: n.x, y: n.y, width: n.w, height: n.h, rx: 12 }, g);
+      mk("rect", { class: "ar-bar", x: n.x, y: n.y + 10, width: 4, height: n.h - 20, rx: 2 }, g);
+      mk("text", { class: "ar-tag", x: n.x + 16, y: n.y + 21 }, g).textContent = n.tag;
+      mk("text", { class: "ar-t", x: n.x + 16, y: n.y + 42 }, g).textContent = n.t;
+      (n.s || []).forEach((s, i) => { mk("text", { class: "ar-s", x: n.x + 16, y: n.y + 61 + i * 16 }, g).textContent = s; });
+      g.addEventListener("click", () => { stop(); panel.innerHTML = `<div class="seq-who" style="--c:${cv(n.c)}">${n.tag}</div><div class="seq-t">${n.t}</div><p>${n.d}</p><p class="muted" style="font-size:13px">Press → to continue the flow.</p>`; });
+      NODE[id] = g;
+    }
+    let LOG = [], gO;
+    if (obs) {
+      gO = mk("g", { class: "ar-obs" }, svg);
+      mk("rect", { x: 10, y: OY + 8, width: VW - 20, height: 70, rx: 12 }, gO);
+      mk("text", { class: "ar-ol", x: 28, y: OY + 31 }, gO).textContent = obs;
+      LOG = [0, 1].map((i) => mk("text", { class: "ar-log", x: 28, y: OY + 51 + i * 18 }, gO));
+    }
+    let flow = flows[0], step = -1, tok = 0, timer = null;
+    const fire = (list) => {
+      const my = ++tok; gP.innerHTML = "";
+      list.forEach((p) => {
+        const path = PATH[p.e], L = path.getTotalLength(), c = p.x ? "var(--bad)" : p.r ? "var(--good)" : "var(--accent)";
+        const dots = [7, 5, 3.5].map((r, i) => mk("circle", { r, class: i ? "ar-tr" : "ar-dot", style: `fill:${c};--c:${c}`, opacity: i ? 0.5 - i * 0.12 : 1, visibility: "hidden" }, gP));
+        const t0 = performance.now() + (p.d || 0) * SPEED;
+        (function tick(now) {
+          if (my !== tok) return;
+          const k = (now - t0) / SPEED;
+          if (k >= 0) dots.forEach((dot, i) => {
+            let u = Math.min(1, Math.max(0, k - i * 0.05)); u = u < 0.5 ? 2 * u * u : 1 - Math.pow(-2 * u + 2, 2) / 2;
+            const pt = path.getPointAtLength((p.r ? 1 - u : u) * L);
+            dot.setAttribute("cx", pt.x); dot.setAttribute("cy", pt.y); dot.setAttribute("visibility", "visible");
+          });
+          if (k < 1.6) requestAnimationFrame(tick); else dots.forEach((d) => d.remove());
+        })(performance.now());
+      });
+    };
+    const show = (t, animate) => {
+      const S = flow.steps; step = Math.max(-1, Math.min(t, S.length - 1));
+      Object.values(PATH).forEach((p) => p.setAttribute("class", "ar-e"));
+      Object.values(NODE).forEach((g) => g.classList.remove("on", "bad", "think"));
+      for (let i = 0; i < step; i++) S[i].p.forEach((p) => PATH[p.e].classList.add("seen"));
+      svg.classList.toggle("dim", step >= 0);
+      const s = S[step];
+      if (!s) {
+        panel.innerHTML = `<div class="seq-who">${flow.name}</div>${flow.intro}<p class="muted" style="font-size:13px">Press <b>→</b> or <b>Next</b>. Click any box to read what it does.</p>`;
+        LOG.forEach((l, i) => (l.textContent = i ? "" : "waiting for a request…"));
+      } else {
+        s.p.forEach((p) => PATH[p.e].classList.add("on", ...(p.x ? ["x"] : p.r ? ["r"] : [])));
+        ["on", "bad", "think"].forEach((k) => (s[k] || []).forEach((n) => NODE[n].classList.add(k)));
+        panel.innerHTML = `<div class="seq-who">Step ${step + 1} · ${s.who}</div><div class="seq-t">${s.t}</div><p>${s.note}</p>${s.code ? `<pre class="code">${W.hl(s.code.trim())}</pre>` : ""}`;
+        const logs = S.slice(Math.max(0, step - 1), step + 1).map((x) => `${String(S.indexOf(x) + 1).padStart(2, "0")}  ${x.log || ""}`);
+        LOG.forEach((l, i) => (l.textContent = logs[i] || ""));
+        if (gO) { gO.classList.remove("flash"); void gO.getBBox(); gO.classList.add("flash"); }
+      }
+      if (animate && s) fire(s.p); else { tok++; gP.innerHTML = ""; }
+      cnt.textContent = `${step + 1} / ${S.length}`;
+      bNext.disabled = step >= S.length - 1;
+      el.classList.toggle("done", step >= S.length - 1);
+    };
+    const hopTime = () => { const s = flow.steps[step]; return s ? (Math.max(0, ...s.p.map((p) => p.d || 0)) + 1) * SPEED + 1600 : 600; };
+    const stop = () => { clearTimeout(timer); timer = null; bPlay.textContent = "⏵ Play"; };
+    const play = () => {
+      if (timer) return stop();
+      if (step >= flow.steps.length - 1) show(-1);
+      bPlay.textContent = "⏸ Pause";
+      const loop = () => { show(step + 1, true); if (step < flow.steps.length - 1) timer = setTimeout(loop, hopTime()); else stop(); };
+      timer = setTimeout(loop, 10);
+    };
+    bNext.onclick = () => { stop(); show(step + 1, true); };
+    bPlay.onclick = play;
+    bReset.onclick = () => { stop(); show(-1); };
+    $$(".arch-flows .btn", el).forEach((b, i) => (b.onclick = () => {
+      stop(); flow = flows[i]; $$(".arch-flows .btn", el).forEach((x) => x.classList.toggle("sel", x === b)); show(-1);
+    }));
+    show(-1);
+    document.addEventListener("slide:enter", (e) => { if (e.detail.slide.contains(el)) { stop(); show(e.detail.back ? flow.steps.length - 1 : -1); } else stop(); });
+    document.addEventListener("slide:advance", (e) => {
+      if (!e.detail.slide.contains(el) || step >= flow.steps.length - 1) return;
+      e.preventDefault(); stop(); show(step + 1, true);
+    });
+    return { show };
+  };
+
   /* cast cards */
   W.castCards = (el, keys) => {
     el.classList.add("cast");

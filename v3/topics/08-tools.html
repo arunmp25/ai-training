@@ -4,9 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Topic 11 · Tools and function calling</title>
-<link rel="stylesheet" href="../assets/style.css?v=3.2">
-<link rel="stylesheet" href="../assets/widgets.css?v=3.2">
-<link rel="stylesheet" href="../assets/story.css?v=3.2">
+<link rel="stylesheet" href="../assets/style.css?v=3.3">
+<link rel="stylesheet" href="../assets/widgets.css?v=3.3">
+<link rel="stylesheet" href="../assets/story.css?v=3.3">
 <style>
   .actors { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 12px; }
   .actor { --c: var(--accent); text-align: center; padding: 12px; border-radius: 12px; border: 1px solid var(--line); background: var(--card); font-weight: 700; transition: all .3s; color: var(--muted); }
@@ -97,8 +97,8 @@
   <aside class="notes"><span class="tag time">⏱ 30 sec</span><p class="say"><b>🎤 Say</b> That is the idea. Next, the actual definitions and messages, and how to design tools well.</p><ul><li>Bridge: “That’s the idea. Next, let’s open the hood: the actual definitions and messages, and how to design tools well.”</li></ul></aside>
 </section>
 
-<script src="../assets/course.js?v=3.2"></script>
-<script src="../assets/widgets.js?v=3.2"></script>
+<script src="../assets/course.js?v=3.3"></script>
+<script src="../assets/widgets.js?v=3.3"></script>
 <script>
 const { $, $$ } = W;
 
@@ -231,6 +231,6 @@ W.BTS.quote = {
 };
 </script>
 <script>W.seq(document.getElementById("seqTool"), {"actors": [{"id": "user", "name": "Customer", "icon": "🙋", "c": "accent"}, {"id": "app", "name": "Your app (harness)", "icon": "🖥️", "c": "autonomy"}, {"id": "model", "name": "Model", "icon": "🧠", "c": "model"}, {"id": "api", "name": "Rating engine", "icon": "🧮", "c": "action"}], "steps": [{"from": "user", "to": "app", "label": "“Premium if I add my son, 18?”"}, {"from": "app", "to": "model", "label": "Request 1: question + tool list", "note": "The app sends the tool definitions with every request. That is how the model knows the tool exists.", "code": "{ \"tools\": [{ \"name\": \"get_motor_quote\",\n    \"description\": \"Live premium for a motor policy, optionally with changes\",\n    \"input_schema\": { \"type\": \"object\",\n      \"properties\": { \"policy_id\": {\"type\":\"string\"}, \"add_driver\": {\"type\":\"object\"} },\n      \"required\": [\"policy_id\"] } }],\n  \"messages\": [{ \"role\": \"user\", \"content\": \"Premium if I add my son, 18?\" }] }"}, {"from": "model", "to": "app", "label": "tool_use: get_motor_quote", "note": "The model does not run anything. It replies with a structured request and stops.", "code": "{ \"stop_reason\": \"tool_use\",\n  \"content\": [{ \"type\": \"tool_use\", \"id\": \"toolu_01\",\n    \"name\": \"get_motor_quote\",\n    \"input\": { \"policy_id\": \"MTR-55120\", \"add_driver\": { \"age\": 18, \"licence_years\": 0 } } }] }", "ret": true}, {"from": "app", "to": "app", "label": "Validate + check permissions", "note": "Your code decides whether to run it: is this customer allowed to see this policy? Are the inputs valid?"}, {"from": "app", "to": "api", "label": "POST /quote", "note": "An ordinary API call from your code to your system.", "code": "POST /rating/v3/quote\n{ \"policy\": \"MTR-55120\", \"drivers\": [{ \"age\": 18, \"years_licensed\": 0 }] }"}, {"from": "api", "to": "app", "label": "{ new_annual: 44750 }", "code": "{ \"current_annual\": 18400, \"new_annual\": 44750, \"currency\": \"INR\" }", "ret": true}, {"from": "app", "to": "model", "label": "Request 2: history + tool_result", "note": "The app sends the whole conversation again, now with the result attached.", "code": "{ \"role\": \"user\", \"content\": [{ \"type\": \"tool_result\", \"tool_use_id\": \"toolu_01\",\n    \"content\": \"{\\\"current_annual\\\":18400,\\\"new_annual\\\":44750,\\\"currency\\\":\\\"INR\\\"}\" }] }"}, {"from": "model", "to": "app", "label": "end_turn: plain-English answer", "code": "{ \"stop_reason\": \"end_turn\",\n  \"content\": [{ \"type\": \"text\", \"text\": \"Adding an 18-year-old driver would take your premium from ₹18,400 to ₹44,750 a year...\" }] }", "ret": true}, {"from": "app", "to": "user", "label": "“₹18,400 → ₹44,750 a year”", "ret": true}], "frames": []});</script>
-<script src="../assets/deck.js?v=3.2"></script>
+<script src="../assets/deck.js?v=3.3"></script>
 </body>
 </html>

@@ -4,9 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Topic 12 · Tools deep dive</title>
-<link rel="stylesheet" href="../assets/style.css?v=3.2">
-<link rel="stylesheet" href="../assets/widgets.css?v=3.2">
-<link rel="stylesheet" href="../assets/story.css?v=3.2">
+<link rel="stylesheet" href="../assets/style.css?v=3.3">
+<link rel="stylesheet" href="../assets/widgets.css?v=3.3">
+<link rel="stylesheet" href="../assets/story.css?v=3.3">
 <style>
   .def { font-family: ui-monospace, Menlo, monospace; font-size: 13px; line-height: 1.45; background: var(--card2); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; white-space: pre; overflow-x: auto; }
   .def .part { --c: var(--accent); border-radius: 5px; padding: 1px 2px; cursor: pointer; transition: background .2s; outline: 1px dashed color-mix(in srgb, var(--c) 50%, transparent); }
@@ -174,8 +174,8 @@
   <aside class="notes"><span class="tag time">⏱ 30 sec</span><p class="say"><b>🎤 Say</b> Tools give AI hands. Wiring every tool into every app separately is a mess, and that is the problem MCP solves.</p><ul><li>Bridge: “Every company wiring tools into every AI app separately is a mess. That’s the problem MCP solves.”</li></ul></aside>
 </section>
 
-<script src="../assets/course.js?v=3.2"></script>
-<script src="../assets/widgets.js?v=3.2"></script>
+<script src="../assets/course.js?v=3.3"></script>
+<script src="../assets/widgets.js?v=3.3"></script>
 <script>
 const { $, $$, cv } = W;
 
@@ -368,6 +368,6 @@ W.quiz($("#quiz"), [
 /* ===== v3 story ===== */
 </script>
 <script>W.seq(document.getElementById("seqFail"), {"actors": [{"id": "app", "name": "Your app", "icon": "🖥️", "c": "autonomy"}, {"id": "model", "name": "Model", "icon": "🧠", "c": "model"}, {"id": "api", "name": "Claims API", "icon": "📂", "c": "action"}], "steps": [{"from": "app", "to": "model", "label": "Question + tools"}, {"from": "model", "to": "app", "label": "2 × tool_use in one reply", "note": "The calls are independent, so the model asks for both at once.", "code": "\"content\": [\n  { \"type\": \"tool_use\", \"id\": \"toolu_A\", \"name\": \"get_claim_status\", \"input\": { \"claim_id\": \"CLM-301\" } },\n  { \"type\": \"tool_use\", \"id\": \"toolu_B\", \"name\": \"get_claim_status\", \"input\": { \"claim_id\": \"CLM-302\" } }\n]", "ret": true}, {"from": "app", "to": "api", "label": "GET /claims/CLM-301", "note": "Your app can run both calls in parallel."}, {"from": "app", "to": "api", "label": "GET /claims/CLM-302"}, {"from": "api", "to": "app", "label": "200: “Approved”", "ret": true}, {"from": "api", "to": "app", "label": "503: service unavailable", "ret": true}, {"from": "app", "to": "model", "label": "2 × tool_result (one is_error)", "note": "Return the error to the model as a result, in words it can act on. Do not crash the conversation.", "code": "\"content\": [\n  { \"type\": \"tool_result\", \"tool_use_id\": \"toolu_A\", \"content\": \"Status: Approved, paid 2 Nov\" },\n  { \"type\": \"tool_result\", \"tool_use_id\": \"toolu_B\", \"is_error\": true,\n    \"content\": \"Claims system busy. Safe to retry in a few seconds.\" }\n]"}, {"from": "model", "to": "app", "label": "tool_use: retry CLM-302", "note": "Because the error said retrying was safe, the model tries again.", "ret": true}, {"from": "app", "to": "api", "label": "GET /claims/CLM-302"}, {"from": "api", "to": "app", "label": "200: “Awaiting assessor”", "ret": true}, {"from": "app", "to": "model", "label": "tool_result"}, {"from": "model", "to": "app", "label": "Answer covering both claims", "ret": true}], "frames": [{"from": 7, "to": 10, "label": "retry", "c": "warn"}]});</script>
-<script src="../assets/deck.js?v=3.2"></script>
+<script src="../assets/deck.js?v=3.3"></script>
 </body>
 </html>

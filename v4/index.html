@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AI Training v4 · Building with AI</title>
+<link rel="stylesheet" href="assets/style.css?v=4.2">
+<link rel="stylesheet" href="assets/widgets.css?v=4.2">
+<link rel="stylesheet" href="assets/story.css?v=4.2">
+<script>const t = localStorage.getItem("aitrain-theme"); if (t) document.documentElement.dataset.theme = t;
+document.documentElement.classList.toggle("show-time", localStorage.getItem("aitrain-showtime") === "1");</script>
+<style>
+  .top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 36px; }
+  .hero h1 { font-size: clamp(40px, 6vw, 72px); letter-spacing: -.02em; }
+  .hero h1 span { color: var(--brand); }
+  [data-theme="light"] .hero h1 span { color: var(--text); box-shadow: inset 0 -.32em 0 var(--brand); }
+  .hero { position: relative; padding-top: 34px; }
+  .hero::before { content: ""; position: absolute; top: 0; left: 0; width: 160px; height: 22px; background: var(--brand); clip-path: polygon(0 0, 100% 0, 100% 35%, 0 100%); }
+  .hero p { font-size: 20px; color: var(--muted); max-width: 780px; margin: 16px 0 30px; }
+  .path { display: flex; flex-wrap: wrap; margin-bottom: 44px; }
+  .path .st { --c: var(--accent); flex: 1; min-width: 140px; padding: 14px 16px; background: color-mix(in srgb, var(--c) 13%, var(--card)); border: 1px solid color-mix(in srgb, var(--c) 45%, var(--line)); }
+  .path .st:first-child { border-radius: var(--radius) 0 0 var(--radius); } .path .st:last-child { border-radius: 0 var(--radius) var(--radius) 0; }
+  .path .st .i { font-size: 24px; } .path .st b { display: block; color: var(--c); } .path .st small { color: var(--muted); }
+  .opt-head { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; margin-bottom: 8px; }
+  .opt-desc { color: var(--muted); margin: 6px 0 22px; font-size: 16px; }
+  .days { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; }
+  .day h3 { font-size: 21px; } .day .theme { color: var(--muted); margin: 4px 0 4px; font-size: 15px; } .day .tot { font-size: 12px; font-weight: 800; color: var(--muted); margin-bottom: 12px; letter-spacing: .06em; }
+  .topic { --c: var(--accent); display: block; padding: 12px 14px; margin-bottom: 9px; border-radius: 6px; text-decoration: none; color: var(--text);
+           background: var(--card); border: 1px solid var(--line); border-left: 4px solid var(--c); transition: transform .15s, box-shadow .2s; }
+  a.topic:hover { transform: translateY(-2px); box-shadow: 0 0 0 1px var(--c); }
+  .topic .n { font-size: 11.5px; font-weight: 800; letter-spacing: .08em; color: var(--c); }
+  .topic .min { float: right; font-size: 12px; color: var(--muted); font-weight: 700; }
+  .topic b { display: block; font-size: 16px; margin: 2px 0; } .topic .meta { font-size: 13px; color: var(--muted); }
+  .cmpwrap { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; }
+  .cmpwrap .card h3 { margin-bottom: 6px; }
+  .cmpwrap ol { padding-left: 20px; margin: 6px 0 12px; } .cmpwrap li { margin: 3px 0; font-size: 14.5px; }
+  .pc { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 14px; }
+  .pc div { padding: 10px 12px; border-radius: 6px; background: var(--card2); }
+  .sec { margin-top: 54px; } .sec h2 { font-size: 28px; margin-bottom: 6px; } .sec .sub2 { color: var(--muted); margin: 0 0 20px; }
+  .help { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 14px; }
+  @media (max-width: 900px) { .days, .cmpwrap { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body class="page">
+<div class="page-wrap">
+  <div class="top">
+    <span style="text-transform:uppercase;letter-spacing:.14em;font-weight:800;color:var(--accent);font-size:13px">AI Training Programme · Version 4</span>
+    <div class="row" style="gap:8px"><button class="btn ghost" id="timeBtn" title="Show / hide timings (D)">⏱ Timings</button><button class="btn ghost" id="theme">◐ Theme</button></div>
+  </div>
+
+  <section class="hero">
+    <h1>Building with <span>AI</span></h1>
+    <p>A hands-on course that turns AI buzzwords into a clear mental model, from talking to AI, through prompts, RAG and tools, to MCP, coding agents and agent harnesses. Every concept is taught through a relatable example, with the real JSON behind it.</p>
+  </section>
+
+  <div class="path" id="path"></div>
+
+
+  <div class="opt-head"><h2 style="font-size:28px">The course</h2></div>
+  <div id="optBody"></div>
+
+  <div class="sec">
+    <h2>Reference</h2>
+    <p class="sub2">Useful on any day.</p>
+    <div class="days" style="grid-template-columns:repeat(auto-fit,minmax(280px,1fr))">
+      <a class="topic" href="topics/00-decoding-ai-jargon.html#8" style="--c:var(--c-model)"><div class="n">REFERENCE</div><b>📖 Jargon dictionary</b><div class="meta">Searchable dictionary of every term (inside Topic 1)</div></a>
+    </div>
+  </div>
+
+  <div class="sec">
+    <h2>Presenting</h2>
+    <p class="sub2">Every page works offline in any browser. Each topic’s “next topic” button follows the course order below.</p>
+    <div class="help">
+      <div class="card"><kbd>←</kbd> <kbd>→</kbd> or a clicker<br><span class="muted">Move between slides</span></div>
+      <div class="card">🎬 Behind the scenes<br><span class="muted">Opens the real JSON sent to and from the model</span></div>
+      <div class="card"><kbd>N</kbd><br><span class="muted">Presenter notes</span></div>
+      <div class="card"><kbd>D</kbd><br><span class="muted">Show / hide timings (hidden by default)</span></div>
+      <div class="card"><kbd>F</kbd><br><span class="muted">Full screen for the projector</span></div>
+      <div class="card"><kbd>T</kbd><br><span class="muted">Light / dark (light suits bright rooms)</span></div>
+    </div>
+  </div>
+</div>
+
+<script src="assets/course.js?v=4.2"></script>
+<script src="assets/widgets.js?v=4.2"></script>
+<script>
+const C = window.COURSE, { $, cv } = W;
+$("#path").innerHTML = W.ORDER.map((l) => `<div class="st" style="--c:${cv(l)}"><div class="i">${W.LAYERS[l].icon}</div><b>${W.LAYERS[l].name}</b><small>${W.LAYERS[l].car}</small></div>`).join("");
+
+function trackHtml(k) {
+  const T = C.tracks[k];
+  return `<p class="opt-desc">${T.desc}</p><div class="days">${T.days.map((d) => {
+    const total = d.items.reduce((a, [, m]) => a + m, 0);
+    return `<div class="day"><h3>${d.d}</h3><div class="theme">${d.theme}</div><div class="tot">${d.items.length} TOPICS<span class="time-only"> · ~${total} MIN</span></div>
+      ${d.items.map(([id, min]) => { const tp = C.topics[id]; return `<a class="topic" href="topics/${tp.file}" style="--c:${cv(tp.l)}"><span class="min time-only">~${min} min</span><div class="n">TOPIC ${tp.n}</div><b>${tp.title}</b><div class="meta">${tp.blurb}</div></a>`; }).join("")}</div>`;
+  }).join("")}</div>`;
+}
+$("#optBody").innerHTML = trackHtml("a");
+
+const timeBtn = $("#timeBtn");
+const setTimeBtn = () => timeBtn.classList.toggle("primary", document.documentElement.classList.contains("show-time"));
+const toggleTime = () => { const on = !document.documentElement.classList.contains("show-time"); document.documentElement.classList.toggle("show-time", on); localStorage.setItem("aitrain-showtime", on ? "1" : "0"); setTimeBtn(); };
+timeBtn.onclick = toggleTime; setTimeBtn();
+document.addEventListener("keydown", (e) => { if ((e.key === "d" || e.key === "D") && !e.metaKey && !e.ctrlKey) toggleTime(); });
+$("#theme").onclick = () => { const r = document.documentElement, t = r.dataset.theme === "light" ? "dark" : "light"; r.dataset.theme = t; localStorage.setItem("aitrain-theme", t); };
+</script>
+</body>
+</html>
