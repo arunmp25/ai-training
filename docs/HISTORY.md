@@ -111,6 +111,14 @@ The user asked for relatable or funny references only, no Day labels (sessions o
 - Follow-up: stage 1 changed from bones to **the brain**. The user did not follow the “What it can do” / “Risk if unchecked” meters, so they were removed. In their place an SVG **robot** gains one part per stage in that layer’s colour (head with a brain, eyes, ears and antenna, a body holding a library, arms and legs, a pulsing power core with motion lines, then a protective dome); parts still to come show as dashed outlines, next to a “Built so far” list. The user felt the first guardrail picture (a shield and a fence) looked like a cage; from four options they chose a glowing **dome with four badges**: 🔐 Permissions, 🪝 Hooks, ✋ Human approval, 📊 Evals, which pop in one after another.
 - Later Topic 1 slides shift by one: the jargon dictionary is now `#9` (course page, Topic 18 wrap-up and the Topic 1 takeaways button updated). Topic 1 minutes 14 → 16. Assets `?v=4.7`. v4 now has 241 slides.
 
+### Transformer section (Topic 3, v4, 23 Nov 2026)
+- The user felt the transformer was missing (Topic 3 had one overview slide). Agreed placement: Topic 3, How AI generates text, because the transformer is the whole engine and Topic 4 zooms into its attention step.
+- Three slides after “One token at a time”:
+  - **Why transformers** (new): the same sentence read the old way (one word at a time, early words fade, weak guess) and by a transformer (arcs from “had” to every earlier word at once, “expired” predicted). Three cards: nothing fades, runs in parallel, it scaled (2017, “Attention Is All You Need”).
+  - **The transformer** (upgraded): the six stages now step with → and trace one sentence, “The claim was rejected because the policy had …”, through tokens with IDs, embedding vectors (plus position), what “had” draws on, next-token scores and the pick.
+  - **Inside one layer** (new): attention as the meeting, feed-forward as desk work, repeated dozens of times; a slider follows “bank” sharpening from “just the word” to “the flooded river bank where the insured car ended up”; four flip cards: parameters, context window, why long prompts cost more, and encoder or decoder (the user asked for this note; links to embeddings in Topic 10).
+- Two quiz questions added; the transformer takeaway reworded; Topic 4’s opening line now says attention is the “meeting” step inside every transformer layer. Topic 3 minutes 14 → 22. Assets `?v=4.8`. v4 now has 243 slides.
+
 ## Known loose ends
 - These slides still scroll slightly at 1280×720: Topic 15 “The loop in action” (+32px), Topic 16 “The landscape” (+198px) and “Which harness?” (+14px), Topic 17 “Which one?” (+121px). The jargon dictionary scrolls by design.
 - Four sequence diagrams scroll inside their box at projector size (RAG, tool retry, MCP, agent loop). The user was offered tighter rows; no answer yet.

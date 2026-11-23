@@ -4,9 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Topic 3 · How AI generates text</title>
-<link rel="stylesheet" href="../assets/style.css?v=4.7">
-<link rel="stylesheet" href="../assets/widgets.css?v=4.7">
-<link rel="stylesheet" href="../assets/story.css?v=4.7">
+<link rel="stylesheet" href="../assets/style.css?v=4.8">
+<link rel="stylesheet" href="../assets/widgets.css?v=4.8">
+<link rel="stylesheet" href="../assets/story.css?v=4.8">
 <style>
   #tokIn { width: 100%; min-height: 84px; padding: 12px 14px; border-radius: 6px; border: 1px solid var(--line); background: var(--card);
            color: var(--text); font: 17px var(--font); resize: vertical; }
@@ -20,6 +20,49 @@
   .tstats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 12px; }
   .tstats .stat { padding: 12px; border-radius: 6px; background: var(--card); border: 1px solid var(--line); }
   .tstats .n { font-size: 26px; font-weight: 800; }
+
+  /* ---- transformer section ---- */
+  .tfx { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .tfx-side { padding: 14px 16px; }
+  .tfx-side .label { margin-bottom: 4px; }
+  .tfx-stage { position: relative; padding-top: 70px; }
+  .tfx-stage svg { position: absolute; left: 0; top: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
+  .tfx-stage path { fill: none; stroke: var(--c-autonomy); stroke-linecap: round; stroke-dasharray: 1; stroke-dashoffset: 1; transition: stroke-dashoffset .7s ease; }
+  .tfx-stage.on path { stroke-dashoffset: 0; }
+  .tfx-words { display: flex; flex-wrap: wrap; gap: 5px; }
+  .tfx-words span { padding: 4px 7px; border-radius: 5px; border: 1px solid var(--line); background: var(--card2); font-size: 15px; transition: opacity .35s, border-color .3s, background .3s; }
+  .tfx-words span.cur { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 18%, var(--card2)); }
+  .tfx-words span.next { border-style: dashed; color: var(--muted); }
+  .tfx-words span.good { border: 1px solid var(--good); color: var(--text); background: color-mix(in srgb, var(--good) 20%, var(--card2)); font-weight: 700; }
+  .tfx-words span.weak { color: var(--bad); }
+  .tfx-note { font-size: 14px; margin-top: 12px; min-height: 42px; }
+  .tfx-why { margin-top: 14px; transition: opacity .4s; } .tfx-why.dim { opacity: .25; }
+  .tfx-why .card { font-size: 14px; padding: 12px 14px; }
+  .trace { margin-top: 10px; padding: 10px 12px; border-radius: 6px; background: var(--card2); font-size: 14px; }
+  .trace .tk2 { display: inline-flex; flex-direction: column; align-items: center; margin: 2px; padding: 3px 7px; border-radius: 5px; background: var(--card); border: 1px solid var(--line); font-size: 14px; }
+  .trace .tk2 small { font: 11px ui-monospace, Menlo, monospace; color: var(--muted); }
+  .trace .vec { font: 12.5px ui-monospace, Menlo, monospace; margin: 2px 0; }
+  .trace .sb { display: grid; grid-template-columns: 90px 1fr 44px; gap: 8px; align-items: center; margin: 3px 0; font-size: 13.5px; }
+  .trace .sb i { display: block; height: 9px; border-radius: 5px; background: var(--c-action); }
+  .trace .hot { --h: 0; padding: 2px 6px; border-radius: 5px; margin: 2px; display: inline-block; background: color-mix(in srgb, var(--c-autonomy) calc(var(--h) * 70%), var(--card)); border: 1px solid var(--line); }
+  .layer { display: grid; grid-template-columns: 1fr 1.2fr; gap: 18px; align-items: start; }
+  .lyr-diag { display: grid; gap: 3px; text-align: center; }
+  .lyr-box { --c: var(--accent); padding: 6px 10px; border-radius: 6px; border: 2px solid var(--c); background: color-mix(in srgb, var(--c) 12%, var(--card)); font-size: 13px; line-height: 1.35; }
+  .lyr-box b { display: block; font-size: 15px; margin-bottom: 1px; }
+  .lyr-arrow { color: var(--muted); font-size: 12px; line-height: 1; }
+  .lyr-rep { font-size: 12px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--c-autonomy); }
+  .lyr-sent { font-size: 15px; line-height: 1.9; }
+  .lyr-sent span { padding: 1px 3px; border-radius: 4px; transition: background .3s; }
+  .lyr-sent span.lit { background: color-mix(in srgb, var(--c-autonomy) 35%, transparent); }
+  .lyr-sent span.me { outline: 2px solid var(--accent); font-weight: 800; }
+  .lyr-meaning { margin-top: 10px; padding: 10px 12px; border-left: 4px solid var(--c-autonomy); background: var(--card2); border-radius: 6px; font-size: 15px; min-height: 66px; }
+  .lyr-ticks { display: flex; justify-content: space-between; font-size: 12px; color: var(--muted); margin-top: 2px; }
+  #tfFacts { margin-top: 12px; }
+  #tfFacts .flip { height: 128px; }
+  #tfFacts .face { padding: 10px 12px; }
+  #tfFacts .face.front { font-size: 16px; }
+  #tfFacts .face.front small { margin-top: 4px; font-size: 12px; }
+  #tfFacts .face.back { font-size: 13px; line-height: 1.35; display: block; }
 </style>
 </head>
 <body class="deck" data-id="02">
@@ -108,14 +151,71 @@
     <li>It also means it can’t go back and edit an earlier word. It commits as it goes, which is why asking it to “think step by step first” helps (Topic 7).</li></ul></aside>
 </section>
 
+<section class="slide" data-title="Why transformers">
+  <div class="eyebrow">Idea 3 · The transformer</div>
+  <h2>Why the transformer changed everything</h2>
+  <p class="sub">Same sentence, two designs, both trying to predict the next word. Press <b>→</b> to play the old way, then the transformer.</p>
+  <div class="tfx">
+    <div class="card tfx-side"><div class="label">⏮️ Before 2017 · one word at a time</div>
+      <div class="tfx-stage" style="padding-top:20px"><div class="tfx-words" id="tfxOld"></div></div>
+      <div class="tfx-note" id="tfxOldN"></div></div>
+    <div class="card tfx-side"><div class="label">⚡ The transformer · every word at once</div>
+      <div class="tfx-stage" id="tfxStage"><svg id="tfxArcs"></svg><div class="tfx-words" id="tfxNew"></div></div>
+      <div class="tfx-note" id="tfxNewN"></div></div>
+  </div>
+  <div class="cols-3 tfx-why dim" id="tfxWhy">
+    <div class="card">🔗 <b>Nothing fades.</b> The first word is as clear as the last, even in a long document.</div>
+    <div class="card">⚡ <b>Runs in parallel.</b> All words are processed together, so training on huge amounts of text became practical.</div>
+    <div class="card">📈 <b>It scaled.</b> The 2017 paper “Attention Is All You Need” led to today’s LLMs. Claude, GPT and Gemini are all transformers.</div>
+  </div>
+  <div class="row" style="margin-top:12px"><button class="btn" id="tfxB1">▶ Old way</button><button class="btn" id="tfxB2">▶ Transformer</button><button class="btn ghost" id="tfxB0">↺ Reset</button></div>
+  <aside class="notes"><span class="tag time">⏱ 3 min</span><p class="say"><b>🎤 Say</b> Older language models read one word at a time and passed a running memory along, so by the end of a long sentence the start had faded. The transformer, from 2017, looks at every word at once. Nothing fades, and because all the words are processed together, it could be trained on enormous amounts of text. That is what made today’s LLMs possible.</p>
+    <ul><li>First → plays the old way: watch “claim” and “policy” fade as the reader moves on. It ends with a weak guess.</li>
+    <li>Second → plays the transformer: arcs from “had” reach every earlier word at once, and the strong arcs to “policy” and “rejected” give “expired”.</li>
+    <li>The arcs are attention, which is the whole of the next topic.</li>
+    <li>No need to name RNNs unless someone asks; “the old way” is enough.</li></ul></aside>
+</section>
+
 <section class="slide" data-title="The transformer">
   <div class="eyebrow">Idea 3 · The transformer</div>
-  <h2>Inside the engine, at a glance</h2>
-  <p class="sub">“Transformer” is the name of the design behind every modern LLM. Click each stage, left to right.</p>
+  <h2>Inside the engine, step by step</h2>
+  <p class="sub">Follow one sentence through the six stages. Press <b>→</b> or click a stage.</p>
   <div id="tf"></div>
-  <aside class="notes"><span class="tag time">⏱ 3 min</span><p class="say"><b>🎤 Say</b> Transformer is the name of the design inside every modern model. We only need to go deeper on one part, attention, which is the next topic.</p>
-    <ul><li>Keep it intuitive. The only stage we go deeper on is <b>attention</b>, which gets the whole of the next topic.</li>
-    <li>Analogy: a reading committee where every word gets to ask every other word “are you relevant to me?”, repeated many times, and then a vote on the next word.</li></ul></aside>
+  <aside class="notes"><span class="tag time">⏱ 4 min</span><p class="say"><b>🎤 Say</b> Here is one sentence going through the engine. It is split into tokens, each token becomes a list of numbers, the layers refine those numbers, and at the end every possible next token gets a score. One is picked, added to the text, and the whole thing runs again.</p>
+    <ul><li>Press → for each stage; the grey box shows what our sentence looks like at that point.</li>
+    <li>Token IDs, numbers and scores are illustrative, not from a real model.</li>
+    <li>Position: the model is also told where each token sits in the sentence. Topic 4 shows why position matters.</li>
+    <li>The layers stage is opened up on the next slide.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="Inside one layer">
+  <div class="eyebrow">Idea 3 · The transformer</div>
+  <h2>Inside one layer: a meeting, then desk work</h2>
+  <p class="sub">Two steps per layer, stacked dozens deep. Drag the slider to watch one word’s meaning sharpen.</p>
+  <div class="layer">
+    <div class="lyr-diag">
+      <div class="lyr-box" style="--c:var(--c-context)"><b>📥 Tokens in</b>each one a list of numbers</div>
+      <div class="lyr-arrow">▼</div>
+      <div class="lyr-box" style="--c:var(--c-autonomy)"><b>🔦 Attention · the meeting</b>Each word gathers context from the earlier words (Topic 4).</div>
+      <div class="lyr-arrow">▼</div>
+      <div class="lyr-box" style="--c:var(--c-model)"><b>🧮 Feed-forward · desk work</b>Each word is processed on its own. Much of what the model learned in training is stored here.</div>
+      <div class="lyr-arrow">▼</div>
+      <div class="lyr-rep">↻ repeat in the next layer, dozens of times</div>
+    </div>
+    <div class="card">
+      <div class="label">👁️ Follow the word “bank”</div>
+      <div class="lyr-sent" id="lyrSent"></div>
+      <input type="range" id="lyrRange" min="0" max="4" value="0" style="margin-top:8px">
+      <div class="lyr-ticks"><span>Layer 1</span><span>Layer 5</span><span>Layer 20</span><span>Layer 40</span><span>Last layer</span></div>
+      <div class="lyr-meaning" id="lyrMeaning"></div>
+    </div>
+  </div>
+  <div id="tfFacts"></div>
+  <aside class="notes"><span class="tag time">⏱ 4 min</span><p class="say"><b>🎤 Say</b> Each layer has two steps. First a meeting, where every word gathers context from the words before it: that is attention. Then desk work, where each word is processed on its own, using what the model learned in training. Stack dozens of these layers, and a plain word like “bank” ends up meaning the flooded river bank where the insured car was found.</p>
+    <ul><li>Drag the slider slowly. The highlighted words are the ones “bank” has drawn on so far.</li>
+    <li>Simplified: real layers hold numbers, not sentences. The idea, meaning sharpening layer by layer, is right.</li>
+    <li>“Bank” can only look back at earlier words. Models like Claude never see the words that come after, which is why the sentence puts “river” first.</li>
+    <li>Flip the four cards at the bottom. Encoder or decoder matters later: the embedding models used for RAG search (Topic 10) are often encoders.</li></ul></aside>
 </section>
 
 <section class="slide" data-title="Why this matters">
@@ -139,14 +239,14 @@
   <div class="cols-3" style="margin:10px 0 24px">
     <div class="card"><b>🧩 Tokens</b><p>AI reads and writes in tokens (≈ ¾ word). Price, speed and limits are all counted in tokens.</p></div>
     <div class="card"><b>🎯 Prediction</b><p>It predicts the most <i>plausible</i> next token, which is not always the <i>true</i> one. That’s why it hallucinates.</p></div>
-    <div class="card"><b>🏗️ Transformer</b><p>Words become meaning-numbers, then <b>attention</b> lets every word look at every other word.</p></div>
+    <div class="card"><b>🏗️ Transformer</b><p>It reads every word at once. Words become meaning-numbers, then dozens of layers of <b>attention</b> (the meeting) and feed-forward (desk work) sharpen them before the next token is picked.</p></div>
   </div>
   <div class="row"><a class="btn primary" data-nexttopic>Next →</a></div>
   <aside class="notes"><span class="tag time">⏱ 30 sec</span><p class="say"><b>🎤 Say</b> Remember: tokens, next-token prediction and a bit of randomness. The key ingredient was attention, so let us look at it next.</p><ul><li>Bridge: “The magic ingredient was attention. Let’s see it in action.”</li></ul></aside>
 </section>
 
-<script src="../assets/course.js?v=4.7"></script>
-<script src="../assets/widgets.js?v=4.7"></script>
+<script src="../assets/course.js?v=4.8"></script>
+<script src="../assets/widgets.js?v=4.8"></script>
 <script>
 const { $ } = W;
 
@@ -218,15 +318,116 @@ W.generate($("#gen"), "The best way to learn a new skill is", [
   [[".", 0.71], [",", 0.17], [" and", 0.08], ["!", 0.03]],
 ]);
 
-/* ---- transformer ---- */
-W.clickInfo($("#tf"), [
-  { icon: "📝", title: "Text in", sub: "your prompt + history", c: "context", html: "<p>Everything in the conversation so far: system instructions, your messages, documents, earlier replies. The model sees it all <b>at once</b>.</p>" },
-  { icon: "🧩", title: "Tokens", sub: "chop into pieces", c: "model", html: "<p>The text is split into tokens, and each token becomes an ID number.</p><p class='muted'>“refund” → 19542 (for example)</p>" },
-  { icon: "📍", title: "Embeddings", sub: "meaning as numbers", c: "knowledge", html: "<p>Each token becomes a long list of numbers that captures its <b>meaning</b>. Similar meanings get similar numbers: <i>king</i> sits near <i>queen</i>, <i>refund</i> near <i>reimbursement</i>.</p><p>Think of it as GPS coordinates for meaning. We meet embeddings again in RAG (Topic 9).</p>" },
-  { icon: "🔦", title: "Attention layers", sub: "words look at words ×N", c: "autonomy", html: "<p>The heart of the transformer. In each layer, every token looks at every other token and asks <b>“how relevant are you to me?”</b>, then updates its meaning.</p><p>“bank” next to “river” becomes riverbank; next to “cash” it becomes a financial bank. This repeats through dozens of layers. <b>Next topic is all about this.</b></p>" },
-  { icon: "📊", title: "Scores", sub: "every possible next token", c: "action", html: "<p>The final layer gives a score to <b>every token in its vocabulary</b> (tens of thousands of them) for “what comes next?”</p>" },
-  { icon: "🎲", title: "Pick one", sub: "temperature decides", c: "trust", html: "<p>One token is chosen: usually a likely one, with some randomness depending on temperature. It’s added to the text and <b>the whole thing runs again</b> for the next token.</p>" },
-], { layout: "flow" });
+/* ---- why transformers: old way vs every word at once ---- */
+(() => {
+  const WORDS = ["The", "claim", "was", "rejected", "because", "the", "policy", "had"];
+  const WEIGHT = [0.12, 0.6, 0.15, 0.7, 0.3, 0.12, 0.95, 0.2];   // how much "had" draws on each word (illustrative)
+  const oldEl = $("#tfxOld"), newEl = $("#tfxNew"), stage = $("#tfxStage"), svg = $("#tfxArcs");
+  let step = 0, timer = null;
+  const words = (el) => el.innerHTML = WORDS.map((w) => `<span>${w}</span>`).join("") + `<span class="next">?</span>`;
+  function reset() {
+    clearInterval(timer); step = 0; words(oldEl); words(newEl); svg.innerHTML = ""; stage.classList.remove("on");
+    oldEl.querySelectorAll("span").forEach((s) => (s.style.opacity = .35));
+    newEl.querySelectorAll("span").forEach((s) => (s.style.opacity = .35));
+    $("#tfxOldN").innerHTML = "<span class='muted'>Reads left to right, carrying a running memory.</span>";
+    $("#tfxNewN").innerHTML = "<span class='muted'>Sees the whole sentence in one go.</span>";
+    $("#tfxWhy").classList.add("dim");
+  }
+  function playOld() {
+    clearInterval(timer); words(oldEl); step = Math.max(step, 1);
+    const sp = [...oldEl.querySelectorAll("span")]; const op = sp.map(() => 0); let i = 0;
+    sp.forEach((s) => (s.style.opacity = 0.15));
+    $("#tfxOldN").innerHTML = "<span class='muted'>Reading…</span>";
+    timer = setInterval(() => {
+      if (i < WORDS.length) {
+        for (let k = 0; k < i; k++) op[k] = Math.max(0.1, op[k] * 0.68);
+        op[i] = 1; sp.forEach((s, k) => { s.style.opacity = k <= i ? op[k] : 0.15; s.classList.toggle("cur", k === i); });
+        i++;
+      } else {
+        clearInterval(timer); sp[i].textContent = "ended?"; sp[i].classList.add("weak"); sp[i].style.opacity = 1;
+        $("#tfxOldN").innerHTML = "By “had”, the early words have faded: “claim” and “policy” are barely there. <b>A weak guess.</b> Long documents were a real struggle.";
+      }
+    }, 380);
+  }
+  function playNew() {
+    clearInterval(timer); words(newEl); step = 2;
+    const sp = [...newEl.querySelectorAll("span")]; sp.forEach((s) => (s.style.opacity = 1));
+    const box = stage.getBoundingClientRect(), last = sp[WORDS.length - 1].getBoundingClientRect();
+    const y0 = sp[0].getBoundingClientRect().top - box.top - 2, x1 = last.left + last.width / 2 - box.left;
+    svg.innerHTML = WORDS.slice(0, -1).map((w, k) => {
+      const r = sp[k].getBoundingClientRect(), x2 = r.left + r.width / 2 - box.left, h = Math.min(62, 16 + Math.abs(x1 - x2) * 0.28);
+      return `<path pathLength="1" d="M${x1} ${y0} Q${(x1 + x2) / 2} ${y0 - h * 2 + 10} ${x2} ${y0}" style="stroke-width:${1 + WEIGHT[k] * 5};opacity:${0.3 + WEIGHT[k] * 0.7}"/>`;
+    }).join("");
+    sp[WORDS.length - 1].classList.add("cur");
+    stage.classList.remove("on"); void stage.offsetWidth; requestAnimationFrame(() => stage.classList.add("on"));
+    setTimeout(() => { sp[WORDS.length].textContent = "expired"; sp[WORDS.length].className = "good"; }, 800);
+    $("#tfxNewN").innerHTML = "“had” looks at every earlier word at the same moment. The thick arcs to <b>“policy”</b> and <b>“rejected”</b> point to <b>“expired”</b>.";
+    $("#tfxWhy").classList.remove("dim");
+  }
+  $("#tfxB1").onclick = playOld; $("#tfxB2").onclick = playNew; $("#tfxB0").onclick = reset;
+  reset();
+  const mine = (e) => e.detail.slide.dataset.title === "Why transformers";
+  document.addEventListener("slide:enter", (e) => { if (mine(e)) { if (e.detail.back) { playOld(); playNew(); } else reset(); } });
+  document.addEventListener("slide:advance", (e) => {
+    if (!mine(e) || step >= 2) return;
+    e.preventDefault(); step === 0 ? playOld() : playNew();
+  });
+})();
+
+/* ---- transformer, step by step ---- */
+(() => {
+  const SENT = "The claim was rejected because the policy had";
+  const TOK = [["The", 791], ["claim", 3802], ["was", 574], ["rejected", 17016], ["because", 1606], ["the", 279], ["policy", 4947], ["had", 1047]];
+  const ATT = { The: .1, claim: .55, was: .1, rejected: .7, because: .3, the: .1, policy: .95, had: .4 };
+  const SC = [["expired", 62], ["lapsed", 14], ["been", 9], ["ended", 5], ["not", 3]];
+  const trace = (h) => `<div class="trace">${h}</div>`;
+  const items = [
+    { icon: "📝", title: "Text in", sub: "your prompt + history", c: "context", html: "<p>Everything in the conversation so far: system instructions, your messages, documents, earlier replies. The model sees it all <b>at once</b>.</p>" +
+      trace(`<b>Our text:</b> “${SENT} …”`) },
+    { icon: "🧩", title: "Tokens", sub: "chop into pieces", c: "model", html: "<p>The text is split into tokens, and each token becomes an ID number from the model’s vocabulary.</p>" +
+      trace(TOK.map(([t, id]) => `<span class="tk2">${t}<small>${id}</small></span>`).join("")) },
+    { icon: "📍", title: "Embeddings", sub: "meaning as numbers", c: "knowledge", html: "<p>Each token becomes a long list of numbers that captures its <b>meaning</b>, plus a marker for <b>where it sits</b> in the sentence. Similar meanings get similar numbers: <i>claim</i> sits near <i>request</i>. We meet embeddings again in RAG (Topics 9 and 10).</p>" +
+      trace(`<div class="vec">claim  → [ 0.12, −0.48, 0.91, 0.03, … ]  thousands of numbers</div><div class="vec">policy → [ 0.40, −0.11, 0.77, −0.62, … ]</div><div class="vec">had    → [ −0.05, 0.33, 0.18, 0.29, … ]</div>`) },
+    { icon: "🔦", title: "Layers", sub: "attention + feed-forward ×N", c: "autonomy", html: "<p>The heart of the transformer. In each layer every token gathers context from the earlier tokens (<b>attention</b>), then is processed on its own (<b>feed-forward</b>). This repeats through dozens of layers. The next slide opens one up.</p>" +
+      trace(`<b>What “had” draws on:</b> ` + TOK.map(([t]) => `<span class="hot" style="--h:${ATT[t]}">${t}</span>`).join("")) },
+    { icon: "📊", title: "Scores", sub: "every possible next token", c: "action", html: "<p>The final layer gives a score to <b>every token in its vocabulary</b> (tens of thousands of them) for “what comes next?”</p>" +
+      trace(SC.map(([t, v]) => `<div class="sb"><span>${t}</span><span><i style="width:${v}%"></i></span><span>${v}%</span></div>`).join("")) },
+    { icon: "🎲", title: "Pick one", sub: "temperature decides", c: "trust", html: "<p>One token is chosen: usually a likely one, with some randomness depending on temperature. It’s added to the text and <b>the whole thing runs again</b> for the next token.</p>" +
+      trace(`“${SENT} <b style="color:var(--good)">expired</b>” <span class="muted">→ run again for the next token ↻</span>`) },
+  ];
+  let at = 0;
+  const ci = W.clickInfo($("#tf"), items, { layout: "flow", onShow: (i) => (at = i) });
+  const mine = (e) => e.detail.slide.dataset.title === "The transformer";
+  document.addEventListener("slide:enter", (e) => { if (mine(e)) ci.show(e.detail.back ? items.length - 1 : 0); });
+  document.addEventListener("slide:advance", (e) => { if (mine(e) && at < items.length - 1) { e.preventDefault(); ci.show(at + 1); } });
+})();
+
+/* ---- inside one layer ---- */
+(() => {
+  const S = ["After", "the", "storm", "the", "river", "rose,", "and", "the", "insured", "car", "was", "found", "on", "the", "bank"];
+  const ME = 14;
+  const LV = [
+    { lit: [], t: "<b>“bank”</b>: just the word. Money? A river? It can’t tell yet." },
+    { lit: [4], t: "<b>“bank”, after “river”</b>: probably the side of a river, not a building with money in it." },
+    { lit: [4, 9, 11], t: "<b>a river bank</b>: the place where the car was found." },
+    { lit: [2, 4, 5, 8, 9, 11], t: "<b>the flooded river bank where the insured car ended up</b>: the scene of a motor claim." },
+    { lit: [0, 2, 4, 5, 8, 9, 10, 11, 12], t: "<b>Ready to predict what comes next</b>, for example “,” or “after”. Only this final version is used to pick the next token." },
+  ];
+  $("#lyrSent").innerHTML = S.map((w, i) => `<span data-i="${i}" class="${i === ME ? "me" : ""}">${w}</span>`).join(" ");
+  const show = (v) => {
+    const L = LV[v];
+    W.$$("#lyrSent span").forEach((s) => s.classList.toggle("lit", L.lit.includes(+s.dataset.i)));
+    $("#lyrMeaning").innerHTML = L.t;
+  };
+  $("#lyrRange").oninput = (e) => show(+e.target.value);
+  show(0);
+  W.flips($("#tfFacts"), [
+    { front: "🔢 Parameters", c: "model", back: "The numbers inside all these layers, learned in training: billions of them. Bigger models have more and wider layers (Topic 6)." },
+    { front: "🪟 Context window", c: "context", back: "How many tokens attention can look at in one go. That limit is the <b>context window</b> (Topic 5)." },
+    { front: "💸 Long prompts cost more", c: "action", back: "Every token goes through every layer, and attention compares each token with the others. More tokens, more work, more time and more cost (Topic 5)." },
+    { front: "🔀 Encoder or decoder?", c: "knowledge", back: "Claude and GPT are <b>decoders</b>: they write text one token at a time, looking only back. Many embedding models are <b>encoders</b>: they read the whole text and return a vector. Those power RAG search (Topic 10)." },
+  ], 4);
+})();
 
 /* ---- implications ---- */
 W.flips($("#impl"), [
@@ -243,6 +444,8 @@ W.quiz($("#quiz"), [
   { q: "Asked about your company’s Q3 revenue (which it has never seen), a plain model will most likely…", o: ["Refuse to answer", "Look it up online", "Produce a plausible-sounding number", "Ask for your login"], a: 2, e: "It predicts plausible tokens. With no real data it will often produce a confident guess: a <b>hallucination</b>." },
   { q: "You want the same, consistent answer every time. Which temperature?", o: ["Low", "High", "It makes no difference"], a: 0, e: "Low temperature means it nearly always picks the top-scoring token, so output is more predictable." },
   { q: "Which part of the transformer lets words “look at” each other?", o: ["Tokenizer", "Attention", "Temperature", "Embedding"], a: 1, e: "<b>Attention</b>, the subject of the next topic." },
+  { q: "What did the transformer change in 2017?", o: ["It reads every word at once, so nothing fades and training runs in parallel", "It reads one word at a time, more carefully", "It looks every word up in a dictionary", "It remembers every past conversation"], a: 0, e: "Seeing every word at once means early words don’t fade, and processing them together made training on huge amounts of text practical." },
+  { q: "Which kind of model turns a document into a vector for RAG search?", o: ["A decoder, like Claude", "An encoder, such as an embedding model", "A tokenizer", "A vector database"], a: 1, e: "Embedding models (often <b>encoders</b>) read the whole text and return a vector. Decoders like Claude write text, one token at a time." },
 ]);
 
 /* ===== v3 story ===== */
@@ -268,6 +471,6 @@ event: message_delta        { "delta": { "stop_reason": "end_turn" },
   ],
 };
 </script>
-<script src="../assets/deck.js?v=4.7"></script>
+<script src="../assets/deck.js?v=4.8"></script>
 </body>
 </html>

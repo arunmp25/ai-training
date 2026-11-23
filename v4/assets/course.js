@@ -5,7 +5,7 @@ window.COURSE = {
   topics: {
     "00":  { n: 1, file: "00-decoding-ai-jargon.html", title: "Decoding the jargon", l: "model", blurb: "Every AI buzzword gets a home in one of six layers. Self-check, sort game, dictionary." },
     "01":  { n: 2, file: "01-interacting-with-ai.html", title: "Talking to AI", l: "context", blurb: "The “[Your Name]” email: the new-colleague mindset, vague vs specific, the parts of a request, and the same request in Python." },
-    "02":  { n: 3, file: "02-how-ai-generates-text.html", title: "How AI generates text", l: "model", blurb: "Why the same question gets two answers: tokens, next-token prediction, temperature." },
+    "02":  { n: 3, file: "02-how-ai-generates-text.html", title: "How AI generates text", l: "model", blurb: "Why the same question gets two answers: tokens, next-token prediction, temperature, and the transformer step by step." },
     "03":  { n: 4, file: "03-attention.html", title: "Attention", l: "model", blurb: "Who is “he”? How words look at each other, and what that means for writing prompts." },
     "04":  { n: 5, file: "04-context-window.html", title: "The context window", l: "context", blurb: "Why a long chat forgets the morning: the desk, statelessness, memory, cost." },
     "04b": { n: 6, file: "04b-model-selection.html", title: "Choosing a model", l: "model", blurb: "Big, medium or small? Quality, speed, cost per token and context size. A cost calculator, routing to the right model, and testing on your own examples." },
@@ -29,7 +29,7 @@ window.COURSE = {
       short: "", name: "Building with AI",
       desc: "Three sessions. Session 3 ends with two optional topics on building agents in code. Each topic adds one layer, using everyday examples from an insurance business.",
       days: [
-        { d: "Session 1", theme: "How AI works, models, prompts and context", items: [["00", 16], ["01", 16], ["02", 14], ["03", 15], ["04", 10], ["04b", 16], ["05", 17], ["06", 15]] },
+        { d: "Session 1", theme: "How AI works, models, prompts and context", items: [["00", 16], ["01", 16], ["02", 22], ["03", 15], ["04", 10], ["04b", 16], ["05", 17], ["06", 15]] },
         { d: "Session 2", theme: "Knowledge, tools and MCP",                  items: [["07", 12], ["07b", 19], ["07c", 16], ["08", 17], ["08b", 19], ["09", 16]] },
         { d: "Session 3", theme: "Agents, harnesses and safety",              items: [["10", 17], ["11", 15], ["12", 22], ["13", 16], ["10b", 22], ["10c", 26]] },
       ],

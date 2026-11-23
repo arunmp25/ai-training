@@ -4,9 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Topic 6 · Choosing a model</title>
-<link rel="stylesheet" href="../assets/style.css?v=4.7">
-<link rel="stylesheet" href="../assets/widgets.css?v=4.7">
-<link rel="stylesheet" href="../assets/story.css?v=4.7">
+<link rel="stylesheet" href="../assets/style.css?v=4.8">
+<link rel="stylesheet" href="../assets/widgets.css?v=4.8">
+<link rel="stylesheet" href="../assets/story.css?v=4.8">
 <style>
   .tiers .ci-card { min-height: 96px; }
   .stat { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px; }
@@ -129,8 +129,8 @@
   <aside class="notes"><span class="tag time">⏱ 30 sec</span><p class="say"><b>🎤 Say</b> Pick the right size for the job, remember that tokens are the bill, and choose with a test. Whatever model you choose, it still needs a good brief, so next: the anatomy of a prompt.</p><ul><li>Bridge: “You have picked your model. Now let us write it a proper brief.”</li></ul></aside>
 </section>
 
-<script src="../assets/course.js?v=4.7"></script>
-<script src="../assets/widgets.js?v=4.7"></script>
+<script src="../assets/course.js?v=4.8"></script>
+<script src="../assets/widgets.js?v=4.8"></script>
 <script>
 const { $, $$ } = W;
 const SAME = {
@@ -218,6 +218,6 @@ evReset();
 W.classify($("#pick"), [{"text": "Sort 50,000 emails a day into claim, quote or complaint.", "a": 0, "why": "High volume, simple labels: a <b>small</b> model is fast and cheap enough."}, {"text": "Pull the policy number and date out of a form.", "a": 0, "why": "Extraction with a clear answer: <b>small</b>."}, {"text": "Summarise a claim and draft a polite reply to the customer.", "a": 1, "why": "Everyday writing and understanding: <b>medium</b>."}, {"text": "A chat assistant for agents answering product questions.", "a": 1, "why": "Good quality and quick replies: <b>medium</b> is the usual default."}, {"text": "Compare two 60-page reinsurance contracts and list every difference in liability.", "a": 2, "why": "Long, careful reasoning where mistakes are costly: <b>large</b>."}, {"text": "An agent that fixes bugs across a large codebase.", "a": 2, "why": "Long multi-step work with many decisions: <b>large</b> (or medium with high effort, if tests show it is enough)."}], [{"label": "Small", "c": "good"}, {"label": "Medium", "c": "model"}, {"label": "Large", "c": "autonomy"}], { cols: 2 });
 W.quiz($("#quiz"), [{"q": "What is the best way to choose between two models for a task?", "o": ["Always pick the newest", "Always pick the cheapest", "Test both on your own real examples and compare quality, speed and cost", "Pick the one with the biggest context window"], "a": 2, "e": "Benchmarks are a starting point. Your own examples decide."}, {"q": "Why do output tokens matter so much for cost?", "o": ["They are free", "They usually cost several times more per token than input", "They are counted twice", "Only output tokens are charged"], "a": 1, "e": "Output is typically about five times the price of input, so long answers add up quickly."}, {"q": "Your app handles 50,000 simple classification requests a day. What should you try first?", "o": ["The largest model, to be safe", "A small model, checked against a test set", "A model with a 1M-token context window", "No model at all"], "a": 1, "e": "Small models are often good enough for simple, high-volume tasks. Prove it with a test set."}]);
 </script>
-<script src="../assets/deck.js?v=4.7"></script>
+<script src="../assets/deck.js?v=4.8"></script>
 </body>
 </html>

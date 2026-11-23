@@ -4,9 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Topic 20 · Agent design patterns</title>
-<link rel="stylesheet" href="../assets/style.css?v=4.7">
-<link rel="stylesheet" href="../assets/widgets.css?v=4.7">
-<link rel="stylesheet" href="../assets/story.css?v=4.7">
+<link rel="stylesheet" href="../assets/style.css?v=4.8">
+<link rel="stylesheet" href="../assets/widgets.css?v=4.8">
+<link rel="stylesheet" href="../assets/story.css?v=4.8">
 <style>
   .ladder .ci-card { min-height: 92px; }
   .lgcode .code { font-size: 12px; line-height: 1.45; white-space: pre; max-height: calc(100vh - 330px); overflow: auto; }
@@ -124,8 +124,8 @@
   <aside class="notes"><span class="tag time">⏱ 30 sec</span><p class="say"><b>🎤 Say</b> Start simple, know the eight shapes, and put a person in front of risky actions. Harnesses package all of this into products you can use today.</p><ul><li>End of Session 3 and of the course. Link back: “A harness like Claude Code is an autonomous agent with orchestrator–workers (subagents) and human in the loop (permissions), ready to use.”</li></ul></aside>
 </section>
 
-<script src="../assets/course.js?v=4.7"></script>
-<script src="../assets/widgets.js?v=4.7"></script>
+<script src="../assets/course.js?v=4.8"></script>
+<script src="../assets/widgets.js?v=4.8"></script>
 <script>
 const { $ } = W;
 W.clickInfo($("#ladder"), [
@@ -155,6 +155,6 @@ W.tabs($("#lgTabs"), [
 W.classify($("#pick"), [{"text": "“Every claim email: extract the details, check them, then draft a reply.”", "a": 0, "why": "Known, fixed steps: <b>prompt chaining</b>."}, {"text": "“Send claims, quotes and complaints to different teams.”", "a": 1, "why": "Classify, then dispatch: <b>routing</b>."}, {"text": "“Run coverage, fraud and damage checks on each claim, quickly.”", "a": 2, "why": "Independent checks at once: <b>parallelisation</b> (sectioning)."}, {"text": "“Investigate a complex claim; we don’t know which experts it needs.”", "a": 3, "why": "Subtasks decided at run time: <b>orchestrator–workers</b>."}, {"text": "“Our decline letters must always quote the clause and explain appeals.”", "a": 4, "why": "Clear criteria, iterate until met: <b>evaluator–optimiser</b>."}, {"text": "“Fix this bug somewhere in a 200-file codebase.”", "a": 5, "why": "Steps depend on what it finds: an <b>autonomous agent</b>."}], [{"label": "Chaining", "c": "model"}, {"label": "Routing", "c": "warn"}, {"label": "Parallel", "c": "knowledge"}, {"label": "Orchestrator", "c": "autonomy"}, {"label": "Evaluator", "c": "trust"}, {"label": "Agent", "c": "action"}], { cols: 2 });
 W.quiz($("#quiz"), [{"q": "What is the main difference between a workflow and an agent?", "o": ["Workflows use smaller models", "In a workflow your code decides the steps; in an agent the model does", "Agents never use tools", "Workflows cannot call an LLM"], "a": 1, "e": "Who decides the next step is the whole difference."}, {"q": "How is orchestrator–workers different from parallelisation?", "o": ["It is slower", "The subtasks are decided at run time by the orchestrator", "It uses only one model call", "Workers cannot run in parallel"], "a": 1, "e": "Parallelisation has fixed subtasks; an orchestrator plans them per request."}, {"q": "Your agent can issue refunds. What pattern should wrap that tool?", "o": ["Voting", "Routing", "Human in the loop", "Prompt chaining"], "a": 2, "e": "Irreversible actions pause for a person’s approval."}]);
 </script>
-<script src="../assets/deck.js?v=4.7"></script>
+<script src="../assets/deck.js?v=4.8"></script>
 </body>
 </html>
