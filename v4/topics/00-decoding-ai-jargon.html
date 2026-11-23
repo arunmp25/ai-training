@@ -223,18 +223,22 @@
   .lion-top p { margin: 0; font-size: 14.5px; line-height: 1.45; }
   .lion-parts { display: flex; gap: 6px; min-height: 34px; margin: 10px 0 8px; flex-wrap: wrap; }
   .lion-parts span { --c: var(--accent); font-size: 12px; font-weight: 700; padding: 4px 9px; border-radius: 999px; border: 1px solid var(--c); background: color-mix(in srgb, var(--c) 16%, transparent); animation: slideIn .3s ease both; }
-  .lion-bottom { display: grid; grid-template-columns: 250px 1fr; gap: 16px; align-items: center; margin-top: 6px; }
-  .robot { width: 250px; height: 250px; display: block; }
+  .lion-bottom { display: grid; grid-template-columns: 290px 1fr; gap: 16px; align-items: center; margin-top: 6px; }
+  .robot { width: 290px; height: 234px; display: block; overflow: visible; }
   .robot .rp { --c: var(--accent); transition: opacity .4s; }
   .robot .rp :is(rect, circle, path, line, ellipse) { fill: color-mix(in srgb, var(--c) 32%, var(--card)); stroke: var(--c); stroke-width: 2.5; }
   .robot .rp line { fill: none; stroke-linecap: round; }
   .robot .rp text { font-size: 24px; text-anchor: middle; dominant-baseline: central; }
   .robot .rp.off :is(rect, circle, path, line, ellipse) { fill: transparent; stroke: var(--muted); stroke-width: 1.5; stroke-dasharray: 4 4; opacity: .45; }
   .robot .rp.off text { opacity: 0; }
-  .robot .rp.new { animation: robotIn .55s ease; transform-box: fill-box; transform-origin: center; }
+  .robot .rp.new { animation: robotIn .55s ease both; transform-box: fill-box; transform-origin: center; }
   @keyframes robotIn { 0% { transform: scale(.6); opacity: 0; } 70% { transform: scale(1.08); } 100% { transform: scale(1); opacity: 1; } }
   .robot .rp.core:not(.off) circle { fill: var(--c); animation: corePulse 1.4s ease-in-out infinite; }
   @keyframes corePulse { 50% { opacity: .35; } }
+  .robot .rp.dome:not(.off) circle { fill: color-mix(in srgb, var(--c) 9%, transparent); stroke-width: 3; filter: drop-shadow(0 0 6px color-mix(in srgb, var(--c) 60%, transparent)); }
+  .robot .rp.badge:not(.off) circle { fill: var(--card); }
+  .robot .rp.badge text { font-size: 17px; }
+  .robot .rp text.bl { font-size: 11.5px; font-weight: 700; fill: var(--text); }
   .lion-side .lion-parts { flex-direction: column; align-items: flex-start; margin: 0 0 10px; min-height: 0; }
   .lion-side .lbl { font-size: 11px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
   .lion-list { display: grid; gap: 6px; }
@@ -306,8 +310,8 @@
     <div class="lion-stage" id="lionStage">
       <div class="lion-top"><div class="lion-icon" id="lionIcon"></div><div><div class="lion-step" id="lionStep"></div><h3 id="lionHead"></h3><p id="lionText"></p></div></div>
       <div class="lion-bottom">
-        <svg class="robot" id="lionRobot" viewBox="0 0 240 240" aria-label="A robot that gains one part per stage">
-          <g class="rp" data-s="6"><line x1="8" y1="176" x2="232" y2="176"/><line x1="8" y1="206" x2="232" y2="206"/><rect x="10" y="164" width="8" height="56" rx="2"/><rect x="222" y="164" width="8" height="56" rx="2"/></g>
+        <svg class="robot" id="lionRobot" viewBox="-34 -8 308 248" aria-label="A robot that gains one part per stage">
+          <g class="rp dome" data-s="6"><circle cx="120" cy="114" r="112"/></g>
           <g class="rp" data-s="5"><line x1="22" y1="120" x2="40" y2="120"/><line x1="16" y1="134" x2="38" y2="134"/><line x1="200" y1="120" x2="218" y2="120"/><line x1="202" y1="134" x2="224" y2="134"/></g>
           <g class="rp" data-s="4"><rect x="92" y="168" width="18" height="44" rx="6"/><rect x="130" y="168" width="18" height="44" rx="6"/><rect x="86" y="208" width="28" height="10" rx="4"/><rect x="126" y="208" width="28" height="10" rx="4"/>
             <rect x="52" y="104" width="22" height="56" rx="9"/><rect x="166" y="104" width="22" height="56" rx="9"/><circle cx="63" cy="168" r="10"/><circle cx="177" cy="168" r="10"/></g>
@@ -315,7 +319,10 @@
           <g class="rp core" data-s="5"><circle cx="120" cy="116" r="8"/></g>
           <g class="rp" data-s="1"><rect x="76" y="22" width="88" height="68" rx="16"/><text x="120" y="46">🧠</text></g>
           <g class="rp" data-s="2"><circle cx="104" cy="72" r="7"/><circle cx="136" cy="72" r="7"/><rect x="66" y="42" width="10" height="28" rx="4"/><rect x="164" y="42" width="10" height="28" rx="4"/><line x1="120" y1="22" x2="120" y2="9"/><circle cx="120" cy="7" r="4"/></g>
-          <g class="rp" data-s="6"><path d="M196 128 l20 7 v14 c0 13 -9 21 -20 26 c-11 -5 -20 -13 -20 -26 v-14 z"/></g>
+          <g class="rp badge" data-s="6" style="animation-delay:0.35s"><circle cx="39" cy="33" r="17"/><text x="39" y="33">🔐</text><text class="bl" x="39" y="10">Permissions</text></g>
+          <g class="rp badge" data-s="6" style="animation-delay:0.55s"><circle cx="201" cy="33" r="17"/><text x="201" y="33">🪝</text><text class="bl" x="201" y="10">Hooks</text></g>
+          <g class="rp badge" data-s="6" style="animation-delay:0.75s"><circle cx="39" cy="195" r="17"/><text x="39" y="195">✋</text><text class="bl" x="39" y="224">Human approval</text></g>
+          <g class="rp badge" data-s="6" style="animation-delay:0.95s"><circle cx="201" cy="195" r="17"/><text x="201" y="195">📊</text><text class="bl" x="201" y="224">Evals</text></g>
         </svg>
         <div class="lion-side">
           <div class="lbl">Built so far</div>
@@ -333,7 +340,7 @@
       <li>Press → slowly. Each stage is one part of the course; the topic numbers are on the right.</li>
       <li>Point at the robot: it gains one part per stage, in that layer’s colour. Dashed outlines show what is still to come.</li>
       <li>Pause at stage 5 (the breath of life): “This is where the original story ended.” The robot can now act on its own, and nothing is stopping it yet.</li>
-      <li>Stage 6 adds a shield and an actual guardrail around the robot.</li>
+      <li>Stage 6 closes a protective dome around the robot, with four badges: permissions and hooks (Topic 17), human approval and evals (Topic 18). Same power, now contained.</li>
       <li>Stage 6 is the point of the course: same power, with guardrails, put to good use. Topic 18 is the fourth friend’s topic.</li>
       <li>The next slide gives these six stages their proper names: the six layers of the car.</li>
     </ul>
