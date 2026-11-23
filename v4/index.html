@@ -4,9 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>AI Training v4 · Building with AI</title>
-<link rel="stylesheet" href="assets/style.css?v=4.5">
-<link rel="stylesheet" href="assets/widgets.css?v=4.5">
-<link rel="stylesheet" href="assets/story.css?v=4.5">
+<link rel="stylesheet" href="assets/style.css?v=4.6">
+<link rel="stylesheet" href="assets/widgets.css?v=4.6">
+<link rel="stylesheet" href="assets/story.css?v=4.6">
 <script>const t = localStorage.getItem("aitrain-theme"); if (t) document.documentElement.dataset.theme = t;
 document.documentElement.classList.toggle("show-time", localStorage.getItem("aitrain-showtime") === "1");</script>
 <style>
@@ -81,8 +81,8 @@ document.documentElement.classList.toggle("show-time", localStorage.getItem("ait
   </div>
 </div>
 
-<script src="assets/course.js?v=4.5"></script>
-<script src="assets/widgets.js?v=4.5"></script>
+<script src="assets/course.js?v=4.6"></script>
+<script src="assets/widgets.js?v=4.6"></script>
 <script>
 const C = window.COURSE, { $, cv } = W;
 $("#path").innerHTML = W.ORDER.map((l) => `<div class="st" style="--c:${cv(l)}"><div class="i">${W.LAYERS[l].icon}</div><b>${W.LAYERS[l].name}</b><small>${W.LAYERS[l].car}</small></div>`).join("");
@@ -90,9 +90,10 @@ $("#path").innerHTML = W.ORDER.map((l) => `<div class="st" style="--c:${cv(l)}">
 function trackHtml(k) {
   const T = C.tracks[k];
   return `<p class="opt-desc">${T.desc}</p><div class="days">${T.days.map((d) => {
-    const total = d.items.reduce((a, [, m]) => a + m, 0);
-    return `<div class="day"><h3>${d.d}</h3><div class="theme">${d.theme}</div><div class="tot">${d.items.length} TOPICS<span class="time-only"> · ~${total} MIN</span></div>
-      ${d.items.map(([id, min]) => { const tp = C.topics[id]; return `<a class="topic" href="topics/${tp.file}" style="--c:${cv(tp.l)}"><span class="min time-only">~${min} min</span><div class="n">TOPIC ${tp.n}</div><b>${tp.title}</b><div class="meta">${tp.blurb}</div></a>`; }).join("")}</div>`;
+    const core = d.items.filter(([id]) => !C.topics[id].opt), opt = d.items.filter(([id]) => C.topics[id].opt);
+    const sum = (a) => a.reduce((t, [, m]) => t + m, 0);
+    return `<div class="day"><h3>${d.d}</h3><div class="theme">${d.theme}</div><div class="tot">${core.length} TOPICS<span class="time-only"> · ~${sum(core)} MIN</span>${opt.length ? ` + ${opt.length} OPTIONAL<span class="time-only"> · ~${sum(opt)} MIN</span>` : ""}</div>
+      ${d.items.map(([id, min]) => { const tp = C.topics[id]; return `<a class="topic" href="topics/${tp.file}" style="--c:${cv(tp.l)}"><span class="min time-only">~${min} min</span><div class="n">TOPIC ${tp.n}${tp.opt ? " · OPTIONAL" : ""}</div><b>${tp.title}</b><div class="meta">${tp.blurb}</div></a>`; }).join("")}</div>`;
   }).join("")}</div>`;
 }
 $("#optBody").innerHTML = trackHtml("a");

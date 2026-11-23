@@ -4,8 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Topic 1 · Decoding the jargon</title>
-<link rel="stylesheet" href="../assets/style.css?v=4.5">
-<link rel="stylesheet" href="../assets/story.css?v=4.5">
+<link rel="stylesheet" href="../assets/style.css?v=4.6">
+<link rel="stylesheet" href="../assets/story.css?v=4.6">
 <style>
   /* ---------- Slide 1: jargon cloud ---------- */
   .hero-head { display: flex; align-items: flex-end; gap: 24px; flex-wrap: wrap; margin-bottom: 18px; }
@@ -164,7 +164,7 @@
   .gcard .an { color: var(--muted); font-size: 13px; }
 
   /* ---------- Slide 9: roadmap ---------- */
-  .road { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+  .road { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
   .day h3 { font-size: 20px; margin-bottom: 4px; }
   .day .theme { color: var(--muted); font-size: 14px; margin-bottom: 12px; }
   .tcard { --c: var(--accent); padding: 12px 14px; border-radius: 6px; background: var(--card); border: 1px solid var(--line);
@@ -402,9 +402,9 @@
   <p class="sub">Each session adds layers to the car. Click a topic to see the kind of jargon it clears up.</p>
   <div class="road" id="road"></div>
   <aside class="notes">
-    <span class="tag time">⏱ 1 min</span><p class="say"><b>🎤 Say</b> Here is the route. Session 1 is the engine, which engine to choose, and what it sees. Session 2 adds knowledge, hands and connectors. Session 3 adds the driver, the car around it and the brakes.</p>
+    <span class="tag time">⏱ 1 min</span><p class="say"><b>🎤 Say</b> Here is the route. Session 1 is the engine, which engine to choose, and what it sees. Session 2 adds knowledge, hands and connectors. Session 3 adds the driver, the car around it and the brakes, and ends with two optional topics for teams that build agents in code.</p>
     <ul>
-      <li>Session 1 = the engine, choosing a model, what it sees and how to prompt it. Session 2 = knowledge, hands and connectors (RAG, tools, MCP). Session 3 = the driver (the agentic loop), the car (harness) and the brakes. Optional extras: building agents in code and agent patterns.</li>
+      <li>Session 1 = the engine, choosing a model, what it sees and how to prompt it. Session 2 = knowledge, hands and connectors (RAG, tools, MCP). Session 3 = the driver (the agentic loop), the car (harness) and the brakes. Session 3 closes with two optional topics, building agents in code and agent patterns, for teams that build their own.</li>
       <li>Point out the colours: they match the six layers.</li>
     </ul>
   </aside>
@@ -450,8 +450,8 @@
   </aside>
 </section>
 
-<script src="../assets/course.js?v=4.5"></script>
-<script src="../assets/widgets.js?v=4.5"></script>
+<script src="../assets/course.js?v=4.6"></script>
+<script src="../assets/widgets.js?v=4.6"></script>
 <script>
 /* ================= DATA ================= */
 const LAYERS = W.LAYERS, ORDER = W.ORDER, TERMS = W.TERMS;
@@ -794,14 +794,14 @@ const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { c
   const track = "a";
   const C = window.COURSE;
   const LAYER_TERMS = (l) => TERMS.filter((x) => x.l === l).slice(0, 6).map((x) => x.t);
-  const DAYS = C.tracks[track].days.map((d) => ({ d: d.d, theme: d.theme, topics: d.items.map(([id]) => [C.topics[id].n || id, C.topics[id].title, C.topics[id].l, LAYER_TERMS(C.topics[id].l), id === "00"]) }));
+  const DAYS = C.tracks[track].days.map((d) => ({ d: d.d, theme: d.theme, topics: d.items.map(([id]) => [C.topics[id].n || id, C.topics[id].title, C.topics[id].l, LAYER_TERMS(C.topics[id].l), id === "00", C.topics[id].opt]) }));
   const road = $("#road");
   road.innerHTML = DAYS.map(day => `
     <div class="day"><h3>${day.d}</h3><div class="theme">${day.theme}</div>
-      ${day.topics.map(([n, t, l, terms, here]) => `
+      ${day.topics.map(([n, t, l, terms, here, opt]) => `
         <div class="tcard ${here ? "here" : ""}" style="--c:${cv(l)}">
           ${here ? '<span class="here-badge">YOU ARE HERE</span>' : ""}
-          <div class="num">TOPIC ${n}</div><b>${t}</b>
+          <div class="num">TOPIC ${n}${opt ? " · OPTIONAL" : ""}</div><b>${t}</b>
           <div class="terms">${terms.map(x => `<span class="tag" style="--c:${cv(byName[x]?.l || l)}">${x}</span>`).join("")}</div>
         </div>`).join("")}
     </div>`).join("");
@@ -863,6 +863,6 @@ const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { c
 
 /* ===== v3 story ===== */
 </script>
-<script src="../assets/deck.js?v=4.5"></script>
+<script src="../assets/deck.js?v=4.6"></script>
 </body>
 </html>

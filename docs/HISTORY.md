@@ -101,6 +101,10 @@ The user asked for relatable or funny references only, no Day labels (sessions o
 - Course page hero says “visual, demo-led” instead of “hands-on”.
 - Topic minutes raised to match: T3 12 → 14, T4 12 → 15, T7 14 → 17, T8 12 → 15, T10 16 → 19, T16 12 → 15, T17 18 → 22. Fixed a stale “Topic 13” reference in Topic 8 (memory files and subagents are Topic 17). Assets `?v=4.5`. v4 now has 240 slides.
 
+### Optional topics moved into Session 3 (v4, 23 Nov 2026)
+- The user wants three sessions only, keeping the optional idea. The separate “Optional” group is gone: Session 3 now holds Topics 15–20, with 19 (AI agents) and 20 (agent design patterns) marked optional.
+- `course.js` gives optional topics `opt: 1`. The course page shows “4 TOPICS + 2 OPTIONAL” for Session 3 (with separate minute totals) and “TOPIC 19 · OPTIONAL” on the cards; the Topic 1 roadmap is back to three columns with the same label. Eyebrows read “Session 3 · Topic 19 · Optional”, and the deck bar now says Session 3. Assets `?v=4.6`. Speaker notes at the end of Topic 1’s roadmap, Topic 18, Topic 19 and Topic 20 updated to match.
+
 ## Known loose ends
 - These slides still scroll slightly at 1280×720: Topic 15 “The loop in action” (+32px), Topic 16 “The landscape” (+198px) and “Which harness?” (+14px), Topic 17 “Which one?” (+121px). The jargon dictionary scrolls by design.
 - Four sequence diagrams scroll inside their box at projector size (RAG, tool retry, MCP, agent loop). The user was offered tighter rows; no answer yet.

@@ -12,7 +12,7 @@ Then say: "Read docs/HANDOFF.md and docs/HISTORY.md, then continue."
 
 ## Where things stand
 - Repo: github.com/arunmp25/ai-training, branch `main`. Last pushed commit **81ae20a**. The worked examples and the Topic 5 context-bar fix are committed on top of it (see `git log`). Check `git status -sb` to see whether they have been pushed.
-- Work only in `v4/`. Asset version is `?v=4.5`. If you change `v4/assets/`, bump it to 4.6 in every v4 page.
+- Work only in `v4/`. Asset version is `?v=4.6`. If you change `v4/assets/`, bump it to 4.7 in every v4 page.
 - v4 has 240 slides. All 20 topics load at 1280×720 with no script errors, and every slide has a speaker note.
 
 ## Course layout (v4)
@@ -20,8 +20,7 @@ Then say: "Read docs/HANDOFF.md and docs/HISTORY.md, then continue."
 |---|---|---|
 | 1: How AI works, models, prompts and context | 1–8 | 00, 01, 02, 03, 04, **04b (new: Choosing a model)**, 05, 06 |
 | 2: Knowledge, tools and MCP | 9–14 | 07, 07b, 07c, 08, 08b, 09 |
-| 3: Agents, harnesses and safety | 15–18 | 10, 11, 12, 13 |
-| Optional: Building agents in code | 19–20 | 10b, 10c |
+| 3: Agents, harnesses and safety | 15–20 (19–20 optional) | 10, 11, 12, 13, 10b, 10c |
 
 File ids are not topic numbers. The mapping lives in `v4/assets/course.js` and the table in the root `CLAUDE.md`.
 

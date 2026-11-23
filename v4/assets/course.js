@@ -18,8 +18,8 @@ window.COURSE = {
     "08b": { n: 13, file: "08b-tools-deep-dive.html", title: "Tools deep dive", l: "action", blurb: "Schemas, the message exchange, parallel calls, tool choice, errors, tool design. The tool loop in Python." },
     "09":  { n: 14, file: "09-mcp.html", title: "MCP: the universal connector", l: "action", blurb: "One rating server, every AI app: hosts, clients, servers, tool call vs MCP, API vs MCP, local vs remote, trust." },
     "10":  { n: 15, file: "10-agentic-loop.html", title: "The agentic loop", l: "autonomy", blurb: "A coding agent fixes an off-by-one bug. Plan, act, observe, repeat. The autonomy dial. A multi-agent application, end to end." },
-    "10b": { n: 19, file: "10b-ai-agents.html", title: "AI agents: from prompt to agent", l: "autonomy", blurb: "Prompt, chain or agent? The six parts of an agent, and the same agent built with LangChain and LangGraph." },
-    "10c": { n: 20, file: "10c-agent-patterns.html", title: "Agent design patterns", l: "autonomy", blurb: "Chaining, routing, parallel calls, orchestrator–workers, evaluator–optimiser, ReAct, multi-agent and human approval, all animated." },
+    "10b": { n: 19, opt: 1, file: "10b-ai-agents.html", title: "AI agents: from prompt to agent", l: "autonomy", blurb: "Prompt, chain or agent? The six parts of an agent, and the same agent built with LangChain and LangGraph." },
+    "10c": { n: 20, opt: 1, file: "10c-agent-patterns.html", title: "Agent design patterns", l: "autonomy", blurb: "Chaining, routing, parallel calls, orchestrator–workers, evaluator–optimiser, ReAct, multi-agent and human approval, all animated." },
     "11":  { n: 16, file: "11-agent-harnesses.html", title: "Agent harnesses", l: "autonomy", blurb: "Claude Code, GitHub Copilot and others: same engine, different car." },
     "12":  { n: 17, file: "12-customizing-the-harness.html", title: "Customising the harness", l: "autonomy", blurb: "Instruction files, skills, subagents, hooks, permissions, plugins: house rules for agents." },
     "13":  { n: 18, file: "13-safety-and-evals.html", title: "Safety, trust and evals", l: "trust", blurb: "The pirate claim: prompt injection, the lethal trifecta, defences, evals, tracing." },
@@ -27,12 +27,11 @@ window.COURSE = {
   tracks: {
     a: {
       short: "", name: "Building with AI",
-      desc: "Three sessions plus two optional topics. Each topic adds one layer, using everyday examples from an insurance business.",
+      desc: "Three sessions. Session 3 ends with two optional topics on building agents in code. Each topic adds one layer, using everyday examples from an insurance business.",
       days: [
         { d: "Session 1", theme: "How AI works, models, prompts and context", items: [["00", 14], ["01", 16], ["02", 14], ["03", 15], ["04", 10], ["04b", 16], ["05", 17], ["06", 15]] },
         { d: "Session 2", theme: "Knowledge, tools and MCP",                  items: [["07", 12], ["07b", 19], ["07c", 16], ["08", 17], ["08b", 19], ["09", 16]] },
-        { d: "Session 3", theme: "Agents, harnesses and safety",              items: [["10", 17], ["11", 15], ["12", 22], ["13", 16]] },
-        { d: "Optional", theme: "Building agents in code",                    items: [["10b", 22], ["10c", 26]] },
+        { d: "Session 3", theme: "Agents, harnesses and safety",              items: [["10", 17], ["11", 15], ["12", 22], ["13", 16], ["10b", 22], ["10c", 26]] },
       ],
     },
   },

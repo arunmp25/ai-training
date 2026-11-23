@@ -34,7 +34,7 @@ docs/HISTORY.md       Project history and user feedback.
 - **Work in v4 only.** v1, v2 and v3 are kept as they are. When making a new version, copy the latest folder (as v4 was copied from v3), then plan with the user before building.
 - **Never lose content.** Every v2 slide still exists in v3, and every v3 slide in v4. Rework or re-skin slides, but do not drop them without the user's agreement.
 - **Tone (user feedback):** professional, not dramatic. Relatable or lightly funny references are welcome (the “[Your Name]” email, the King prawn curry in the royal search, the pirate claim). No characters, no dialogue scenes, no named cast.
-- **Structure words:** say “Session 1–3” (plus two optional topics) and “Topic 1–20” (v4; v3 has Sessions 1–3 and Topics 1–17). Never “Day” or “Episode”.
+- **Structure words:** say “Session 1–3” and “Topic 1–20” (v4; v3 has Sessions 1–3 and Topics 1–17). Never “Day” or “Episode”.
 - **Running example:** a fictional insurer, HarborShield, appears only inside example prompts and JSON. Rating engine quote for policy MTR-55120: ₹18,400 → ₹44,750 when adding an 18-year-old driver.
 - **Theme (v4):** EY style. EY Yellow `#FFE600` on EY dark grey (`#2E2E38`, `#1A1A24`), greys `#747480` `#C4C4CD` `#F6F6FA`, Arial-family font. Dark is the default; light must keep working. Do not draw the EY logo.
 - **Audience is technical enough for real JSON.** Show the real request/response shapes (Anthropic Messages API, MCP JSON-RPC, Claude Code settings) via Behind the scenes drawers, sequence diagrams and Python code walkthroughs. Use `claude-sonnet-5-5` as the model id in examples.
@@ -58,12 +58,12 @@ File ids are the old v2 ids; the audience sees `n` from `course.js`. Always writ
 | 07b | 10 | Embeddings and similarity |  |  |  |
 | 07c | 11 | Vector databases |  |  |  |
 
-Sessions (v4): 1 = topics 1–8, 2 = topics 9–14, 3 = topics 15–18 (the agentic loop, harnesses, customising, safety). Topics 19–20 (building agents in code, agent patterns) are optional extras after Session 3. File ids are not topic numbers: see the table above.
+Sessions (v4): 1 = topics 1–8, 2 = topics 9–14, 3 = topics 15–20: the agentic loop, harnesses, customising and safety (15–18), then two topics marked optional, building agents in code and agent patterns (19–20). There is no separate optional group; optional topics carry `opt: 1` in `course.js`, which adds “· OPTIONAL” on the course page and the Topic 1 roadmap. File ids are not topic numbers: see the table above.
 
 ## Run and check
 - Start the preview server (`.claude/launch.json`, name `ai-training`) and open `http://localhost:8765/v4/index.html`. v4 also works from `file://`.
 - Test at **1280×720** (projector size). Slides should not need scrolling; a few long v2 slides still do (Topic 15 “The loop in action”, Topic 16 “The landscape” and “Which harness?”, Topic 17 “Which one?”).
-- Browsers cache aggressively. Asset links carry `?v=4.5` in v4; bump the number in every v4 page when you change files in `v4/assets/`, or force reload with `fetch(url, {cache: "reload"})` while testing.
+- Browsers cache aggressively. Asset links carry `?v=4.6` in v4; bump the number in every v4 page when you change files in `v4/assets/`, or force reload with `fetch(url, {cache: "reload"})` while testing.
 - Before finishing, load every v4 topic and check: no script errors, every slide has a `.say` note, every `.seq` renders arrows, `data-bts` buttons have a matching `W.BTS` key.
 
 ## Packaging and git
