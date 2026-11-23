@@ -63,7 +63,7 @@ Sessions (v4): 1 = topics 1–8, 2 = topics 9–14, 3 = topics 15–20: the agen
 ## Run and check
 - Start the preview server (`.claude/launch.json`, name `ai-training`) and open `http://localhost:8765/v4/index.html`. v4 also works from `file://`.
 - Test at **1280×720** (projector size). Slides should not need scrolling; a few long v2 slides still do (Topic 15 “The loop in action”, Topic 16 “The landscape” and “Which harness?”, Topic 17 “Which one?”).
-- Browsers cache aggressively. Asset links carry `?v=4.6` in v4; bump the number in every v4 page when you change files in `v4/assets/`, or force reload with `fetch(url, {cache: "reload"})` while testing.
+- Browsers cache aggressively. Asset links carry `?v=4.7` in v4; bump the number in every v4 page when you change files in `v4/assets/`, or force reload with `fetch(url, {cache: "reload"})` while testing.
 - Before finishing, load every v4 topic and check: no script errors, every slide has a `.say` note, every `.seq` renders arrows, `data-bts` buttons have a matching `W.BTS` key.
 
 ## Packaging and git

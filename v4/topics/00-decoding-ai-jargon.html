@@ -4,8 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Topic 1 · Decoding the jargon</title>
-<link rel="stylesheet" href="../assets/style.css?v=4.6">
-<link rel="stylesheet" href="../assets/story.css?v=4.6">
+<link rel="stylesheet" href="../assets/style.css?v=4.7">
+<link rel="stylesheet" href="../assets/story.css?v=4.7">
 <style>
   /* ---------- Slide 1: jargon cloud ---------- */
   .hero-head { display: flex; align-items: flex-end; gap: 24px; flex-wrap: wrap; margin-bottom: 18px; }
@@ -209,6 +209,32 @@
     .layer-grid { grid-template-columns: 1fr 1fr; }
   }
   .road .tcard { padding: 3px 10px; margin-bottom: 3px; } .road .tcard b { font-size: 13.5px; } .road .day .theme { margin-bottom: 8px; }
+
+  /* ---------- The lion-makers ---------- */
+  .lion { display: grid; grid-template-columns: 1.15fr 1fr; gap: 18px; align-items: start; }
+  .lion-stage { --c: var(--accent); background: var(--card); border: 1px solid var(--line); border-top: 4px solid var(--c); border-radius: 6px; padding: 14px 18px; transition: border-color .4s; }
+  .lion-top { display: grid; grid-template-columns: 96px 1fr; gap: 14px; align-items: center; min-height: 150px; }
+  .lion-icon { position: relative; font-size: 74px; line-height: 1; text-align: center; }
+  .lion-icon.pop { animation: lionPop .45s ease; }
+  .lion-icon .badge { position: absolute; right: -4px; bottom: -6px; font-size: 34px; }
+  @keyframes lionPop { 0% { transform: scale(.4); opacity: 0; } 70% { transform: scale(1.12); } 100% { transform: scale(1); opacity: 1; } }
+  .lion-step { font-size: 11px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: var(--c); }
+  .lion-top h3 { margin: 2px 0 6px; font-size: 20px; }
+  .lion-top p { margin: 0; font-size: 14.5px; line-height: 1.45; }
+  .lion-parts { display: flex; gap: 6px; min-height: 34px; margin: 10px 0 8px; flex-wrap: wrap; }
+  .lion-parts span { --c: var(--accent); font-size: 12px; font-weight: 700; padding: 4px 9px; border-radius: 999px; border: 1px solid var(--c); background: color-mix(in srgb, var(--c) 16%, transparent); animation: slideIn .3s ease both; }
+  .lion-meter { display: grid; grid-template-columns: 150px 1fr 40px; gap: 10px; align-items: center; font-size: 13px; margin: 6px 0; }
+  .lion-meter .lbar { height: 12px; border-radius: 6px; background: var(--card2); overflow: hidden; }
+  .lion-meter .lbar i { display: block; height: 100%; width: 0; border-radius: 6px; transition: width .6s ease, background .4s; }
+  .lion-meter b { text-align: right; font-size: 12.5px; color: var(--muted); }
+  .lion-list { display: grid; gap: 6px; }
+  .lion-card { --c: var(--accent); display: grid; grid-template-columns: 34px 1fr; gap: 10px; align-items: center; padding: 7px 12px; border-radius: 6px; border: 1px solid var(--line); border-left: 4px solid var(--line); background: var(--card); cursor: pointer; opacity: .35; transition: all .35s; }
+  .lion-card .ic { font-size: 22px; text-align: center; }
+  .lion-card b { display: block; font-size: 14.5px; }
+  .lion-card small { color: var(--muted); font-size: 12px; }
+  .lion-card small em { font-style: normal; font-weight: 800; color: var(--c); }
+  .lion-card.done { opacity: 1; border-left-color: var(--c); }
+  .lion-card.cur { box-shadow: 0 0 0 2px var(--c); transform: translateX(4px); }
 </style>
 </head>
 <body class="deck" data-id="00">
@@ -257,6 +283,33 @@
       <li>Ask everyone to open this page on their own laptop and rate themselves honestly.</li>
       <li>Show of hands: “Who has more ✅ than ❓?” Usually very few people do, and that’s the point.</li>
       <li>We revisit this on the last day. The goal is all green.</li>
+    </ul>
+  </aside>
+</section>
+
+<!-- ======================= 2b. THE LION-MAKERS ======================= -->
+<section class="slide" data-title="The lion-makers">
+  <div class="eyebrow">The story of this course</div>
+  <h2>Four scholars brought a lion to life. We’ll do it more carefully.</h2>
+  <p class="sub">An old fable from the Panchatantra, and the plan for this course. Press <b>→</b> to build the lion one layer at a time.</p>
+  <div class="lion">
+    <div class="lion-stage" id="lionStage">
+      <div class="lion-top"><div class="lion-icon" id="lionIcon"></div><div><div class="lion-step" id="lionStep"></div><h3 id="lionHead"></h3><p id="lionText"></p></div></div>
+      <div class="lion-parts" id="lionParts"></div>
+      <div class="lion-meter"><span>💪 What it can do</span><div class="lbar"><i id="lionCan"></i></div><b id="lionCanN"></b></div>
+      <div class="lion-meter"><span>⚠️ Risk if unchecked</span><div class="lbar"><i id="lionRisk"></i></div><b id="lionRiskN"></b></div>
+      <div class="row" style="margin-top:10px"><button class="btn primary" id="lionNext">Next ›</button><button class="btn ghost" id="lionReset">↺ Reset</button></div>
+    </div>
+    <div class="lion-list" id="lionList"></div>
+  </div>
+  <aside class="notes">
+    <span class="tag time">⏱ 3 min</span><p class="say"><b>🎤 Say</b> There is an old Panchatantra story about four friends who bring a lion back to life. Three are brilliant, one has common sense, and only the one with common sense survives. In this course we build our own lion the same way, bones first, then senses, knowledge, legs and breath, but this time we listen to the fourth friend and put the guardrails in place before it wakes up.</p>
+    <ul>
+      <li>Tell the original story first (stage 0) in your own words. Keep it short and light.</li>
+      <li>Press → slowly. Each stage is one part of the course; the topic numbers are on the right.</li>
+      <li>Pause at stage 5 (the breath of life): “This is where the original story ended.” Point at the red risk bar.</li>
+      <li>Stage 6 is the point of the course: same power, with guardrails, put to good use. Topic 18 is the fourth friend’s topic.</li>
+      <li>The next slide gives these six stages their proper names: the six layers of the car.</li>
     </ul>
   </aside>
 </section>
@@ -437,7 +490,7 @@
   <div class="formula">🧠 Model + 📋 Context + 📚 Knowledge + 🔧 Action + 🤖 Autonomy + 🛡️ Trust = a useful AI system</div>
   <div class="row">
     <button class="btn" data-goto="2">↩ Revisit your self-check</button>
-    <button class="btn" data-goto="8">📖 Open the dictionary</button>
+    <button class="btn" data-goto="9">📖 Open the dictionary</button>
     <a class="btn primary" data-nexttopic>Next →</a>
     
   </div>
@@ -450,8 +503,8 @@
   </aside>
 </section>
 
-<script src="../assets/course.js?v=4.6"></script>
-<script src="../assets/widgets.js?v=4.6"></script>
+<script src="../assets/course.js?v=4.7"></script>
+<script src="../assets/widgets.js?v=4.7"></script>
 <script>
 /* ================= DATA ================= */
 const LAYERS = W.LAYERS, ORDER = W.ORDER, TERMS = W.TERMS;
@@ -862,7 +915,52 @@ const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { c
 })();
 
 /* ===== v3 story ===== */
+/* ================= THE LION-MAKERS ================= */
+(() => {
+  const STAGES = [
+    { icon: "📜", c: "accent", head: "The original story", can: 0, risk: 0,
+      text: "Three learned friends find a lion’s bones. One rebuilds the skeleton, one adds flesh and blood, one breathes life into it. The fourth, who has common sense, warns them and climbs a tree. The lion wakes up, and only the fourth friend walks home. Skill without judgement." },
+    { icon: "🦴", l: "model", head: "Bones: the LLM", part: "🦴 Model", topics: "Topics 3–6", can: 20, risk: 5,
+      text: "A model trained on a huge amount of text. It knows patterns and language, but not our business, and it cannot move on its own." },
+    { icon: "👁️", l: "context", head: "Eyes and ears: context", part: "👁️ Context", topics: "Topics 2, 5, 7–8", can: 35, risk: 10,
+      text: "Instructions, examples and the conversation so far. It can only use what is put in front of it, so what we show it matters." },
+    { icon: "📚", l: "knowledge", head: "Our world: RAG", part: "📚 Knowledge", topics: "Topics 9–11", can: 55, risk: 20,
+      text: "It looks up our policies, claims guides and documents before answering, instead of guessing from memory." },
+    { icon: "🦾", l: "action", head: "Hands and legs: tools and MCP", part: "🦾 Action", topics: "Topics 12–14", can: 75, risk: 50,
+      text: "It can call the rating engine, update a claim or send an email. It can now do real things, so its mistakes are real too." },
+    { icon: "🦁", l: "autonomy", head: "The breath of life: the agent", part: "💨 Autonomy", topics: "Topics 15–17, 19–20", can: 95, risk: 90,
+      text: "It chooses its own next step and keeps going until the job is done. This is where the original story ended." },
+    { icon: "🦁", badge: "🛡️", l: "trust", head: "The fourth friend: guardrails", part: "🛡️ Trust", topics: "Topic 18", can: 95, risk: 15,
+      text: "Permissions, hooks, human approval and evals, in place before the lion wakes up. The same power, now working for us." },
+  ];
+  const stage = $("#lionStage"), list = $("#lionList");
+  list.innerHTML = STAGES.slice(1).map((st, i) => `<div class="lion-card" data-i="${i + 1}" style="--c:${cv(st.l)}"><div class="ic">${st.badge || st.icon}</div><div><b>${st.head}</b><small><em>${W.LAYERS[st.l].name}</em> · ${st.topics}</small></div></div>`).join("");
+  const meterColour = (v) => v >= 70 ? "var(--bad)" : v >= 40 ? "var(--warn)" : "var(--good)";
+  let at = 0;
+  function show(i) {
+    at = i; const st = STAGES[i], c = st.l ? cv(st.l) : "var(--accent)";
+    stage.style.setProperty("--c", c);
+    const icon = $("#lionIcon");
+    icon.innerHTML = st.icon + (st.badge ? `<span class="badge">${st.badge}</span>` : "");
+    icon.classList.remove("pop"); void icon.offsetWidth; icon.classList.add("pop");
+    $("#lionStep").textContent = i ? `Stage ${i} of 6 · ${W.LAYERS[st.l].name}` : "Panchatantra";
+    $("#lionHead").textContent = st.head;
+    $("#lionText").textContent = st.text;
+    $("#lionParts").innerHTML = STAGES.slice(1, i + 1).map((s) => `<span style="--c:${cv(s.l)}">${s.part}</span>`).join("");
+    $("#lionCan").style.width = st.can + "%"; $("#lionCan").style.background = "var(--accent)"; $("#lionCanN").textContent = i ? st.can + "%" : "";
+    $("#lionRisk").style.width = st.risk + "%"; $("#lionRisk").style.background = meterColour(st.risk); $("#lionRiskN").textContent = i ? st.risk + "%" : "";
+    W.$$(".lion-card", list).forEach((d) => { const k = +d.dataset.i; d.classList.toggle("done", k <= i); d.classList.toggle("cur", k === i); });
+    $("#lionNext").disabled = i === STAGES.length - 1;
+  }
+  W.$$(".lion-card", list).forEach((d) => (d.onclick = () => show(+d.dataset.i)));
+  $("#lionNext").onclick = () => at < STAGES.length - 1 && show(at + 1);
+  $("#lionReset").onclick = () => show(0);
+  show(0);
+  const mine = (e) => e.detail.slide.dataset.title === "The lion-makers";
+  document.addEventListener("slide:enter", (e) => { if (mine(e)) show(e.detail.back ? STAGES.length - 1 : 0); });
+  document.addEventListener("slide:advance", (e) => { if (mine(e) && at < STAGES.length - 1) { e.preventDefault(); show(at + 1); } });
+})();
 </script>
-<script src="../assets/deck.js?v=4.6"></script>
+<script src="../assets/deck.js?v=4.7"></script>
 </body>
 </html>

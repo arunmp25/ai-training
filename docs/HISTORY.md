@@ -105,6 +105,11 @@ The user asked for relatable or funny references only, no Day labels (sessions o
 - The user wants three sessions only, keeping the optional idea. The separate “Optional” group is gone: Session 3 now holds Topics 15–20, with 19 (AI agents) and 20 (agent design patterns) marked optional.
 - `course.js` gives optional topics `opt: 1`. The course page shows “4 TOPICS + 2 OPTIONAL” for Session 3 (with separate minute totals) and “TOPIC 19 · OPTIONAL” on the cards; the Topic 1 roadmap is back to three columns with the same label. Eyebrows read “Session 3 · Topic 19 · Optional”, and the deck bar now says Session 3. Assets `?v=4.6`. Speaker notes at the end of Topic 1’s roadmap, Topic 18, Topic 19 and Topic 20 updated to match.
 
+### The lion-makers (Topic 1, v4, 23 Nov 2026)
+- The user asked for the Panchatantra fable of the four scholars who brought a lion to life, adapted as the storyline of the course: the LLM, then knowledge through RAG, hands and legs through tools, and guardrails before it “eats us”, so the lion is put to good use. The user approved the plan first and chose all six stages and the position before “The big picture”.
+- New slide 3 in Topic 1, “The lion-makers”: the original story (stage 0), then six stages on → (bones = Model, eyes and ears = Context, our world = Knowledge/RAG, hands and legs = Action/tools and MCP, the breath of life = Autonomy, the fourth friend = Trust/guardrails), each with its topic numbers. Two meters, “What it can do” and “Risk if unchecked”; risk turns red at the agent stage and drops to green when the guardrails arrive. Narrated, no dialogue.
+- Later Topic 1 slides shift by one: the jargon dictionary is now `#9` (course page, Topic 18 wrap-up and the Topic 1 takeaways button updated). Topic 1 minutes 14 → 16. Assets `?v=4.7`. v4 now has 241 slides.
+
 ## Known loose ends
 - These slides still scroll slightly at 1280×720: Topic 15 “The loop in action” (+32px), Topic 16 “The landscape” (+198px) and “Which harness?” (+14px), Topic 17 “Which one?” (+121px). The jargon dictionary scrolls by design.
 - Four sequence diagrams scroll inside their box at projector size (RAG, tool retry, MCP, agent loop). The user was offered tighter rows; no answer yet.
