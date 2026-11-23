@@ -4,9 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Topic 5 · The context window</title>
-<link rel="stylesheet" href="../assets/style.css?v=4.4">
-<link rel="stylesheet" href="../assets/widgets.css?v=4.4">
-<link rel="stylesheet" href="../assets/story.css?v=4.4">
+<link rel="stylesheet" href="../assets/style.css?v=4.5">
+<link rel="stylesheet" href="../assets/widgets.css?v=4.5">
+<link rel="stylesheet" href="../assets/story.css?v=4.5">
 <style>
   .win { display: flex; gap: 4px; padding: 8px; border: 2px solid var(--text); border-radius: 6px; height: 70px; position: relative; }
   .win .m { height: 100%; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; overflow: hidden;
@@ -144,8 +144,8 @@
   <aside class="notes"><span class="tag time">⏱ 30 sec</span><p class="say"><b>🎤 Say</b> The desk is limited and shared, and every token on it costs money. Different models have different desks and different prices, so next: how to choose a model.</p><ul><li>Bridge: “Bigger desk, smarter model, higher bill. Which model should you actually use?”</li></ul></aside>
 </section>
 
-<script src="../assets/course.js?v=4.4"></script>
-<script src="../assets/widgets.js?v=4.4"></script>
+<script src="../assets/course.js?v=4.5"></script>
+<script src="../assets/widgets.js?v=4.5"></script>
 <script>
 const { $, $$ } = W;
 
@@ -276,6 +276,6 @@ W.BTS.stateless = {
 };
 </script>
 <script>W.seq(document.getElementById("seqResend"), {"actors": [{"id": "user", "name": "You", "icon": "🙋", "c": "accent"}, {"id": "app", "name": "Chat app", "icon": "💬", "c": "autonomy"}, {"id": "model", "name": "Model API", "icon": "🧠", "c": "model"}], "steps": [{"sep": "Turn 1"}, {"from": "user", "to": "app", "label": "“My policy is MTR-55120”"}, {"from": "app", "to": "model", "label": "messages: [1 message]", "note": "Small request: system prompt plus one message.", "code": "\"messages\": [\n  { \"role\": \"user\", \"content\": \"My policy is MTR-55120\" }\n]   // ≈ 300 tokens with the system prompt"}, {"from": "model", "to": "app", "label": "“Thanks, how can I help?”", "ret": true}, {"sep": "Turn 2"}, {"from": "user", "to": "app", "label": "“Add my son as a driver”"}, {"from": "app", "to": "model", "label": "messages: [3 messages]", "note": "The app sends turn 1 again, plus the new message. The model has no memory of turn 1 otherwise.", "code": "\"messages\": [\n  { \"role\": \"user\", \"content\": \"My policy is MTR-55120\" },\n  { \"role\": \"assistant\", \"content\": \"Thanks, how can I help?\" },\n  { \"role\": \"user\", \"content\": \"Add my son as a driver\" }\n]   // ≈ 450 tokens"}, {"from": "model", "to": "app", "label": "“How old is he?”", "ret": true}, {"sep": "Turn 313"}, {"from": "app", "to": "app", "label": "Window full: drop oldest", "note": "Hundreds of turns later the history no longer fits. The app (not the model) trims the oldest messages, including the policy number.", "code": "// 214,000 tokens > 200,000 limit\n\"messages\": [\n  // messages 1-190 dropped, including \"My policy is MTR-55120\"\n  { \"role\": \"user\", \"content\": \"So what was my policy number again?\" }\n]"}, {"from": "model", "to": "app", "label": "“Could you tell me your policy number?”", "note": "This is the forgetful chat. Nothing broke: message 1 was simply not in the request any more.", "ret": true}], "frames": []});</script>
-<script src="../assets/deck.js?v=4.4"></script>
+<script src="../assets/deck.js?v=4.5"></script>
 </body>
 </html>

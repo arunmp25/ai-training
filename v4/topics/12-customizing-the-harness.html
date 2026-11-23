@@ -4,9 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Topic 17 · Customising the harness</title>
-<link rel="stylesheet" href="../assets/style.css?v=4.4">
-<link rel="stylesheet" href="../assets/widgets.css?v=4.4">
-<link rel="stylesheet" href="../assets/story.css?v=4.4">
+<link rel="stylesheet" href="../assets/style.css?v=4.5">
+<link rel="stylesheet" href="../assets/widgets.css?v=4.5">
+<link rel="stylesheet" href="../assets/story.css?v=4.5">
 <style>
   .explorer { display: grid; grid-template-columns: 300px 1fr; gap: 18px; align-items: start; }
   .tree { background: var(--card); border: 1px solid var(--line); border-radius: 6px; padding: 12px 8px; color: var(--muted); }
@@ -26,6 +26,15 @@
   .gate { display: grid; gap: 8px; }
   .gate div { padding: 10px 12px; border-radius: 6px; border: 1px solid var(--line); background: var(--card); font-size: 14px; animation: slideIn .3s ease both; }
   .gate .ok { border-color: var(--good); } .gate .stop { border-color: var(--bad); background: color-mix(in srgb, var(--bad) 10%, var(--card)); } .gate .ask { border-color: var(--warn); }
+  .afile { display: grid; grid-template-columns: 1.25fr 1fr; gap: 18px; align-items: start; }
+  .afile-code { background: var(--card2); border: 1px solid var(--line); border-radius: 6px; padding: 8px 6px; max-height: 470px; overflow-y: auto; font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-size: 12px; line-height: 1.45; }
+  .afile-code .sec { white-space: pre-wrap; padding: 4px 8px; border-left: 3px solid transparent; border-radius: 4px; cursor: pointer; opacity: .55; transition: all .25s; }
+  .afile-code .sec:hover { opacity: .85; }
+  .afile-code .sec.on { opacity: 1; border-left-color: var(--brand); background: color-mix(in srgb, var(--brand) 9%, transparent); }
+  .afile-code .sec b.h { color: var(--accent); }
+  .afile-side .afs-step { font-size: 12px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+  .afile-side h3 { margin: 4px 0 8px; font-size: 20px; }
+  .afile-side p { margin: 0 0 8px; font-size: 15px; }
 </style>
 </head>
 <body class="deck" data-id="12">
@@ -64,6 +73,20 @@
     <div class="stack-v"><div id="fileExpl" class="callout"></div><pre class="code" id="fileBody" style="max-height:360px"></pre></div>
   </div>
   <aside class="notes"><span class="tag time">⏱ 3 min</span><p class="say"><b>🎤 Say</b> It is all plain files in your project. Commit them and the whole team shares the same setup.</p><ul><li>Point out that these are plain text and markdown. Non-developers can write skills and instruction files too.</li><li>There are also personal versions in your home folder (<code>~/.claude/</code>) that apply to all your projects.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="AGENTS.md up close">
+  <div class="eyebrow">Worked example</div>
+  <h2>A complete AGENTS.md for a Guidewire repo</h2>
+  <p class="sub">The instruction file for HarborShield’s PolicyCenter configuration. Press → or click a section to see why it’s there.</p>
+  <div class="afile">
+    <div class="afile-code" id="agentsCode"></div>
+    <div class="stack-v afile-side">
+      <div class="card"><div class="afs-step" id="agentsStep"></div><h3 id="agentsHead"></h3><div id="agentsWhy"></div></div>
+      <div class="callout" style="font-size:14px"><b>One file, every harness.</b> Codex, Cursor, GitHub Copilot and others read <code>AGENTS.md</code>. Claude Code reads <code>CLAUDE.md</code>, so make that file a single line, <code>@AGENTS.md</code>, plus anything Claude-only.</div>
+    </div>
+  </div>
+  <aside class="notes"><span class="tag time">⏱ 4 min</span><p class="say"><b>🎤 Say</b> This is a real-sized instruction file for a Guidewire PolicyCenter repository. Each section answers a question a new developer would otherwise ask on day one. Notice what is not here: no Gosu tutorial and no copy of the Guidewire docs, because this file is loaded into every session.</p><ul><li>Step through with → or the clicker; each press highlights the next section.</li><li>The commands are illustrative. Teams should paste in the exact build and test commands their project uses.</li><li>Point out the rate-table rule: it is written here as a request, and the next slides show how to enforce it with a deny rule.</li><li>Monorepos can have an AGENTS.md in a subfolder too; the nearest file to the code being changed takes priority.</li><li>Ask the room: “What would you add for your own team?”</li></ul></aside>
 </section>
 
 <section class="slide" data-title="Skills up close">
@@ -132,10 +155,10 @@
   <h2>Side by side</h2>
   <table class="cmp">
     <tr><th></th><th>Loaded when</th><th>Guaranteed?</th><th>Best for</th><th>Example</th></tr>
-    <tr><td><b>📌 Instruction file</b></td><td>Every session, always</td><td>No (guidance)</td><td>Short, always-true project facts</td><td>“Use pnpm. Tests: pnpm test:unit”</td></tr>
-    <tr><td><b>⚡ Slash command</b></td><td>When you type it</td><td>No</td><td>Prompts you repeat often</td><td><code>/release-notes</code></td></tr>
-    <tr><td><b>📚 Skill</b></td><td>When the task matches</td><td>No</td><td>Procedures, templates, domain know-how</td><td>Brand-voice writing, building decks</td></tr>
-    <tr><td><b>👥 Subagent</b></td><td>When delegated</td><td>No</td><td>Isolated research, specialists, parallel work</td><td>Security reviewer, researcher</td></tr>
+    <tr><td><b>📌 Instruction file</b></td><td>Every session, always</td><td>No (guidance)</td><td>Short, always-true project facts</td><td>“Compile: ./gwb compile. Never edit base files.”</td></tr>
+    <tr><td><b>⚡ Slash command</b></td><td>When you type it</td><td>No</td><td>Prompts you repeat often</td><td><code>/story-to-gunit</code></td></tr>
+    <tr><td><b>📚 Skill</b></td><td>When the task matches</td><td>No</td><td>Procedures, templates, domain know-how</td><td>Adding a coverage, writing release notes</td></tr>
+    <tr><td><b>👥 Subagent</b></td><td>When delegated</td><td>No</td><td>Isolated research, specialists, parallel work</td><td>Gosu reviewer, researcher</td></tr>
     <tr><td><b>🪝 Hook</b></td><td>On an event, every time</td><td><b>Yes</b></td><td>Must-always-happen rules and automation</td><td>Format after edit; block <code>rm -rf</code></td></tr>
     <tr><td><b>🔐 Permissions</b></td><td>Before every tool call</td><td><b>Yes</b></td><td>What may run without asking</td><td>Deny reading <code>.env</code></td></tr>
     <tr><td><b>🔌 MCP server</b></td><td>Session start (tools listed)</td><td>n/a</td><td>Connecting external systems</td><td>Jira, GitHub, a database</td></tr>
@@ -179,8 +202,8 @@
   <aside class="notes"><span class="tag time">⏱ 30 sec</span><p class="say"><b>🎤 Say</b> Make the agent yours with files, and make the important rules enforced, not just written down.</p></aside>
 </section>
 
-<script src="../assets/course.js?v=4.4"></script>
-<script src="../assets/widgets.js?v=4.4"></script>
+<script src="../assets/course.js?v=4.5"></script>
+<script src="../assets/widgets.js?v=4.5"></script>
 <script>
 const { $, $$, cv } = W;
 
@@ -197,25 +220,84 @@ W.clickInfo($("#kit"), [
 
 /* ---- file explorer ---- */
 const FILES = [
-  { p: "my-project/", d: 0, dir: 1 },
-  { p: "CLAUDE.md", d: 1, x: "📌 <b>Instruction file.</b> Loaded at the start of every session. Keep it short and always-true.",
-    b: "# Acme Billing Service\n\n## Commands\n- Install: pnpm install\n- Test: pnpm test:unit\n- Lint: pnpm lint\n\n## Conventions\n- TypeScript strict mode; no `any`\n- Never edit files in /generated\n- Money is stored in cents (integers)\n\n## Before finishing\n- Run tests and lint; both must pass" },
-  { p: ".mcp.json", d: 1, x: "🔌 <b>MCP servers</b> shared with the team: which external systems this project’s agent can reach.",
-    b: "{\n  \"mcpServers\": {\n    \"jira\":   { \"type\": \"http\", \"url\": \"https://mcp.example.com/jira\" },\n    \"db\":     { \"command\": \"npx\", \"args\": [\"-y\", \"some-postgres-mcp\", \"--read-only\"] }\n  }\n}" },
-  { p: ".claude/", d: 1, dir: 1 },
-  { p: "settings.json", d: 2, x: "🔐🪝 <b>Permissions and hooks.</b> Enforced by the harness, not left to the model.",
-    b: "{\n  \"permissions\": {\n    \"allow\": [\"Bash(pnpm test:*)\", \"Bash(pnpm lint)\"],\n    \"deny\":  [\"Read(./.env)\", \"Bash(rm -rf:*)\"]\n  },\n  \"hooks\": {\n    \"PostToolUse\": [{\n      \"matcher\": \"Edit|Write\",\n      \"hooks\": [{ \"type\": \"command\", \"command\": \".claude/hooks/format.sh\" }]\n    }]\n  }\n}" },
-  { p: "commands/", d: 2, dir: 1 },
-  { p: "release-notes.md", d: 3, x: "⚡ <b>Slash command.</b> Type <code>/release-notes v2.4</code> and this prompt runs.",
-    b: "Write release notes for version $ARGUMENTS.\n\n1. List merged PRs since the last tag (use git log).\n2. Group into Features, Fixes, Internal.\n3. Plain English, one line each, customer-facing tone.\n4. Save to CHANGELOG.md under a new heading." },
-  { p: "skills/", d: 2, dir: 1 },
-  { p: "brand-voice/", d: 3, dir: 1 },
-  { p: "SKILL.md", d: 4, x: "📚 <b>Skill.</b> Only the name and description sit in context. The body (and the template next to it) load when someone asks for customer-facing copy.",
-    b: "---\nname: brand-voice\ndescription: Write customer-facing copy (emails, release\n  notes, web text) in Acme's brand voice. Use whenever\n  text will be read by customers.\n---\n\n# Acme brand voice\n- Warm, direct, no jargon; short sentences\n- Say \"we\", never \"the company\"\n- Never promise dates we haven't confirmed\n\nFor press releases, start from templates/press-release.md" },
-  { p: "templates/press-release.md", d: 4, x: "📄 A <b>supporting file</b> inside the skill folder, loaded only if the skill needs it.", b: "# [Headline: what's new, in plain words]\n\n**[City, date]**: [One-sentence summary]\n\n[Why it matters to customers: 2-3 sentences]\n\n> \"[Quote from a named person]\"\n\n[Availability and how to get it]" },
-  { p: "agents/", d: 2, dir: 1 },
-  { p: "security-reviewer.md", d: 3, x: "👥 <b>Subagent.</b> A specialist with its own instructions, a restricted set of tools (read-only here) and a fresh context.",
-    b: "---\nname: security-reviewer\ndescription: Reviews code changes for security issues.\n  Use after significant changes to auth, payments or\n  user data.\ntools: Read, Grep, Glob\n---\n\nYou are a meticulous application-security reviewer.\nCheck for: injection, secrets in code, missing auth\nchecks, unsafe deserialisation, logging of personal data.\nReport findings by severity with file:line references.\nDo not modify files." },
+  {
+   "p": "harborshield-policycenter/",
+   "d": 0,
+   "dir": 1
+  },
+  {
+   "p": "AGENTS.md",
+   "d": 1,
+   "x": "📌 <b>Instruction file</b> for every harness (Codex, Cursor, Copilot and others). Loaded at the start of every session. The full file is on the next slide.",
+   "b": "# AGENTS.md · harborshield-policycenter\n\nHarborShield's Guidewire PolicyCenter configuration\n(Personal Auto and Homeowners). Gosu, Guidewire Cloud.\n\n## Build and test\n- Compile:    ./gwb compile\n- Unit tests: ./gwb test -Dtest=hs.*   (GUnit)\n\n## Never\n- Never edit base (out-of-the-box) files\n- Never change rate tables or rating worksheets\n\n…  (full version on the next slide)"
+  },
+  {
+   "p": "CLAUDE.md",
+   "d": 1,
+   "x": "📌 <b>Claude Code’s instruction file.</b> It imports AGENTS.md so the team keeps one set of rules, then adds anything Claude-only.",
+   "b": "@AGENTS.md\n\n## Claude Code only\n- Use the gosu-reviewer subagent before finishing\n  any change under gsrc/hs/rating/\n- Use the add-coverage skill for new coverages"
+  },
+  {
+   "p": ".mcp.json",
+   "d": 1,
+   "x": "🔌 <b>MCP servers</b> shared with the team: which external systems this project’s agent can reach.",
+   "b": "{\n  \"mcpServers\": {\n    \"jira\":    { \"type\": \"http\", \"url\": \"https://mcp.example.com/jira\" },\n    \"pc-dev\":  { \"command\": \"npx\",\n                 \"args\": [\"-y\", \"some-sql-mcp\", \"--read-only\",\n                          \"--db\", \"pc_dev\"] }\n  }\n}"
+  },
+  {
+   "p": ".claude/",
+   "d": 1,
+   "dir": 1
+  },
+  {
+   "p": "settings.json",
+   "d": 2,
+   "x": "🔐🪝 <b>Permissions and hooks.</b> Enforced by the harness, not left to the model. Here the rate-table rule from AGENTS.md becomes a hard deny.",
+   "b": "{\n  \"permissions\": {\n    \"allow\": [\"Bash(./gwb compile)\", \"Bash(./gwb test:*)\"],\n    \"deny\":  [\"Edit(**/rating/ratetables/**)\",\n              \"Read(./.env)\", \"Bash(git push:*)\"]\n  },\n  \"hooks\": {\n    \"PostToolUse\": [{\n      \"matcher\": \"Edit|Write\",\n      \"hooks\": [{ \"type\": \"command\",\n                   \"command\": \".claude/hooks/check-base-files.sh\" }]\n    }]\n  }\n}"
+  },
+  {
+   "p": "commands/",
+   "d": 2,
+   "dir": 1
+  },
+  {
+   "p": "story-to-gunit.md",
+   "d": 3,
+   "x": "⚡ <b>Slash command.</b> Type <code>/story-to-gunit PC-1482</code> and this prompt runs.",
+   "b": "Write GUnit tests for Jira story $ARGUMENTS.\n\n1. Read the story and its acceptance criteria (Jira MCP).\n2. One test per acceptance criterion, named after it.\n3. Build data with hs.test.builders; no real customer data.\n4. Put tests in gtest/hs/ next to the area under test.\n5. Run them and report which pass and which fail."
+  },
+  {
+   "p": "skills/",
+   "d": 2,
+   "dir": 1
+  },
+  {
+   "p": "add-coverage/",
+   "d": 3,
+   "dir": 1
+  },
+  {
+   "p": "SKILL.md",
+   "d": 4,
+   "x": "📚 <b>Skill.</b> Only the name and description sit in context. The body (and the checklist next to it) load when someone asks to add a coverage.",
+   "b": "---\nname: add-coverage\ndescription: Add a new coverage, term or option to a\n  PolicyCenter product line. Use whenever a task adds\n  or changes a coverage in the product model.\n---\n\n# Adding a coverage\n1. Add the coverage pattern in the product model\n2. Add display keys for every label (en_IN)\n3. Add availability rules; never hard-code states\n4. Add the rating hook in hs.rating, behind a flag\n5. GUnit: availability, defaults and the quote\n\nWork through checklist.md before you finish."
+  },
+  {
+   "p": "checklist.md",
+   "d": 4,
+   "x": "📄 A <b>supporting file</b> inside the skill folder, loaded only if the skill needs it.",
+   "b": "# New coverage checklist\n- [ ] Coverage pattern and terms in product model\n- [ ] Display keys added; no hard-coded labels\n- [ ] Availability by line, state and effective date\n- [ ] Shows on the Coverages screen (PCF)\n- [ ] Rating: priced, or explicitly ₹0 with a note\n- [ ] Forms / documents updated or ticket raised\n- [ ] GUnit tests pass; golden quote unchanged"
+  },
+  {
+   "p": "agents/",
+   "d": 2,
+   "dir": 1
+  },
+  {
+   "p": "gosu-reviewer.md",
+   "d": 3,
+   "x": "👥 <b>Subagent.</b> A specialist with its own instructions, a restricted set of tools (read-only here) and a fresh context.",
+   "b": "---\nname: gosu-reviewer\ndescription: Reviews Gosu and PCF changes for upgrade\n  safety and house rules. Use before finishing any\n  change in gsrc/ or config/.\ntools: Read, Grep, Glob\n---\n\nYou are a senior Guidewire reviewer. Check for:\n- edits to base files instead of extensions\n- hard-coded labels instead of display keys\n- Double/float used for money\n- raw SQL instead of the Query API\n- customer data in logs or tests\nReport findings by severity with file:line.\nDo not modify files."
+  }
 ];
 $("#tree").innerHTML = FILES.map((f, i) => `<div data-i="${i}" style="padding-left:${8 + f.d * 18}px">${f.dir ? "📁" : "📄"} ${f.p}</div>`).join("");
 function showFile(i) {
@@ -225,6 +307,86 @@ function showFile(i) {
 }
 $$("#tree div").forEach((d) => (d.onclick = () => showFile(+d.dataset.i)));
 showFile(1);
+
+/* ---- AGENTS.md worked example ---- */
+const AGENTS = [
+  { h: "Project overview", t: `# AGENTS.md · harborshield-policycenter
+
+HarborShield's Guidewire PolicyCenter configuration for
+the Personal Auto and Homeowners lines. Gosu code,
+built in Guidewire Studio, released to Guidewire Cloud.`,
+    why: "<p>Two or three lines that tell the agent what this repo is. Without them it guesses from file names.</p><p>Name the product, the lines of business and the platform, because they change what a “correct” answer looks like.</p>" },
+  { h: "Build and test", t: `## Build and test
+- Compile:     ./gwb compile
+- Run server:  ./gwb runServer   (http://localhost:8180/pc)
+- Unit tests:  ./gwb test -Dtest=hs.*   (GUnit)
+- Compile and the tests for the area you changed
+  must pass before you say you are done.`,
+    why: "<p>The single most useful section. An agent that knows the exact commands can check its own work instead of handing you code that does not compile.</p><p>Copy the commands your team really uses. Wrong commands are worse than none.</p>" },
+  { h: "Where things live", t: `## Where things live
+- Our Gosu code:     modules/configuration/gsrc/hs/
+- Entity extensions: config/extensions/entity/*.etx
+- Typelists:         config/extensions/typelist/*.ttx
+- Screens (PCF):     config/web/pcf/
+- Display keys:      config/locale/display_en_IN.properties
+- Product model:     config/resources/productmodel/
+- GUnit tests:       modules/configuration/gtest/hs/`,
+    why: "<p>A map saves the agent dozens of searches (and tokens) at the start of every task.</p><p>Guidewire projects are large; pointing at the handful of folders your team actually changes keeps the agent out of the rest.</p>" },
+  { h: "Gosu conventions", t: `## Gosu conventions
+- All our code is in package hs.*
+- Add behaviour to entities with enhancements (.gsx),
+  not with logic inside PCF files
+- Every user-facing string is a display key.
+  No hard-coded text in PCFs.
+- Money is MonetaryAmount, never Double or float
+- Query with gw.api.database.Query, never raw SQL
+- Write data inside Transaction.runWithNewBundle`,
+    why: "<p>The house style a reviewer would otherwise correct by hand. Each line is short, specific and checkable.</p><p>“Write clean code” would be useless here. “Money is MonetaryAmount” is a rule the agent can follow.</p>" },
+  { h: "Never do this", t: `## Never
+- Never edit base (out-of-the-box) files. Extend them
+  with .etx / .ttx or override in configuration, so
+  upgrades stay safe.
+- Never change rate tables or rating worksheets.
+  Rates change only through the pricing committee.
+- Never put real customer names, licence numbers or
+  addresses in code, logs or test data.
+- No new libraries or plugins without asking.`,
+    why: "<p>The expensive mistakes. Editing base files breaks the next Guidewire upgrade; changing rates without approval is a compliance issue.</p><p>But this is still only a <b>request</b>. Rules that must never be broken also belong in a permission or hook (coming up next).</p>" },
+  { h: "Testing", t: `## Testing
+- Every new rule or change gets a GUnit test in
+  gtest/hs/, next to the area you changed
+- Build test data with our builders in hs.test.builders
+  (PolicyPeriodBuilder, DriverBuilder), not by hand
+- Golden quote must not change: policy MTR-55120 is
+  ₹18,400, and ₹44,750 with an 18-year-old driver added`,
+    why: "<p>Tells the agent how to prove its change works, using the team’s own helpers rather than inventing new ones.</p><p>The golden quote is a quick regression check: if the price moves, something in rating changed that should not have.</p>" },
+  { h: "Before you finish", t: `## Before you finish
+- Compile passes and the GUnit tests you touched pass
+- If you changed an .etx file, say so: it needs a
+  database upgrade step in the release notes
+- Keep diffs small. Summarise what changed and why,
+  in plain English, for the reviewer.`,
+    why: "<p>A short definition of done. It turns “I think it works” into a checklist the agent runs through every time.</p><p>The .etx line is Guidewire-specific knowledge a new joiner (human or AI) would not know to mention.</p>" },
+];
+let agentsAt = 0;
+$("#agentsCode").innerHTML = AGENTS.map((a, i) => `<div class="sec" data-i="${i}">${a.t.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/^(#+ .*)$/gm, '<b class="h">$1</b>')}</div>`).join("");
+function showAgents(i) {
+  agentsAt = i;
+  $$("#agentsCode .sec").forEach((d) => d.classList.toggle("on", +d.dataset.i === i));
+  const el = $(`#agentsCode .sec[data-i="${i}"]`), box = $("#agentsCode");
+  box.scrollTo({ top: Math.max(0, el.offsetTop - box.offsetTop - 40), behavior: "smooth" });
+  $("#agentsStep").textContent = `Section ${i + 1} of ${AGENTS.length}`;
+  $("#agentsHead").textContent = AGENTS[i].h;
+  $("#agentsWhy").innerHTML = AGENTS[i].why;
+}
+$$("#agentsCode .sec").forEach((d) => (d.onclick = () => showAgents(+d.dataset.i)));
+showAgents(0);
+document.addEventListener("slide:enter", (e) => { if (e.detail.slide.dataset.title === "AGENTS.md up close" && !e.detail.back) showAgents(0); });
+document.addEventListener("slide:advance", (e) => {
+  if (e.detail.slide.dataset.title !== "AGENTS.md up close") return;
+  if (agentsAt < AGENTS.length - 1) { e.preventDefault(); showAgents(agentsAt + 1); }
+});
+
 
 /* ---- skills progressive disclosure ---- */
 const SKILLS = [
@@ -335,6 +497,6 @@ description: How to release a new rating engine version. Use when asked to cut a
 };
 </script>
 <script>W.seq(document.getElementById("seqHook"), {"actors": [{"id": "model", "name": "Model", "icon": "🧠", "c": "model"}, {"id": "app", "name": "Harness", "icon": "🧰", "c": "autonomy"}, {"id": "hook", "name": "Hooks + rules", "icon": "🪝", "c": "trust"}, {"id": "user", "name": "Developer", "icon": "👩‍💻", "c": "accent"}, {"id": "tools", "name": "Files + terminal", "icon": "🛠️", "c": "action"}], "steps": [{"from": "model", "to": "app", "label": "tool_use: Edit rates.json"}, {"from": "app", "to": "hook", "label": "Check settings.json rules", "note": "Deny rules win, then ask, then allow.", "code": "\"permissions\": {\n  \"allow\": [\"Read\", \"Bash(pytest:*)\"],\n  \"ask\":   [\"Edit(pricing/**)\"],\n  \"deny\":  [\"Edit(rates/*.json)\", \"Bash(git push:*)\"] }"}, {"from": "hook", "to": "app", "label": "deny: rates/*.json", "ret": true}, {"from": "app", "to": "model", "label": "tool_result: blocked", "note": "The model is told why, and can change its plan.", "code": "{ \"type\": \"tool_result\", \"is_error\": true,\n  \"content\": \"Permission denied: editing rates/*.json is not allowed in this project.\" }"}, {"from": "model", "to": "app", "label": "tool_use: Edit pricing/bands.py", "ret": true}, {"from": "app", "to": "hook", "label": "PreToolUse hook", "note": "Your own script runs before the tool. It can block, allow or change the call.", "code": "\"hooks\": { \"PreToolUse\": [{ \"matcher\": \"Edit\",\n  \"hooks\": [{ \"type\": \"command\", \"command\": \"scripts/check_no_secrets.sh\" }] }] }"}, {"from": "hook", "to": "app", "label": "exit 0 (ok), rule says ask", "ret": true}, {"from": "app", "to": "user", "label": "“Allow edit to bands.py?”", "note": "Rules marked ask stop and wait for a person."}, {"from": "user", "to": "app", "label": "Approve", "ret": true}, {"from": "app", "to": "tools", "label": "Apply the edit"}, {"from": "app", "to": "hook", "label": "PostToolUse: run formatter", "note": "Runs after the tool, every time, for example to format and lint the file."}, {"from": "app", "to": "model", "label": "tool_result: edited"}], "frames": []});</script>
-<script src="../assets/deck.js?v=4.4"></script>
+<script src="../assets/deck.js?v=4.5"></script>
 </body>
 </html>

@@ -4,9 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Topic 16 · Agent harnesses</title>
-<link rel="stylesheet" href="../assets/style.css?v=4.4">
-<link rel="stylesheet" href="../assets/widgets.css?v=4.4">
-<link rel="stylesheet" href="../assets/story.css?v=4.4">
+<link rel="stylesheet" href="../assets/style.css?v=4.5">
+<link rel="stylesheet" href="../assets/widgets.css?v=4.5">
+<link rel="stylesheet" href="../assets/story.css?v=4.5">
 <style>
   .feat { display: flex; align-items: center; gap: 12px; padding: 10px 14px; border-radius: 6px; background: var(--card); border: 1px solid var(--line); margin-bottom: 8px; }
   .feat b { flex: 1; } .feat small { display: block; color: var(--muted); font-weight: 500; }
@@ -18,6 +18,12 @@
   .hcard b { font-size: 16px; } .hcard .who { font-size: 12px; color: var(--muted); font-weight: 700; } .hcard p { font-size: 12.5px; margin: 4px 0 0; line-height: 1.35; }
   .engine-car { display: grid; grid-template-columns: 1fr auto 1fr; gap: 18px; align-items: center; margin: 10px 0 18px; }
   .engine-car .card { text-align: center; } .engine-car .e { font-size: 50px; }
+  .h3col { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  .h3col .card { padding: 14px 16px; display: flex; flex-direction: column; gap: 8px; font-size: 14px; }
+  .h3col h4 { margin: 0; font-size: 17px; }
+  .h3col .lbl { font-size: 11px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin-bottom: 2px; }
+  .h3col ol { margin: 0; padding-left: 18px; } .h3col ol li { margin: 2px 0; }
+  .h3col .start { font-family: ui-monospace, Menlo, monospace; font-size: 12.5px; background: var(--card2); border: 1px solid var(--line); border-radius: 6px; padding: 6px 8px; }
 </style>
 </head>
 <body class="deck" data-id="11">
@@ -94,6 +100,26 @@
   <aside class="notes"><span class="tag time">⏱ 3 min</span><p class="say"><b>🎤 Say</b> A coding harness fixing a bug, step by step. Each step is a harness feature at work.</p><ul><li>If you can, follow this with a <b>live demo</b> of a real harness doing a small task, pointing out each feature as it appears.</li></ul></aside>
 </section>
 
+<section class="slide" data-title="One task, three harnesses">
+  <div class="eyebrow">Worked example</div>
+  <h2>One Guidewire bug, three kinds of harness</h2>
+  <p class="sub">After an age-band change, the GUnit test <code>YoungDriverSurchargeTest</code> fails. The model could be the same in all three; the harness changes how you work with it.</p>
+  <div class="h3col"><div class="card"><h4>⌨️ Terminal agent</h4><div class="muted" style="font-size:13px">e.g. Claude Code, Codex CLI</div>
+      <div><div class="lbl">You start it</div><div class="start">&gt; YoungDriverSurchargeTest fails since the age-band change. Fix it.</div></div>
+      <div><div class="lbl">It works</div><ol><li>Reads AGENTS.md, runs <code>./gwb test</code> to see the failure</li><li>Finds the band moved from &lt;21 to &lt;=21 in <code>hs.rating</code></li><li>Fixes it, re-runs the tests, asks before each edit</li></ol></div>
+      <div><div class="lbl">You get back</div>A fixed file on your machine and a summary. You review the diff and commit.</div>
+      <div class="callout" style="font-size:13px;padding:8px 12px;margin-top:auto"><b>Good when:</b> you want to watch and steer, step by step.</div></div><div class="card"><h4>🧑‍💻 IDE agent</h4><div class="muted" style="font-size:13px">e.g. GitHub Copilot or JetBrains AI in Guidewire Studio (IntelliJ)</div>
+      <div><div class="lbl">You start it</div><div class="start">Select the failing test → “Fix this test”</div></div>
+      <div><div class="lbl">It works</div><ol><li>Uses the open file and the test output in the editor</li><li>Suggests a change inline, with the reason</li><li>You accept, tweak or reject it in the editor</li></ol></div>
+      <div><div class="lbl">You get back</div>An inline edit in the file you’re already working on.</div>
+      <div class="callout" style="font-size:13px;padding:8px 12px;margin-top:auto"><b>Good when:</b> it’s a small change and you’re already in Studio.</div></div><div class="card"><h4>☁️ Cloud agent</h4><div class="muted" style="font-size:13px">e.g. Copilot coding agent, Codex cloud, Claude Code on the web</div>
+      <div><div class="lbl">You start it</div><div class="start">Assign Jira PC-1490 or a GitHub issue to the agent</div></div>
+      <div><div class="lbl">It works</div><ol><li>Clones the repo into a sandbox, reads AGENTS.md</li><li>Fixes the band, runs the build and GUnit tests there</li><li>Opens a pull request with the test results</li></ol></div>
+      <div><div class="lbl">You get back</div>A pull request to review, maybe an hour later. Your laptop was never involved.</div>
+      <div class="callout" style="font-size:13px;padding:8px 12px;margin-top:auto"><b>Good when:</b> the task is well defined and you have other work to do.</div></div></div>
+  <aside class="notes"><span class="tag time">⏱ 3 min</span><p class="say"><b>🎤 Say</b> Here is one real bug handled three ways. The engine underneath can be the same model; what changes is where it runs, how much it does on its own, and what you get back: an edit you watch, an inline suggestion, or a pull request.</p><ul><li>All three read the same AGENTS.md, which is why Topic 17 recommends one shared instruction file.</li><li>The cloud agent needs the build to run in its sandbox. For Guidewire that means the environment setup must include the JDK and build dependencies.</li><li>Product names are a snapshot and change often; check them before you present.</li></ul></aside>
+</section>
+
 <section class="slide" data-title="Which harness?">
   <div class="eyebrow">Your turn</div>
   <h2>Which family fits?</h2>
@@ -120,8 +146,8 @@
   <aside class="notes"><span class="tag time">⏱ 30 sec</span><p class="say"><b>🎤 Say</b> Same engine, different cars. Next, how teams make the car their own.</p></aside>
 </section>
 
-<script src="../assets/course.js?v=4.4"></script>
-<script src="../assets/widgets.js?v=4.4"></script>
+<script src="../assets/course.js?v=4.5"></script>
+<script src="../assets/widgets.js?v=4.5"></script>
 <script>
 const { $, $$, cv } = W;
 
@@ -219,6 +245,6 @@ W.quiz($("#quiz"), [
 
 /* ===== v3 story ===== */
 </script>
-<script src="../assets/deck.js?v=4.4"></script>
+<script src="../assets/deck.js?v=4.5"></script>
 </body>
 </html>

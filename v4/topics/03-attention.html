@@ -4,9 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Topic 4 · Attention</title>
-<link rel="stylesheet" href="../assets/style.css?v=4.4">
-<link rel="stylesheet" href="../assets/widgets.css?v=4.4">
-<link rel="stylesheet" href="../assets/story.css?v=4.4">
+<link rel="stylesheet" href="../assets/style.css?v=4.5">
+<link rel="stylesheet" href="../assets/widgets.css?v=4.5">
+<link rel="stylesheet" href="../assets/story.css?v=4.5">
 <style>
   .noise-strip { display: flex; gap: 3px; flex-wrap: wrap; padding: 12px; border-radius: 6px; background: var(--card2); min-height: 60px; }
   .blk { width: 22px; height: 30px; border-radius: 5px; background: var(--line); transition: all .3s; }
@@ -103,6 +103,43 @@
     <ul><li>Practical rule: state the task first, put long material in the middle, and repeat the key constraint at the end.</li></ul></aside>
 </section>
 
+<section class="slide" data-title="The buried instruction">
+  <div class="eyebrow">Worked example</div>
+  <h2>The rule that got lost in the middle</h2>
+  <p class="sub">A claims handler asks for a summary of a first notice of loss (FNOL) email. Same facts, same rule, different order.</p>
+  <div class="split" style="align-items:start">
+    <div class="stack-v" style="gap:8px">
+      <div class="label">❌ Before: rule buried mid-way</div>
+      <pre class="code" style="font-size:12px;line-height:1.45">Hi, can you look at this claim email for me.
+From: R. Menon, policy MTR-55120 ...
+"I was driving on the ring road on Tuesday
+evening when the car in front braked hard..."
+<span style="background:color-mix(in srgb,var(--bad) 25%,transparent)">Oh, and flag it if the car was being used for
+paid deliveries, because that's excluded.</span>
+"...I'd just dropped off the last food order
+and was heading home when..."  (30 more lines)
+"...the bumper and left headlamp are damaged."
+Thanks!</pre>
+      <div class="callout" style="--c:var(--bad);font-size:14px"><b>Summary:</b> Rear-end collision on the ring road, Tuesday evening. Bumper and headlamp damage. No injuries. <i>(No delivery flag.)</i></div>
+    </div>
+    <div class="stack-v" style="gap:8px">
+      <div class="label">✅ After: task first, data tagged, rule repeated</div>
+      <pre class="code" style="font-size:12px;line-height:1.45"><span style="background:color-mix(in srgb,var(--good) 25%,transparent)">Summarise this FNOL email for a motor claims
+handler in 5 bullets. Flag any sign the car was
+used for paid deliveries (excluded cover).</span>
+
+&lt;email&gt;
+From: R. Menon, policy MTR-55120 ...  (70 lines)
+&lt;/email&gt;
+
+<span style="background:color-mix(in srgb,var(--good) 25%,transparent)">Remember: say "DELIVERY USE: yes / no / unclear"
+as the last bullet, quoting the line you used.</span></pre>
+      <div class="callout" style="--c:var(--good);font-size:14px"><b>Summary:</b> … • <b>DELIVERY USE: unclear.</b> Driver says “I’d just dropped off the last food order”. Check with the customer before deciding cover.</div>
+    </div>
+  </div>
+  <aside class="notes"><span class="tag time">⏱ 3 min</span><p class="say"><b>🎤 Say</b> This is the lost-in-the-middle effect on a real task. On the left the one rule that matters is buried between two long chunks of email, and the summary misses it. On the right the task comes first, the email is wrapped in tags, and the rule is repeated at the end, so the important line is caught.</p><ul><li>The “before” is how most people actually write: chatty opening, paste, then an afterthought.</li><li>Notice the “after” also asks for a quote. That makes the answer easy to check (more in Topic 7).</li><li>Outputs are illustrative. Newer models often catch the buried rule, but the habit makes it far more reliable.</li></ul></aside>
+</section>
+
 <section class="slide" data-title="Prompt tips from attention">
   <div class="eyebrow">Turn it into habits</div>
   <h2>Six prompt habits that come from attention</h2>
@@ -130,8 +167,8 @@
   <aside class="notes"><span class="tag time">⏱ 30 sec</span><p class="say"><b>🎤 Say</b> The model looks at everything it is given. Next question: how much can it be given? That is the context window.</p><ul><li>Bridge: “So the model looks at everything it’s given. How much can it be given? That’s the context window.”</li></ul></aside>
 </section>
 
-<script src="../assets/course.js?v=4.4"></script>
-<script src="../assets/widgets.js?v=4.4"></script>
+<script src="../assets/course.js?v=4.5"></script>
+<script src="../assets/widgets.js?v=4.5"></script>
 <script>
 const { $ } = W;
 
@@ -211,6 +248,6 @@ W.classify($("#spot"), [
 
 /* ===== v3 story ===== */
 </script>
-<script src="../assets/deck.js?v=4.4"></script>
+<script src="../assets/deck.js?v=4.5"></script>
 </body>
 </html>

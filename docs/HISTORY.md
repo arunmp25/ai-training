@@ -88,8 +88,21 @@ The user asked for relatable or funny references only, no Day labels (sessions o
 - Session 3 re-ordered to The agentic loop → Agent harnesses → Customising the harness → Safety and evals (Topics 15–18). The two code-heavy topics, **AI agents** and **Agent design patterns**, moved to the end as **optional Topics 19–20** (files 10b/10c kept, not deleted); their eyebrows now read “Optional”.
 - Everything renumbered (file ids unchanged; audience numbers shifted): Session 1 = Topics 1–8, Session 2 = 9–14, Session 3 = 15–18, optional 19–20. All cross-references, the roadmap (four columns: three sessions + Optional), the course page, the jargon recap and the docs updated. Assets `?v=4.4`.
 
+### Worked examples and a context-bar fix (v4, 23 Nov 2026)
+- Seven **Worked example** slides set in the team’s own world (Guidewire PolicyCenter, motor and home insurance), one per topic where a concept benefits from a real task:
+  - Topic 3 “A confident wrong answer”: an invented deductible and an invented Gosu method, each with its fix. The tokenizer presets gained **Gosu**, and Numbers now uses MTR-55120.
+  - Topic 4 “The buried instruction”: an FNOL summary that misses a buried delivery-use rule, then the same prompt with the task first, tagged data and the rule repeated.
+  - Topic 7 “Prompts for your role”: three tabbed prompts (business analyst, developer, tester) for a young-driver surcharge, with the component highlighting.
+  - Topic 8 “A developer’s desk”: what goes in context for “add Roadside Assistance coverage”, each item tagged select, compress, write or isolate.
+  - Topic 10 “The burst pipe”: keyword search versus search by meaning over home policy clauses (“burst pipe” versus “escape of water”), interactive.
+  - Topic 16 “One task, three harnesses”: one failing GUnit test handled by a terminal, IDE and cloud agent.
+  - Topic 17 “AGENTS.md up close”: a complete AGENTS.md for a PolicyCenter repo, stepped through section by section with →. The file explorer now shows the same Guidewire repo (AGENTS.md, a one-line CLAUDE.md importing it, `/story-to-gunit`, an `add-coverage` skill, a `gosu-reviewer` subagent, a deny rule on rate tables). The comparison table examples match.
+- Topic 5 context bar: thin segments no longer show cramped labels (label only when the block is at least 9% wide; hover title kept).
+- Course page hero says “visual, demo-led” instead of “hands-on”.
+- Topic minutes raised to match: T3 12 → 14, T4 12 → 15, T7 14 → 17, T8 12 → 15, T10 16 → 19, T16 12 → 15, T17 18 → 22. Fixed a stale “Topic 13” reference in Topic 8 (memory files and subagents are Topic 17). Assets `?v=4.5`. v4 now has 240 slides.
+
 ## Known loose ends
-- Three v2 slides still scroll slightly at 1280×720: Topic 15 “The landscape” and “Which harness?”, Topic 16 “Which one?”. A few others overflow by a few pixels; the jargon dictionary scrolls by design.
+- These slides still scroll slightly at 1280×720: Topic 15 “The loop in action” (+32px), Topic 16 “The landscape” (+198px) and “Which harness?” (+14px), Topic 17 “Which one?” (+121px). The jargon dictionary scrolls by design.
 - Four sequence diagrams scroll inside their box at projector size (RAG, tool retry, MCP, agent loop). The user was offered tighter rows; no answer yet.
 - HarborShield, Mrs Patel’s son, the King’s horse Biscuit and a sign-off name in a Topic 2 makeover remain in examples; the user was told and can ask for removal.
 - `W.scene`, `W.CAST`, `W.castCards` and their styles are unused leftovers from the character version.

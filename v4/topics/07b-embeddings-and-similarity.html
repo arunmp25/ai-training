@@ -4,9 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Topic 10 · Embeddings and similarity search</title>
-<link rel="stylesheet" href="../assets/style.css?v=4.4">
-<link rel="stylesheet" href="../assets/widgets.css?v=4.4">
-<link rel="stylesheet" href="../assets/story.css?v=4.4">
+<link rel="stylesheet" href="../assets/style.css?v=4.5">
+<link rel="stylesheet" href="../assets/widgets.css?v=4.5">
+<link rel="stylesheet" href="../assets/story.css?v=4.5">
 <style>
   .words { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
   .vec-tbl { width: 100%; border-collapse: collapse; font-size: 14px; }
@@ -49,6 +49,13 @@
   .queen-face { font-size: 64px; text-align: center; line-height: 1.1; }
   .queen-says { text-align: center; font-weight: 800; font-size: 18px; margin: 6px 0 8px; }
   .arith { display: grid; grid-template-columns: 1.2fr 1fr; gap: 18px; align-items: start; }
+  .ws-row { display: grid; grid-template-columns: 34px 1fr 170px; gap: 12px; align-items: center; padding: 8px 12px; border-radius: 6px; border: 1px solid var(--line); background: var(--card); font-size: 14.5px; transition: all .35s; }
+  .ws-row.best { border-color: var(--good); background: color-mix(in srgb, var(--good) 10%, var(--card)); }
+  .ws-row .rk { font-weight: 800; font-size: 18px; color: var(--muted); text-align: center; }
+  .ws-row .wsbar { height: 10px; border-radius: 5px; background: var(--card2); overflow: hidden; }
+  .ws-row .wsbar i { display: block; height: 100%; background: var(--c-knowledge); transition: width .6s ease; }
+  .ws-row .sc { font-size: 12.5px; color: var(--muted); margin-top: 3px; }
+  #wsList { display: grid; gap: 6px; }
 </style>
 </head>
 <body class="deck" data-id="07b">
@@ -158,6 +165,19 @@
   <aside class="notes"><span class="tag time">⏱ 3 min</span><p class="say"><b>🎤 Say</b> Here is the calculation by hand: multiply matching numbers, add them up, divide by the lengths. Change dog into a truck and watch the score drop.</p><ul><li>Dimensions: [animal, pet, vehicle]. Walk the “puppy vs dog” row: 0.9×0.8 + 0.8×0.9 + 0×0.1 = 1.44, lengths 1.20 and 1.21, so cos ≈ 0.99.</li><li>Ask someone to change “dog” into a truck (0, 0, 0.9) and watch the score collapse.</li><li>A vector database does exactly this, just with 1,536 numbers and millions of chunks, very fast.</li></ul></aside>
 </section>
 
+<section class="slide" data-title="The burst pipe">
+  <div class="eyebrow">Worked example</div>
+  <h2>Customers say “burst pipe”. Policies say “escape of water”.</h2>
+  <p class="sub">Search the home policy wording for the customer’s sentence. Switch between keyword matching and meaning (embeddings).</p>
+  <div class="row" style="margin-bottom:8px;gap:10px">
+    <div class="bubble user" style="margin:0">A pipe burst under the sink and flooded my kitchen.</div>
+    <button class="btn" id="wsKey">🔤 Keyword search</button><button class="btn primary" id="wsSem">🧭 Search by meaning</button>
+  </div>
+  <div id="wsList"></div>
+  <div class="callout" id="wsNote" style="font-size:14px;margin-top:10px"></div>
+  <aside class="notes"><span class="tag time">⏱ 3 min</span><p class="say"><b>🎤 Say</b> This is the royal search in our own world. Customers say “burst pipe”; policy wordings say “escape of water”. Keyword search shares no words with the right clause, so it ranks it last. Search by meaning puts it first, because the two sentences mean the same thing.</p><ul><li>Start on Keyword search and ask the room which clause should win. Then switch.</li><li>Point out that the unoccupied-home exclusion still ranks high by meaning, which is good: a claims handler needs to see it.</li><li>“Flood” is the trap: it shares a word with the customer’s sentence but is a different peril (rising water from outside). Topic 11 shows how hybrid search and re-ranking combine both signals.</li><li>Scores are illustrative.</li></ul></aside>
+</section>
+
 <section class="slide" data-title="Three ways to measure">
   <div class="eyebrow">Similarity metrics</div>
   <h2>Cosine, dot product, or distance?</h2>
@@ -216,8 +236,8 @@
   <aside class="notes"><span class="tag time">⏱ 30 sec</span><p class="say"><b>🎤 Say</b> Comparing a question with sixteen chunks is easy. With fifty million you need a vector database.</p><ul><li>Bridge: “Comparing one question with 16 chunks is easy. What about 50 million? That’s what a vector database is for.”</li></ul></aside>
 </section>
 
-<script src="../assets/course.js?v=4.4"></script>
-<script src="../assets/widgets.js?v=4.4"></script>
+<script src="../assets/course.js?v=4.5"></script>
+<script src="../assets/widgets.js?v=4.5"></script>
 <script>
 const { $, $$, cv } = W;
 const dot = (a, b) => a.reduce((s, x, i) => s + x * b[i], 0);
@@ -533,6 +553,35 @@ W.BTS.royal = {
   $("#arEq .tab-body")?.remove();
 })();
 </script>
-<script src="../assets/deck.js?v=4.4"></script>
+<script>
+/* ---- worked example: burst pipe ---- */
+(() => {
+  const CL = [
+    { t: "<b>Escape of water:</b> damage caused by water escaping from any fixed water or heating installation.", k: 0, m: 0.86 },
+    { t: "<b>Exclusion:</b> burst pipes when the home has been unoccupied for more than 30 days.", hits: "“burst”, “pipe”", k: 2, m: 0.74 },
+    { t: "<b>Flood:</b> damage from rising water from rivers, the sea or heavy rainfall.", hits: "“flooded”", k: 1, m: 0.58 },
+    { t: "<b>Accidental damage:</b> sudden damage to kitchen fittings and appliances.", hits: "“kitchen”", k: 1, m: 0.47 },
+    { t: "<b>Subsidence:</b> downward movement of the ground beneath the buildings.", k: 0, m: 0.12 },
+  ];
+  const NOTE = {
+    k: "❌ Keyword search ranks the exclusion, flood and kitchen clauses first. The clause that actually covers this claim shares no words with the customer’s sentence, so it falls to the bottom.",
+    m: "✅ By meaning, <b>escape of water</b> comes first, with the 30-day exclusion close behind. Both are exactly what a claims handler needs to read.",
+  };
+  function show(mode) {
+    const sorted = CL.map((c, i) => ({ ...c, i })).sort((a, b) => mode === "k" ? (b.k - a.k) || a.i - b.i : b.m - a.m);
+    $("#wsList").innerHTML = sorted.map((c, r) => {
+      const v = mode === "k" ? c.k / 2 : c.m;
+      const lab = mode === "k" ? c.k ? `shared: ${c.hits}` : "no shared words" : `similarity ${c.m.toFixed(2)}`;
+      return `<div class="ws-row${c.i === 0 ? " best" : ""}"><div class="rk">${r + 1}</div><div>${c.t}</div><div><div class="wsbar"><i style="width:${Math.round(v * 100)}%"></i></div><div class="sc">${lab}</div></div></div>`;
+    }).join("");
+    $("#wsNote").innerHTML = NOTE[mode];
+    $("#wsNote").style.setProperty("--c", mode === "k" ? "var(--bad)" : "var(--good)");
+    $("#wsKey").classList.toggle("primary", mode === "k"); $("#wsSem").classList.toggle("primary", mode === "m");
+  }
+  $("#wsKey").onclick = () => show("k"); $("#wsSem").onclick = () => show("m");
+  show("k");
+})();
+</script>
+<script src="../assets/deck.js?v=4.5"></script>
 </body>
 </html>

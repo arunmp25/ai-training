@@ -4,9 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Topic 3 · How AI generates text</title>
-<link rel="stylesheet" href="../assets/style.css?v=4.4">
-<link rel="stylesheet" href="../assets/widgets.css?v=4.4">
-<link rel="stylesheet" href="../assets/story.css?v=4.4">
+<link rel="stylesheet" href="../assets/style.css?v=4.5">
+<link rel="stylesheet" href="../assets/widgets.css?v=4.5">
+<link rel="stylesheet" href="../assets/story.css?v=4.5">
 <style>
   #tokIn { width: 100%; min-height: 84px; padding: 12px 14px; border-radius: 6px; border: 1px solid var(--line); background: var(--card);
            color: var(--text); font: 17px var(--font); resize: vertical; }
@@ -56,7 +56,7 @@
   </div>
   <p class="muted" style="font-size:13px;margin-top:10px">Illustration only. Real tokenizers differ by model, but the rule of thumb holds: <b>1 token ≈ ¾ of an English word</b>.</p>
   <aside class="notes"><span class="tag time">⏱ 3 min</span><p class="say"><b>🎤 Say</b> AI does not read words, it reads tokens: chunks of text, often part of a word. Everything is measured in tokens, including price, speed and how much fits in one request.</p>
-    <ul><li>Type a long or unusual word and watch it split. Try the code and non-English presets: they use more tokens.</li>
+    <ul><li>Type a long or unusual word and watch it split. Try the Code, Gosu and Hindi presets: they use more tokens than plain English.</li>
     <li>Why care? <b>Everything is measured in tokens</b>: price, speed and the size limit (the context window, Topic 5).</li></ul></aside>
 </section>
 
@@ -73,6 +73,29 @@
 
 
 
+
+<section class="slide" data-title="A confident wrong answer">
+  <div class="eyebrow">Worked example</div>
+  <h2>A confident answer is not a correct answer</h2>
+  <p class="sub">Two everyday questions. The model has no facts for either, so it predicts what a right answer usually looks like.</p>
+  <div class="split" style="gap:18px;align-items:start">
+    <div class="card stack-v" style="gap:8px">
+      <div class="label">🧾 A policy question</div>
+      <div class="bubble user">What’s the deductible on policy MTR-55120?</div>
+      <div class="bubble ai">The deductible on MTR-55120 is <b>₹2,500</b> for own-damage claims.</div>
+      <p style="margin:0;font-size:14px">❌ Sounds exact, but nothing about this policy was ever in the context. The number is just a likely-looking token sequence.</p>
+      <div class="callout" style="--c:var(--good);font-size:14px"><b>Fix:</b> give it the facts. Paste the policy schedule, or give the app a <code>get_policy</code> tool (Topic 12), and ask it to quote where the number came from.</div>
+    </div>
+    <div class="card stack-v" style="gap:8px">
+      <div class="label">💻 A Guidewire question</div>
+      <div class="bubble user">Which PolicyCenter method gives me a driver’s claim count?</div>
+      <div class="bubble ai">Use <code>driver.getClaimCount()</code> on the <code>PolicyDriver</code> entity.</div>
+      <p style="margin:0;font-size:14px">❌ A plausible Gosu name, so it looks right. But this method doesn’t exist in your configuration, and you only find out when it fails to compile.</p>
+      <div class="callout" style="--c:var(--good);font-size:14px"><b>Fix:</b> let it read your code. An agent that can search the repo and run <code>./gwb compile</code> checks its own guess (Topics 15 and 17).</div>
+    </div>
+  </div>
+  <aside class="notes"><span class="tag time">⏱ 2 min</span><p class="say"><b>🎤 Say</b> Here is the revenue example in our own world. Both answers are specific, confident and wrong, because the model had nothing to go on and produced what a good answer usually looks like. The fix is never “ask more nicely”; it is to give the model the facts or a way to check.</p><ul><li>Ask the room: “Has anyone had an AI invent a method name or an API?” Most developers have.</li><li>The made-up method is the most common hallucination in code. The compile step catches it, which is why agents that run the build are more reliable.</li><li>₹2,500 and <code>getClaimCount()</code> are invented for this slide on purpose.</li></ul></aside>
+</section>
 
 <section class="slide" data-title="One token at a time">
   <div style="position:absolute;right:clamp(24px,5vw,72px);top:40px"><button class="btn bts-btn" data-bts="stream">🎬 Behind the scenes</button></div>
@@ -122,8 +145,8 @@
   <aside class="notes"><span class="tag time">⏱ 30 sec</span><p class="say"><b>🎤 Say</b> Remember: tokens, next-token prediction and a bit of randomness. The key ingredient was attention, so let us look at it next.</p><ul><li>Bridge: “The magic ingredient was attention. Let’s see it in action.”</li></ul></aside>
 </section>
 
-<script src="../assets/course.js?v=4.4"></script>
-<script src="../assets/widgets.js?v=4.4"></script>
+<script src="../assets/course.js?v=4.5"></script>
+<script src="../assets/widgets.js?v=4.5"></script>
 <script>
 const { $ } = W;
 
@@ -159,7 +182,8 @@ const PRESETS = {
   "Plain English": "The customer wants a refund for the unbelievably delayed shipment.",
   "Jargon": "Antidisestablishmentarianism and supercalifragilistic configurations.",
   "Code": "if (user.isActive && cart.total > 100) { applyDiscount(0.15); }",
-  "Numbers": "Invoice 2026-11-0045 totals 1234567.89 EUR.",
+  "Gosu": "if (period.PersonalAutoLine.PolicyDrivers.hasMatch(\\ d -> d.Age < 21)) { addYoungDriverSurcharge(period) }",
+  "Numbers": "Policy MTR-55120 renews on 2026-11-30 at ₹18,400.",
   "Hindi": "ग्राहक को देरी से आए सामान के लिए पैसे वापस चाहिए।",
 };
 $("#tokPresets").innerHTML = Object.keys(PRESETS).map((k) => `<button class="btn" data-k="${k}">${k}</button>`).join("");
@@ -244,6 +268,6 @@ event: message_delta        { "delta": { "stop_reason": "end_turn" },
   ],
 };
 </script>
-<script src="../assets/deck.js?v=4.4"></script>
+<script src="../assets/deck.js?v=4.5"></script>
 </body>
 </html>

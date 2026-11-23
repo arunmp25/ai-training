@@ -8,9 +8,9 @@ Read the root `CLAUDE.md` first (ground rules, tone, topic id/number table). Thi
 <html lang="en"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Topic 11 · Tools and function calling</title>
-<link rel="stylesheet" href="../assets/style.css?v=4.4">
-<link rel="stylesheet" href="../assets/widgets.css?v=4.4">
-<link rel="stylesheet" href="../assets/story.css?v=4.4">
+<link rel="stylesheet" href="../assets/style.css?v=4.5">
+<link rel="stylesheet" href="../assets/widgets.css?v=4.5">
+<link rel="stylesheet" href="../assets/story.css?v=4.5">
 </head>
 <body class="deck" data-id="08">            <!-- id = key in course.js -->
 
@@ -30,10 +30,10 @@ Read the root `CLAUDE.md` first (ground rules, tone, topic id/number table). Thi
   <aside class="notes">...</aside>
 </section>
 
-<script src="../assets/course.js?v=4.4"></script>
-<script src="../assets/widgets.js?v=4.4"></script>
+<script src="../assets/course.js?v=4.5"></script>
+<script src="../assets/widgets.js?v=4.5"></script>
 <script> /* page script: W.* calls, W.BTS entries */ </script>
-<script src="../assets/deck.js?v=4.4"></script>   <!-- always last -->
+<script src="../assets/deck.js?v=4.5"></script>   <!-- always last -->
 </body></html>
 ```
 - Title slide eyebrow is always `Session S · Topic N`; `<title>` is `Topic N · Title`.
@@ -118,7 +118,7 @@ W.codeWalk(el, { file: "code/tool_call.py", code: `...the file's text...`, steps
 `W.scene`, `W.CAST`, `W.castCards` and the `.scene`/`.cast`/`.storyline` styles are from the dropped character-story version. Nothing uses them; leave them or delete them, but do not bring characters back.
 
 ## Checklist after changing v4
-1. Bump `?v=4.4` in all v4 pages if you changed anything in `assets/`.
+1. Bump `?v=4.5` in all v4 pages if you changed anything in `assets/`.
 2. Open every changed topic at 1280×720: no console errors, no slide scroll, widgets work with → and clicks.
 3. Every slide still has a `.say` note; cross-references use the new topic numbers.
 4. Rebuild `AI-Training-v4.zip` (see root `CLAUDE.md`) and commit.

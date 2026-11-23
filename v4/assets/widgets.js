@@ -422,7 +422,9 @@
       frame.innerHTML = on.map((p) => {
         const start = acc; acc += p.tokens;
         const inside = Math.max(0, Math.min(acc, capacity) - start), over = p.tokens - inside;
-        return (inside ? `<div class="ctx-seg" style="--c:${cv(p.c)};width:${(inside / capacity) * 100}%" title="${p.label}">${p.label}</div>` : "") +
+        const pct = (inside / capacity) * 100;
+        // Only label blocks wide enough to read; thin ones keep the colour and a hover title.
+        return (inside ? `<div class="ctx-seg" style="--c:${cv(p.c)};width:${pct}%" title="${p.label}">${pct >= 9 ? `<span>${p.label}</span>` : ""}</div>` : "") +
                (over ? `<div class="ctx-seg over" style="width:${Math.min(40, (over / capacity) * 100)}%" title="${p.label} (does not fit)"></div>` : "");
       }).join("");
       el.querySelector(".ctx-used").innerHTML = total > capacity
