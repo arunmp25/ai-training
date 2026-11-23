@@ -26,12 +26,11 @@ window.COURSE = {
   tracks: {
     a: {
       short: "", name: "Building with AI",
-      desc: "Four sessions. Each topic adds one layer, using everyday examples from an insurance business.",
+      desc: "Three sessions. Each topic adds one layer, using everyday examples from an insurance business.",
       days: [
-        { d: "Session 1", theme: "How AI works and how to talk to it",  items: [["00", 14], ["01", 16], ["02", 12], ["03", 12], ["04", 10], ["05", 14]] },
-        { d: "Session 2", theme: "Knowledge and tools",                 items: [["06", 12], ["07", 12], ["07b", 16], ["07c", 16], ["08", 17], ["08b", 19]] },
-        { d: "Session 3", theme: "Connectors and agents",               items: [["09", 16], ["10", 17], ["10b", 22], ["10c", 26]] },
-        { d: "Session 4", theme: "Harnesses, customisation and safety", items: [["11", 12], ["12", 18], ["13", 16]] },
+        { d: "Session 1", theme: "How AI works, prompts and context", items: [["00", 14], ["01", 16], ["02", 12], ["03", 12], ["04", 10], ["05", 14], ["06", 12]] },
+        { d: "Session 2", theme: "Knowledge, tools and MCP",          items: [["07", 12], ["07b", 16], ["07c", 16], ["08", 17], ["08b", 19], ["09", 16]] },
+        { d: "Session 3", theme: "Agents, harnesses and safety",      items: [["10", 17], ["10b", 22], ["10c", 26], ["11", 12], ["12", 18], ["13", 16]] },
       ],
     },
   },

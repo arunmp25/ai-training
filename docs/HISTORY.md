@@ -78,6 +78,11 @@ The user asked for relatable or funny references only, no Day labels (sessions o
 - Harness, customising and safety moved from Topics 15–17 to 17–19 and into a new **Session 4** (“Harnesses, customisation and safety”). Session 3 is now “Connectors and agents” (Topics 13–16). All cross-references renumbered; the roadmap in Topic 1 now says four sessions (and “TOPIC” instead of a leftover “EPISODE”); the final recap in Topic 19 includes the two new topics.
 - `W.arch` gained an upward edge (`"u"`). New sample programs `code/langchain_agent.py` and `code/langgraph_agent.py` (syntax-checked, not run against the API). v4 now has 222 slides.
 
+### Three sessions (v4)
+- The user asked for Topics 1–7 on day 1, 8–13 on day 2 and the rest on day 3 (written as Sessions, per the course rules).
+- Session 1 “How AI works, prompts and context” = Topics 1–7; Session 2 “Knowledge, tools and MCP” = Topics 8–13; Session 3 “Agents, harnesses and safety” = Topics 14–19. Session 4 is gone.
+- Eyebrows, the roadmap (back to three columns), session hand-off notes (end of Session 1 now on Topic 7, end of Session 2 on Topic 13) and the jargon quiz text updated. Topic 17’s eyebrow wrongly said Topic 19; fixed. Assets `?v=4.3`.
+
 ## Known loose ends
 - Three v2 slides still scroll slightly at 1280×720: Topic 15 “The landscape” and “Which harness?”, Topic 16 “Which one?”. A few others overflow by a few pixels; the jargon dictionary scrolls by design.
 - Four sequence diagrams scroll inside their box at projector size (RAG, tool retry, MCP, agent loop). The user was offered tighter rows; no answer yet.

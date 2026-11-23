@@ -4,9 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Topic 2 · Talking to AI</title>
-<link rel="stylesheet" href="../assets/style.css?v=4.2">
-<link rel="stylesheet" href="../assets/widgets.css?v=4.2">
-<link rel="stylesheet" href="../assets/story.css?v=4.2">
+<link rel="stylesheet" href="../assets/style.css?v=4.3">
+<link rel="stylesheet" href="../assets/widgets.css?v=4.3">
+<link rel="stylesheet" href="../assets/story.css?v=4.3">
 <style>
   .chatbox { display: flex; flex-direction: column; gap: 10px; }
   .verdict { font-size: 14px; margin-top: 10px; }
@@ -152,8 +152,8 @@
   <aside class="notes"><span class="tag time">⏱ 30 sec</span><p class="say"><b>🎤 Say</b> Three things to take away. Next question: why is it a good guesser but bad with facts it has never seen? That comes down to how it generates text.</p><ul><li>Bridge: “Why is it a good guesser but bad at facts it hasn’t seen? Let’s look at how it generates text.”</li></ul></aside>
 </section>
 
-<script src="../assets/course.js?v=4.2"></script>
-<script src="../assets/widgets.js?v=4.2"></script>
+<script src="../assets/course.js?v=4.3"></script>
+<script src="../assets/widgets.js?v=4.3"></script>
 <script>
 const { $, cv } = W;
 
@@ -286,6 +286,6 @@ W.BTS.anatomy = {
 
 W.codeWalk(document.getElementById("cwFirst"), { file: "code/first_call.py", code: "\"\"\"Topic 2: one request to the model, with every part of the prompt.\nRun:  pip install anthropic\n      export ANTHROPIC_API_KEY=...\n      python first_call.py\n\"\"\"\nimport anthropic\n\nclient = anthropic.Anthropic()  # reads ANTHROPIC_API_KEY\n\nresponse = client.messages.create(\n    # Settings: which model, how long, how creative\n    model=\"claude-sonnet-5-5\",\n    max_tokens=1024,\n    temperature=0.3,\n    # System prompt: written by the app developer, not the user\n    system=(\n        \"You are HarborShield's customer email assistant. \"\n        \"Write in plain British English, under 120 words. \"\n        \"Never invent policy details: ask if something is missing.\"\n    ),\n    # Messages: the conversation so far, oldest first\n    messages=[\n        {\"role\": \"user\",\n         \"content\": \"Write a renewal reminder for motor policy MTR-55120.\"},\n        {\"role\": \"assistant\",\n         \"content\": \"Happy to. When does it renew, and what is the new premium?\"},\n        {\"role\": \"user\",\n         \"content\": \"Renews 1 December at ₹18,400. Sign it 'HarborShield Renewals'.\"},\n    ],\n)\n\n# The reply is a list of content blocks; here there is one text block\nprint(response.content[0].text)\nprint(\"stop_reason:\", response.stop_reason)\nprint(\"tokens in/out:\", response.usage.input_tokens, response.usage.output_tokens)\n", steps: [{"lines": [6, 8], "c": "accent", "t": "Create a client", "note": "The SDK reads your API key from the environment and handles HTTPS, retries and errors for you.", "label": "Every call goes here", "json": "POST https://api.anthropic.com/v1/messages\nx-api-key: $ANTHROPIC_API_KEY\nanthropic-version: 2023-06-01\ncontent-type: application/json"}, {"lines": [10, 14], "c": "model", "t": "Settings", "note": "Which model, the longest reply allowed, and how adventurous the wording can be.", "label": "Becomes", "json": "{\n  \"model\": \"claude-sonnet-5-5\",\n  \"max_tokens\": 1024,\n  \"temperature\": 0.3,\n  …\n}"}, {"lines": [15, 20], "c": "context", "t": "System prompt", "note": "Python joins the three strings into one. The person using the app never types this.", "label": "Becomes", "json": "\"system\": \"You are HarborShield's customer email assistant. Write in plain British English, under 120 words. Never invent policy details: ask if something is missing.\""}, {"lines": [21, 29], "c": "accent", "t": "Messages: the conversation so far", "note": "Oldest first, alternating user and assistant. The assistant turn is the model’s earlier question, sent back because the model remembers nothing.", "label": "Becomes", "json": "\"messages\": [\n  { \"role\": \"user\", \"content\": \"Write a renewal reminder for motor policy MTR-55120.\" },\n  { \"role\": \"assistant\", \"content\": \"Happy to. When does it renew, and what is the new premium?\" },\n  { \"role\": \"user\", \"content\": \"Renews 1 December at ₹18,400. Sign it 'HarborShield Renewals'.\" }\n]"}, {"lines": [10, 30], "c": "accent", "t": "The whole request that is sent", "note": "One HTTPS request. This is everything the model will know.", "label": "Request → POST /v1/messages", "json": "{\n  \"model\": \"claude-sonnet-5-5\",\n  \"max_tokens\": 1024,\n  \"temperature\": 0.3,\n  \"system\": \"You are HarborShield's customer email assistant. Write in plain British English, under 120 words. Never invent policy details: ask if something is missing.\",\n  \"messages\": [\n    { \"role\": \"user\",\n      \"content\": \"Write a renewal reminder for motor policy MTR-55120.\" },\n    { \"role\": \"assistant\",\n      \"content\": \"Happy to. When does it renew, and what is the new premium?\" },\n    { \"role\": \"user\",\n      \"content\": \"Renews 1 December at ₹18,400. Sign it 'HarborShield Renewals'.\" }\n  ]\n}"}, {"lines": [32, 33], "c": "good", "t": "Read the reply", "note": "The reply is a list of content blocks. Here there is one text block. With tools there can be several (Topic 11).", "label": "Response ←", "json": "{\n  \"id\": \"msg_01XFDUDYJgAACzvnptvVoYEL\",\n  \"type\": \"message\",\n  \"role\": \"assistant\",\n  \"model\": \"claude-sonnet-5-5\",\n  \"content\": [\n    { \"type\": \"text\",\n      \"text\": \"Subject: Your motor policy renews on 1 December\\n\\nDear customer,\\n\\nYour HarborShield motor policy MTR-55120 renews on 1 December. Your new annual premium is ₹18,400...\" }\n  ],\n  \"stop_reason\": \"end_turn\",\n  \"usage\": { \"input_tokens\": 96, \"output_tokens\": 88 }\n}"}, {"lines": [34, 35], "c": "good", "t": "Why it stopped, and what it cost", "note": "<code>end_turn</code> means the model finished. <code>max_tokens</code> would mean it was cut off. Tokens in and out are what you are billed for.", "label": "From the response", "json": "\"stop_reason\": \"end_turn\",\n\"usage\": { \"input_tokens\": 96, \"output_tokens\": 88 }"}] });
 </script>
-<script src="../assets/deck.js?v=4.2"></script>
+<script src="../assets/deck.js?v=4.3"></script>
 </body>
 </html>

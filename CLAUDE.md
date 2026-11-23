@@ -57,12 +57,12 @@ File ids are the old v2 ids; the audience sees `n` from `course.js`. Always writ
 | 07b | 9 | Embeddings and similarity | 13 | 19 | Safety, trust and evals (Topic 17 in v3) |
 | 07c | 10 | Vector databases |  |  |  |
 
-Sessions (v4): 1 = topics 1–6, 2 = topics 7–12, 3 = topics 13–16, 4 = topics 17–19.
+Sessions (v4): 1 = topics 1–7, 2 = topics 8–13, 3 = topics 14–19.
 
 ## Run and check
 - Start the preview server (`.claude/launch.json`, name `ai-training`) and open `http://localhost:8765/v4/index.html`. v4 also works from `file://`.
 - Test at **1280×720** (projector size). Slides should not need scrolling; a few long v2 slides still do (Topic 15 landscape and “Which harness?”, Topic 16 “Which one?”).
-- Browsers cache aggressively. Asset links carry `?v=4.2` in v4; bump the number in every v4 page when you change files in `v4/assets/`, or force reload with `fetch(url, {cache: "reload"})` while testing.
+- Browsers cache aggressively. Asset links carry `?v=4.3` in v4; bump the number in every v4 page when you change files in `v4/assets/`, or force reload with `fetch(url, {cache: "reload"})` while testing.
 - Before finishing, load every v4 topic and check: no script errors, every slide has a `.say` note, every `.seq` renders arrows, `data-bts` buttons have a matching `W.BTS` key.
 
 ## Packaging and git
