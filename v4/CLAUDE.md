@@ -8,9 +8,9 @@ Read the root `CLAUDE.md` first (ground rules, tone, topic id/number table). Thi
 <html lang="en"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Topic 11 · Tools and function calling</title>
-<link rel="stylesheet" href="../assets/style.css?v=4.3">
-<link rel="stylesheet" href="../assets/widgets.css?v=4.3">
-<link rel="stylesheet" href="../assets/story.css?v=4.3">
+<link rel="stylesheet" href="../assets/style.css?v=4.4">
+<link rel="stylesheet" href="../assets/widgets.css?v=4.4">
+<link rel="stylesheet" href="../assets/story.css?v=4.4">
 </head>
 <body class="deck" data-id="08">            <!-- id = key in course.js -->
 
@@ -30,16 +30,16 @@ Read the root `CLAUDE.md` first (ground rules, tone, topic id/number table). Thi
   <aside class="notes">...</aside>
 </section>
 
-<script src="../assets/course.js?v=4.3"></script>
-<script src="../assets/widgets.js?v=4.3"></script>
+<script src="../assets/course.js?v=4.4"></script>
+<script src="../assets/widgets.js?v=4.4"></script>
 <script> /* page script: W.* calls, W.BTS entries */ </script>
-<script src="../assets/deck.js?v=4.3"></script>   <!-- always last -->
+<script src="../assets/deck.js?v=4.4"></script>   <!-- always last -->
 </body></html>
 ```
 - Title slide eyebrow is always `Session S · Topic N`; `<title>` is `Topic N · Title`.
 - Each topic ends with “Did it click?” (`W.quiz`) and “What to remember”, and usually a closing question that bridges to the next topic.
 - Every slide has `<aside class="notes">` with: a time tag (hidden unless D is on), a `<p class="say">` talk track of two or three spoken sentences, then a `<ul>` of tips. The notes panel (N key or 📝 Notes) shows them and labels the list “Tips”.
-- Slide index in the URL hash is 1-based (`topic.html#4`). Inserting a slide shifts later indexes, so check any `href="...html#N"` links (the course page and Topic 17 link to `00-decoding-ai-jargon.html#2` and `#8`).
+- Slide index in the URL hash is 1-based (`topic.html#4`). Inserting a slide shifts later indexes, so check any `href="...html#N"` links (the course page and the Topic 18 wrap-up link to `00-decoding-ai-jargon.html#2` and `#8`).
 
 ## Deck engine (`assets/deck.js`)
 - Keys: ← → PageUp PageDown (clicker), Home/End, N notes, D timings, F full screen, T theme.
@@ -72,7 +72,7 @@ W.seq(document.getElementById("seqTool"), {
 - Existing diagrams: Topic 2 (pressing Enter), 5 (re-sent history), 8 (RAG indexing and query), 10 (hybrid search and re-ranking), 11 (tool call; the Python program request by request), 12 (parallel calls and a failure; the Python loop request by request), 13 (MCP session), 14 (agent loop), 15 (what create_agent does), 18 (permissions and hooks), 19 (injection defences).
 
 ### Architecture diagrams: `W.arch`
-Boxes and arrows with animated dots that travel along the arrows (accent = request, green = reply, red = blocked). Several named flows can share one diagram. Used in Topic 14 “Architecture: A multi-agent application”, Topic 15 (prompt, chain or agent; the LangGraph graph) and all eight pattern slides in Topic 16 (class `seq-slide arch-slide`, data in the page script as `AN`, `AE`, `AF`). A standalone copy lives at `samples/architecture-demo.html`.
+Boxes and arrows with animated dots that travel along the arrows (accent = request, green = reply, red = blocked). Several named flows can share one diagram. Used in Topic 6 “Route to the right model”, Topic 15 “Architecture: A multi-agent application”, optional Topic 19 (prompt, chain or agent; the LangGraph graph) and all eight pattern slides in optional Topic 20 (class `seq-slide arch-slide`, data in the page script as `AN`, `AE`, `AF`). A standalone copy lives at `samples/architecture-demo.html`.
 ```js
 W.arch(el, {
   vb: [1160, 640],                                     // SVG viewBox; boxes use these units
@@ -103,7 +103,7 @@ W.codeWalk(el, { file: "code/tool_call.py", code: `...the file's text...`, steps
   { lines: [34, 39], c: "accent", t: "Request 1", note: "HTML", label: "Request 1 → POST /v1/messages", json: `{ ... }` },
 ]});
 ```
-- Topic 15 also walks through `langchain_agent.py` and `langgraph_agent.py` (LangChain `create_agent`; LangGraph `StateGraph` with `ToolNode`, `tools_condition`, `InMemorySaver`). Topic 16 shows LangGraph snippets for routing, `Send` and `interrupt` in tabs.
+- Optional Topic 19 also walks through `langchain_agent.py` and `langgraph_agent.py` (LangChain `create_agent`; LangGraph `StateGraph` with `ToolNode`, `tools_condition`, `InMemorySaver`). Optional Topic 20 shows LangGraph snippets for routing, `Send` and `interrupt` in tabs.
 - The program text is embedded in the page script because `fetch` does not work from `file://`. The same programs live in `v4/code/` (`first_call.py` T2, `tool_call.py` T11, `tool_loop.py` T12) and are linked for download. **If you change a .py file, update the embedded copy and the line numbers in its steps.**
 - The samples use the official `anthropic` SDK and `claude-sonnet-5-5`. They were checked against a mocked client; they need `ANTHROPIC_API_KEY` to run for real.
 - `W.py(src)` colours Python (keywords, strings, comments, numbers, calls). `W.hl` still does JSON.
@@ -118,7 +118,7 @@ W.codeWalk(el, { file: "code/tool_call.py", code: `...the file's text...`, steps
 `W.scene`, `W.CAST`, `W.castCards` and the `.scene`/`.cast`/`.storyline` styles are from the dropped character-story version. Nothing uses them; leave them or delete them, but do not bring characters back.
 
 ## Checklist after changing v4
-1. Bump `?v=4.3` in all v4 pages if you changed anything in `assets/`.
+1. Bump `?v=4.4` in all v4 pages if you changed anything in `assets/`.
 2. Open every changed topic at 1280×720: no console errors, no slide scroll, widgets work with → and clicks.
 3. Every slide still has a `.say` note; cross-references use the new topic numbers.
 4. Rebuild `AI-Training-v4.zip` (see root `CLAUDE.md`) and commit.

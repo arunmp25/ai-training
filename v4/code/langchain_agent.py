@@ -1,4 +1,4 @@
-"""Topic 15: an agent with LangChain.
+"""Topic 19: an agent with LangChain.
 Run:  pip install langchain langchain-anthropic
       export ANTHROPIC_API_KEY=...
       python langchain_agent.py

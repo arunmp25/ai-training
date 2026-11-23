@@ -4,9 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Topic 4 · Attention</title>
-<link rel="stylesheet" href="../assets/style.css?v=4.3">
-<link rel="stylesheet" href="../assets/widgets.css?v=4.3">
-<link rel="stylesheet" href="../assets/story.css?v=4.3">
+<link rel="stylesheet" href="../assets/style.css?v=4.4">
+<link rel="stylesheet" href="../assets/widgets.css?v=4.4">
+<link rel="stylesheet" href="../assets/story.css?v=4.4">
 <style>
   .noise-strip { display: flex; gap: 3px; flex-wrap: wrap; padding: 12px; border-radius: 6px; background: var(--card2); min-height: 60px; }
   .blk { width: 22px; height: 30px; border-radius: 5px; background: var(--line); transition: all .3s; }
@@ -83,7 +83,7 @@
       <div class="muted" id="shareNote" style="font-size:14px"></div>
     </div>
   </div>
-  <div class="callout" style="margin-top:16px">💡 <b>Tip:</b> more context isn’t always better. Give the model what it <i>needs</i>, not everything you <i>have</i>. (This becomes “context engineering” in Topic 7.)</div>
+  <div class="callout" style="margin-top:16px">💡 <b>Tip:</b> more context isn’t always better. Give the model what it <i>needs</i>, not everything you <i>have</i>. (This becomes “context engineering” in Topic 8.)</div>
   <aside class="notes"><span class="tag time">⏱ 2 min</span><p class="say"><b>🎤 Say</b> Attention is shared. The more irrelevant text you paste in, the less attention your key instruction gets.</p>
     <ul><li>A simplified illustration, not an exact measurement, but the effect is real: irrelevant text distracts the model.</li>
     <li>Example: pasting a 40-page document when only one paragraph is relevant.</li></ul></aside>
@@ -130,8 +130,8 @@
   <aside class="notes"><span class="tag time">⏱ 30 sec</span><p class="say"><b>🎤 Say</b> The model looks at everything it is given. Next question: how much can it be given? That is the context window.</p><ul><li>Bridge: “So the model looks at everything it’s given. How much can it be given? That’s the context window.”</li></ul></aside>
 </section>
 
-<script src="../assets/course.js?v=4.3"></script>
-<script src="../assets/widgets.js?v=4.3"></script>
+<script src="../assets/course.js?v=4.4"></script>
+<script src="../assets/widgets.js?v=4.4"></script>
 <script>
 const { $ } = W;
 
@@ -204,13 +204,13 @@ W.flips($("#tips"), [
 
 W.classify($("#spot"), [
   { text: "“Read these two proposals and tell me if it is better. Also make it shorter.”", a: 0, why: "Which one is “it”? Name them: “Is proposal B better than A? Then shorten proposal B.”" },
-  { text: "You paste a 60-page handbook to ask one question about parental leave.", a: 1, why: "Most of those 60 pages are noise. Paste the parental-leave section (or use RAG, Topic 8)." },
+  { text: "You paste a 60-page handbook to ask one question about parental leave.", a: 1, why: "Most of those 60 pages are noise. Paste the parental-leave section (or use RAG, Topic 9)." },
   { text: "A long prompt where the crucial rule (“never mention pricing”) sits in paragraph 6 of 12.", a: 2, why: "Buried in the middle. Put it at the start and repeat it at the end." },
   { text: "“Summarise this, translate it, find errors, suggest a title, and rate it 1-10” all in one sentence.", a: 3, why: "Too many jobs blended together. Number them as separate steps, or ask in turns." },
 ], [{ label: "Ambiguous reference", c: "context" }, { label: "Too much noise", c: "warn" }, { label: "Lost in the middle", c: "autonomy" }, { label: "Too many jobs at once", c: "action" }], { cols: 2 });
 
 /* ===== v3 story ===== */
 </script>
-<script src="../assets/deck.js?v=4.3"></script>
+<script src="../assets/deck.js?v=4.4"></script>
 </body>
 </html>

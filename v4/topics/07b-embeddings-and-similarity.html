@@ -3,10 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Topic 9 · Embeddings and similarity search</title>
-<link rel="stylesheet" href="../assets/style.css?v=4.3">
-<link rel="stylesheet" href="../assets/widgets.css?v=4.3">
-<link rel="stylesheet" href="../assets/story.css?v=4.3">
+<title>Topic 10 · Embeddings and similarity search</title>
+<link rel="stylesheet" href="../assets/style.css?v=4.4">
+<link rel="stylesheet" href="../assets/widgets.css?v=4.4">
+<link rel="stylesheet" href="../assets/story.css?v=4.4">
 <style>
   .words { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
   .vec-tbl { width: 100%; border-collapse: collapse; font-size: 14px; }
@@ -55,7 +55,7 @@
 
 <section class="slide title-slide" data-title="Welcome">
   <div class="big-emoji">📍</div>
-  <div class="eyebrow">Session 2 · Topic 9</div>
+  <div class="eyebrow">Session 2 · Topic 10</div>
   <h1>Embeddings: meaning as numbers</h1>
   <p class="sub">To search by <i>meaning</i>, a computer needs a way to measure it. An <b>embedding</b> turns any text into a list of numbers. <b>Cosine similarity</b> tells us how close two of those lists point.</p>
   <aside class="notes"><span class="tag time">⏱ 30 sec</span><p class="say"><b>🎤 Say</b> To search by meaning, a computer needs to measure meaning. An embedding turns text into a list of numbers, and similarity tells us how close two of those lists are.</p><ul><li>Promise: by the end everyone can explain “embedding”, “vector”, “dimension” and “cosine similarity” in plain words, and do one by hand.</li></ul></aside>
@@ -67,7 +67,7 @@
   <p class="sub">Pick a search and a method. <b>Keyword</b> search matches the exact words. <b>Meaning</b> search compares embeddings and keeps everything scoring above 0.65. Green = right, red = wrong.</p>
   <div class="row"><div id="rq"></div><div id="rm"></div><button class="btn bts-btn" data-bts="royal">🎬 Behind the scenes</button></div>
   <div class="royal"><div class="r-items" id="rRes"></div><div class="card" id="rQueen"></div></div>
-  <aside class="notes"><span class="tag time">⏱ 3 min</span><p class="say"><b>🎤 Say</b> Search the royal inventory for things belonging to the King. Keyword search finds a King prawn curry and misses the Queen’s tiara. Meaning search finds everything royal.</p><ul><li>Start with “things belonging to the King” + Keyword: 3 right, a curry recipe wrong, and none of the Queen’s items. Switch to Meaning: everything royal comes back, the curry doesn’t.</li><li>Try “royal jewellery” on keywords: it finds… the corgis, because they’re the only thing with “royal” in the name.</li><li>“How does the monarch get around?” on meaning even finds the lawnmower (it is, technically, transport). Meaning search is fuzzy, which matters later (hybrid search, Topic 10).</li><li>The scores here come from small hand-made vectors. Next we see how real ones work.</li></ul></aside>
+  <aside class="notes"><span class="tag time">⏱ 3 min</span><p class="say"><b>🎤 Say</b> Search the royal inventory for things belonging to the King. Keyword search finds a King prawn curry and misses the Queen’s tiara. Meaning search finds everything royal.</p><ul><li>Start with “things belonging to the King” + Keyword: 3 right, a curry recipe wrong, and none of the Queen’s items. Switch to Meaning: everything royal comes back, the curry doesn’t.</li><li>Try “royal jewellery” on keywords: it finds… the corgis, because they’re the only thing with “royal” in the name.</li><li>“How does the monarch get around?” on meaning even finds the lawnmower (it is, technically, transport). Meaning search is fuzzy, which matters later (hybrid search, Topic 11).</li><li>The scores here come from small hand-made vectors. Next we see how real ones work.</li></ul></aside>
 </section>
 
 
@@ -216,8 +216,8 @@
   <aside class="notes"><span class="tag time">⏱ 30 sec</span><p class="say"><b>🎤 Say</b> Comparing a question with sixteen chunks is easy. With fifty million you need a vector database.</p><ul><li>Bridge: “Comparing one question with 16 chunks is easy. What about 50 million? That’s what a vector database is for.”</li></ul></aside>
 </section>
 
-<script src="../assets/course.js?v=4.3"></script>
-<script src="../assets/widgets.js?v=4.3"></script>
+<script src="../assets/course.js?v=4.4"></script>
+<script src="../assets/widgets.js?v=4.4"></script>
 <script>
 const { $, $$, cv } = W;
 const dot = (a, b) => a.reduce((s, x, i) => s + x * b[i], 0);
@@ -533,6 +533,6 @@ W.BTS.royal = {
   $("#arEq .tab-body")?.remove();
 })();
 </script>
-<script src="../assets/deck.js?v=4.3"></script>
+<script src="../assets/deck.js?v=4.4"></script>
 </body>
 </html>

@@ -3,10 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Topic 7 · Context engineering</title>
-<link rel="stylesheet" href="../assets/style.css?v=4.3">
-<link rel="stylesheet" href="../assets/widgets.css?v=4.3">
-<link rel="stylesheet" href="../assets/story.css?v=4.3">
+<title>Topic 8 · Context engineering</title>
+<link rel="stylesheet" href="../assets/style.css?v=4.4">
+<link rel="stylesheet" href="../assets/widgets.css?v=4.4">
+<link rel="stylesheet" href="../assets/story.css?v=4.4">
 <style>
   .items { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
   .item { padding: 12px 14px; border-radius: 6px; background: var(--card); border: 1px solid var(--line); cursor: pointer; transition: all .2s; font-size: 14.5px; }
@@ -36,7 +36,7 @@
 
 <section class="slide title-slide" data-title="Welcome">
   <div class="big-emoji">🧳</div>
-  <div class="eyebrow">Session 1 · Topic 7</div>
+  <div class="eyebrow">Session 1 · Topic 8</div>
   <h1>Context engineering</h1>
   <p class="sub">Prompt engineering is about the right <b>words</b>. Context engineering is about putting the right <b>information</b> on the desk, and keeping the wrong information off it.</p>
   <aside class="notes"><span class="tag time">⏱ 30 sec</span><p class="say"><b>🎤 Say</b> Prompt engineering is about the right words. Context engineering is about putting the right information on the desk and keeping the wrong information off it.</p><ul><li>This is where the industry focus shifted: once prompts are decent, quality depends on <i>what you feed in</i>.</li></ul></aside>
@@ -99,7 +99,7 @@
   <h2>The four moves of context engineering</h2>
   <p class="sub">Click each move. You’ll meet every one of them again in later topics.</p>
   <div id="moves"></div>
-  <aside class="notes"><span class="tag time">⏱ 2 min</span><p class="say"><b>🎤 Say</b> Context engineering has four moves: select, compress, write and isolate. Each one comes back in a later topic.</p><ul><li>Select → RAG (Topic 8). Compress → compaction (Topic 5). Write → memory and notes files (Topic 12). Isolate → subagents (Topic 12).</li></ul></aside>
+  <aside class="notes"><span class="tag time">⏱ 2 min</span><p class="say"><b>🎤 Say</b> Context engineering has four moves: select, compress, write and isolate. Each one comes back in a later topic.</p><ul><li>Select → RAG (Topic 9). Compress → compaction (Topic 5). Write → memory and notes files (Topic 13). Isolate → subagents (Topic 13).</li></ul></aside>
 </section>
 
 <section class="slide" data-title="Common mistakes">
@@ -129,8 +129,8 @@
   <aside class="notes"><span class="tag time">⏱ 30 sec</span><p class="say"><b>🎤 Say</b> Selecting the right information is the move that matters most, and the standard way to do it is RAG. That is where the next session starts.</p><ul><li>End of Session 1. Session 2 opens with RAG: picking the right paragraph from 50,000 documents.</li></ul></aside>
 </section>
 
-<script src="../assets/course.js?v=4.3"></script>
-<script src="../assets/widgets.js?v=4.3"></script>
+<script src="../assets/course.js?v=4.4"></script>
+<script src="../assets/widgets.js?v=4.4"></script>
 <script>
 const { $, $$ } = W;
 
@@ -149,7 +149,7 @@ const ITEMS = [
   { t: "✍️ Reply tone guide (1 page)", cost: 1, ok: 1, fb: "Keeps the reply on-brand." },
   { t: "💶 Refund policy section", cost: 1, ok: 1, fb: "Tells it what it’s allowed to offer." },
   { t: "🏢 Company history and mission", cost: 2, ok: 0, fb: "Nice, but not needed to answer this." },
-  { t: "🔧 Tool: issue_refund", cost: 1, ok: 1, fb: "Lets it actually fix the problem (Topic 11)." },
+  { t: "🔧 Tool: issue_refund", cost: 1, ok: 1, fb: "Lets it actually fix the problem (Topic 12)." },
   { t: "💬 Customer’s full chat log since 2021", cost: 4, ok: 0, fb: "Mostly stale. A one-line summary would do." },
 ];
 let packed = new Set();
@@ -180,8 +180,8 @@ renderPack();
 W.clickInfo($("#moves"), [
   { icon: "🎯", title: "Select", sub: "pull in only what’s relevant", c: "knowledge", html: "<p>Don’t dump everything: <b>find</b> the few pieces that matter for this request.</p><p><b>Example:</b> from 50,000 help articles, retrieve the 3 about billing errors.</p><p class='muted'>Main technique: <b>RAG</b>, next topic.</p>" },
   { icon: "🗜️", title: "Compress", sub: "summarise what’s long", c: "context", html: "<p>Keep the meaning, drop the bulk.</p><p><b>Example:</b> replace 40 turns of chat history with a 5-line summary; trim a tool result to the fields that matter.</p><p class='muted'>In agents this is called <b>compaction</b> (Topic 5).</p>" },
-  { icon: "📝", title: "Write (save outside)", sub: "notes the AI can re-read", c: "autonomy", html: "<p>Store information <b>outside</b> the context and bring it back only when needed.</p><p><b>Example:</b> an agent keeps a to-do list or <code>NOTES.md</code> file; a memory feature saves “user is vegetarian”.</p><p class='muted'>Instruction files and memory: Topic 18.</p>" },
-  { icon: "🧪", title: "Isolate", sub: "split work across contexts", c: "action", html: "<p>Give sub-tasks their <b>own separate context</b> so the main one stays clean.</p><p><b>Example:</b> three helper agents each research one competitor and return a one-paragraph summary.</p><p class='muted'>That’s <b>subagents</b>: Topic 18.</p>" },
+  { icon: "📝", title: "Write (save outside)", sub: "notes the AI can re-read", c: "autonomy", html: "<p>Store information <b>outside</b> the context and bring it back only when needed.</p><p><b>Example:</b> an agent keeps a to-do list or <code>NOTES.md</code> file; a memory feature saves “user is vegetarian”.</p><p class='muted'>Instruction files and memory: Topic 17.</p>" },
+  { icon: "🧪", title: "Isolate", sub: "split work across contexts", c: "action", html: "<p>Give sub-tasks their <b>own separate context</b> so the main one stays clean.</p><p><b>Example:</b> three helper agents each research one competitor and return a one-paragraph summary.</p><p class='muted'>That’s <b>subagents</b>: Topic 17.</p>" },
 ], { cols: 4 });
 
 W.flips($("#mistakes"), [
@@ -190,7 +190,7 @@ W.flips($("#mistakes"), [
   { front: "⚔️ Contradictions", back: "System prompt says “be brief”, the instruction file says “be thorough”. <b>Fix:</b> one source of truth for each rule." },
   { front: "👻 Ghosts of failed attempts", back: "A long chat full of wrong turns keeps steering the model wrong. <b>Fix:</b> start a fresh chat with a clean summary." },
   { front: "🧰 Too many tools", back: "50 tool definitions eat context and confuse tool choice. <b>Fix:</b> only load the tools the task needs." },
-  { front: "🔓 Untrusted text mixed in", back: "A web page or email in the context can carry hidden instructions. <b>Fix:</b> label it clearly as data (Topic 19)." },
+  { front: "🔓 Untrusted text mixed in", back: "A web page or email in the context can carry hidden instructions. <b>Fix:</b> label it clearly as data (Topic 18)." },
 ]);
 
 W.quiz($("#quiz"), [
@@ -231,6 +231,6 @@ W.quiz($("#quiz"), [
   $("#pg").oninput = upd;
 })();
 </script>
-<script src="../assets/deck.js?v=4.3"></script>
+<script src="../assets/deck.js?v=4.4"></script>
 </body>
 </html>

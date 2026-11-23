@@ -20,17 +20,17 @@
   /* ---------- the six layers ---------- */
   W.ORDER = ["model", "context", "knowledge", "action", "autonomy", "trust"];
   W.LAYERS = {
-    model:     { name: "Model",     icon: "🧠", car: "The engine",         q: "What is the AI?",            topics: "Topics 02–03",
+    model:     { name: "Model",     icon: "🧠", car: "The engine",         q: "What is the AI?",            topics: "Topics 3–4, 6",
                  desc: "Powerful, but on its own it goes nowhere. It reads text and predicts text, using only what it learned in training." },
-    context:   { name: "Context",   icon: "📋", car: "The trip briefing",  q: "What does it see right now?", topics: "Topics 01, 04–06",
+    context:   { name: "Context",   icon: "📋", car: "The trip briefing",  q: "What does it see right now?", topics: "Topics 2, 5, 7–8",
                  desc: "Everything you hand the model for this job: instructions, examples, history. It can only use what’s in front of it." },
-    knowledge: { name: "Knowledge", icon: "📚", car: "The map / GPS",      q: "What does it know about us?", topics: "Topic 07",
+    knowledge: { name: "Knowledge", icon: "📚", car: "The map / GPS",      q: "What does it know about us?", topics: "Topics 9–11",
                  desc: "Your company’s own roads. Instead of guessing, it looks things up in your documents before answering." },
-    action:    { name: "Action",    icon: "🔧", car: "Wheels & steering",  q: "What can it actually do?",    topics: "Topics 08–09",
+    action:    { name: "Action",    icon: "🔧", car: "Wheels & steering",  q: "What can it actually do?",    topics: "Topics 12–14",
                  desc: "Lets it move: query systems, send messages, update records. MCP is the standard fitting, so any wheel fits any car." },
-    autonomy:  { name: "Autonomy",  icon: "🤖", car: "Driver & chassis",   q: "Who’s driving?",              topics: "Topics 10–12",
+    autonomy:  { name: "Autonomy",  icon: "🤖", car: "Driver & chassis",   q: "Who’s driving?",              topics: "Topics 15–17, 19–20",
                  desc: "A workflow follows a fixed route; an agent chooses its own turns. The harness is the car body that wires everything together." },
-    trust:     { name: "Trust",     icon: "🛡️", car: "Brakes & seatbelts", q: "Is it safe and is it good?",  topics: "Topic 13",
+    trust:     { name: "Trust",     icon: "🛡️", car: "Brakes & seatbelts", q: "Is it safe and is it good?",  topics: "Topic 18",
                  desc: "Brakes, seatbelts and a dashboard. Without them, the faster the car, the worse the crash." },
   };
 

@@ -4,9 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Topic 3 · How AI generates text</title>
-<link rel="stylesheet" href="../assets/style.css?v=4.3">
-<link rel="stylesheet" href="../assets/widgets.css?v=4.3">
-<link rel="stylesheet" href="../assets/story.css?v=4.3">
+<link rel="stylesheet" href="../assets/style.css?v=4.4">
+<link rel="stylesheet" href="../assets/widgets.css?v=4.4">
+<link rel="stylesheet" href="../assets/story.css?v=4.4">
 <style>
   #tokIn { width: 100%; min-height: 84px; padding: 12px 14px; border-radius: 6px; border: 1px solid var(--line); background: var(--card);
            color: var(--text); font: 17px var(--font); resize: vertical; }
@@ -82,7 +82,7 @@
   <div id="gen"></div>
   <aside class="notes"><span class="tag time">⏱ 2 min</span><p class="say"><b>🎤 Say</b> Every answer is built one token at a time: predict, add, repeat. That is why answers type themselves out on screen, and why the model cannot go back and fix an earlier word.</p>
     <ul><li>This is why you see answers “type out” on screen: they genuinely are produced word by word.</li>
-    <li>It also means it can’t go back and edit an earlier word. It commits as it goes, which is why asking it to “think step by step first” helps (Topic 6).</li></ul></aside>
+    <li>It also means it can’t go back and edit an earlier word. It commits as it goes, which is why asking it to “think step by step first” helps (Topic 7).</li></ul></aside>
 </section>
 
 <section class="slide" data-title="The transformer">
@@ -122,8 +122,8 @@
   <aside class="notes"><span class="tag time">⏱ 30 sec</span><p class="say"><b>🎤 Say</b> Remember: tokens, next-token prediction and a bit of randomness. The key ingredient was attention, so let us look at it next.</p><ul><li>Bridge: “The magic ingredient was attention. Let’s see it in action.”</li></ul></aside>
 </section>
 
-<script src="../assets/course.js?v=4.3"></script>
-<script src="../assets/widgets.js?v=4.3"></script>
+<script src="../assets/course.js?v=4.4"></script>
+<script src="../assets/widgets.js?v=4.4"></script>
 <script>
 const { $ } = W;
 
@@ -198,7 +198,7 @@ W.generate($("#gen"), "The best way to learn a new skill is", [
 W.clickInfo($("#tf"), [
   { icon: "📝", title: "Text in", sub: "your prompt + history", c: "context", html: "<p>Everything in the conversation so far: system instructions, your messages, documents, earlier replies. The model sees it all <b>at once</b>.</p>" },
   { icon: "🧩", title: "Tokens", sub: "chop into pieces", c: "model", html: "<p>The text is split into tokens, and each token becomes an ID number.</p><p class='muted'>“refund” → 19542 (for example)</p>" },
-  { icon: "📍", title: "Embeddings", sub: "meaning as numbers", c: "knowledge", html: "<p>Each token becomes a long list of numbers that captures its <b>meaning</b>. Similar meanings get similar numbers: <i>king</i> sits near <i>queen</i>, <i>refund</i> near <i>reimbursement</i>.</p><p>Think of it as GPS coordinates for meaning. We meet embeddings again in RAG (Topic 8).</p>" },
+  { icon: "📍", title: "Embeddings", sub: "meaning as numbers", c: "knowledge", html: "<p>Each token becomes a long list of numbers that captures its <b>meaning</b>. Similar meanings get similar numbers: <i>king</i> sits near <i>queen</i>, <i>refund</i> near <i>reimbursement</i>.</p><p>Think of it as GPS coordinates for meaning. We meet embeddings again in RAG (Topic 9).</p>" },
   { icon: "🔦", title: "Attention layers", sub: "words look at words ×N", c: "autonomy", html: "<p>The heart of the transformer. In each layer, every token looks at every other token and asks <b>“how relevant are you to me?”</b>, then updates its meaning.</p><p>“bank” next to “river” becomes riverbank; next to “cash” it becomes a financial bank. This repeats through dozens of layers. <b>Next topic is all about this.</b></p>" },
   { icon: "📊", title: "Scores", sub: "every possible next token", c: "action", html: "<p>The final layer gives a score to <b>every token in its vocabulary</b> (tens of thousands of them) for “what comes next?”</p>" },
   { icon: "🎲", title: "Pick one", sub: "temperature decides", c: "trust", html: "<p>One token is chosen: usually a likely one, with some randomness depending on temperature. It’s added to the text and <b>the whole thing runs again</b> for the next token.</p>" },
@@ -206,9 +206,9 @@ W.clickInfo($("#tf"), [
 
 /* ---- implications ---- */
 W.flips($("#impl"), [
-  { front: "🎭 Hallucination", back: "It predicts what <b>sounds plausible</b>, not what is <b>true</b>. If it doesn’t know, it still writes something fluent. <b>Fix:</b> give it sources (RAG, Topic 8)." },
+  { front: "🎭 Hallucination", back: "It predicts what <b>sounds plausible</b>, not what is <b>true</b>. If it doesn’t know, it still writes something fluent. <b>Fix:</b> give it sources (RAG, Topic 9)." },
   { front: "🎲 Different answers each time", back: "There’s some randomness in picking tokens (temperature). Same prompt, different wording. <b>Fix:</b> clearer prompts, lower temperature, structured output." },
-  { front: "📅 Knowledge cutoff", back: "It only knows what was in its training data, up to a date. <b>Fix:</b> tools like web search (Topic 11)." },
+  { front: "📅 Knowledge cutoff", back: "It only knows what was in its training data, up to a date. <b>Fix:</b> tools like web search (Topic 12)." },
   { front: "💸 Tokens cost money", back: "You pay per token, in and out. Long documents and long chats cost more. (Topic 5)" },
   { front: "🧠 No memory", back: "Each request is processed fresh. It “remembers” a chat only because the whole conversation is sent again every time. (Topic 5)" },
   { front: "🧮 Shaky at exact maths", back: "It predicts digits as text instead of calculating. <b>Fix:</b> let it use a calculator or code tool." },
@@ -244,6 +244,6 @@ event: message_delta        { "delta": { "stop_reason": "end_turn" },
   ],
 };
 </script>
-<script src="../assets/deck.js?v=4.3"></script>
+<script src="../assets/deck.js?v=4.4"></script>
 </body>
 </html>

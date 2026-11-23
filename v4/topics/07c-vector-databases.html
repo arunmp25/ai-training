@@ -3,10 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Topic 10 · Vector databases and retrieval</title>
-<link rel="stylesheet" href="../assets/style.css?v=4.3">
-<link rel="stylesheet" href="../assets/widgets.css?v=4.3">
-<link rel="stylesheet" href="../assets/story.css?v=4.3">
+<title>Topic 11 · Vector databases and retrieval</title>
+<link rel="stylesheet" href="../assets/style.css?v=4.4">
+<link rel="stylesheet" href="../assets/widgets.css?v=4.4">
+<link rel="stylesheet" href="../assets/story.css?v=4.4">
 <style>
   .rec-list { display: grid; gap: 6px; max-height: 52vh; overflow-y: auto; }
   .rec { display: grid; grid-template-columns: 70px 1fr; gap: 8px; padding: 8px 10px; border-radius: 6px; border: 1px solid var(--line); background: var(--card); cursor: pointer; font-size: 14px; transition: opacity .3s; }
@@ -40,10 +40,10 @@
 
 <section class="slide title-slide" data-title="Welcome">
   <div class="big-emoji">🗄️</div>
-  <div class="eyebrow">Session 2 · Topic 10</div>
+  <div class="eyebrow">Session 2 · Topic 11</div>
   <h1>Vector databases and retrieval</h1>
   <p class="sub">A <b>vector database</b> stores millions of embeddings and finds the nearest ones to a question in milliseconds. Then hybrid search, filters and re-ranking turn “nearest” into “right”.</p>
-  <aside class="notes"><span class="tag time">⏱ 30 sec</span><p class="say"><b>🎤 Say</b> A vector database stores millions of embeddings and finds the nearest ones in milliseconds. Then hybrid search, filters and re-ranking make the results right, not just close.</p><ul><li>Recap in one line: chunks become vectors (Topic 9); now where do they live and how do we search them fast and well?</li></ul></aside>
+  <aside class="notes"><span class="tag time">⏱ 30 sec</span><p class="say"><b>🎤 Say</b> A vector database stores millions of embeddings and finds the nearest ones in milliseconds. Then hybrid search, filters and re-ranking make the results right, not just close.</p><ul><li>Recap in one line: chunks become vectors (Topic 10); now where do they live and how do we search them fast and well?</li></ul></aside>
 </section>
 
 <section class="slide" data-title="What it stores">
@@ -152,7 +152,7 @@
   <h2>One question, the whole journey</h2>
   <p class="sub">“How is the annual bonus calculated?” Step through a production-grade RAG pipeline.</p>
   <div class="split wide-right"><div id="e2eCtrl"></div><div id="e2eLog" style="max-height:52vh"></div></div>
-  <aside class="notes"><span class="tag time">⏱ 3 min</span><p class="say"><b>🎤 Say</b> One question, the whole journey, from chunking to the cited answer. Every step is something we have covered.</p><ul><li>Each step maps to something we covered: chunking (Topic 8), embeddings (Topic 9), ANN, filters, hybrid, re-ranking (Topic 10), the augmented prompt (Topic 8), citations.</li></ul></aside>
+  <aside class="notes"><span class="tag time">⏱ 3 min</span><p class="say"><b>🎤 Say</b> One question, the whole journey, from chunking to the cited answer. Every step is something we have covered.</p><ul><li>Each step maps to something we covered: chunking (Topic 9), embeddings (Topic 10), ANN, filters, hybrid, re-ranking (Topic 11), the augmented prompt (Topic 9), citations.</li></ul></aside>
 </section>
 
 <section class="slide" data-title="Choosing a vector database">
@@ -180,7 +180,7 @@
     <div class="stack-v">
       <div><div class="label">k (chunks kept): <span id="gkLbl"></span></div><input type="range" id="gk" min="1" max="10" value="3"></div>
       <div class="card"><div class="kv" id="gStats"></div></div>
-      <div class="callout" style="--c:var(--c-trust);font-size:14px">Also check the <b>answers</b>: are they <b>grounded</b> (every claim supported by a retrieved chunk) and <b>correct</b>? More in Topic 19.</div>
+      <div class="callout" style="--c:var(--c-trust);font-size:14px">Also check the <b>answers</b>: are they <b>grounded</b> (every claim supported by a retrieved chunk) and <b>correct</b>? More in Topic 18.</div>
     </div>
   </div>
   <aside class="notes"><span class="tag time">⏱ 2 min</span><p class="say"><b>🎤 Say</b> Measure retrieval with a set of real questions. If the right chunk is not retrieved, the model cannot use it.</p><ul><li><b>Recall@k</b>: how often the right chunk is in the top k. If it’s not retrieved, the model can’t use it.</li><li><b>MRR</b> (mean reciprocal rank): rewards putting the right chunk near the top.</li><li>Re-run the set every time you change chunking, embeddings, k or the re-ranker.</li></ul></aside>
@@ -206,7 +206,7 @@
   <h2>“What will my premium be if I add my 18-year-old son? Today’s price, please.”</h2>
   
   <div class="stack-v" style="max-width:900px"><div class="bubble user">What will my car premium be if I add my 18-year-old son? Today’s price, please.</div><div class="bubble ai" style="border-color:var(--bad)">₹9,999 a year! 🎉</div></div><div class="callout" style="--c:var(--warn);margin-top:16px;max-width:900px">That number came from a 2023 rate table on page 14,201. Documents can’t know today’s price, and retrieval can’t do the calculation. The real number lives in the <b>rating engine</b>, so the model needs a way to ask it. That’s <b>tools</b>.</div>
-  <aside class="notes"><span class="tag time">⏱ 2 min</span><p class="say"><b>🎤 Say</b> Now the next question: what will my premium be if I add my 18-year-old son, at today’s price? RAG finds an old rate table. Documents cannot give a live price, and that is where tools come in.</p><ul><li>Bridge into Topic 11: RAG reads documents; tools fetch live data and take actions.</li></ul></aside>
+  <aside class="notes"><span class="tag time">⏱ 2 min</span><p class="say"><b>🎤 Say</b> Now the next question: what will my premium be if I add my 18-year-old son, at today’s price? RAG finds an old rate table. Documents cannot give a live price, and that is where tools come in.</p><ul><li>Bridge into Topic 12: RAG reads documents; tools fetch live data and take actions.</li></ul></aside>
 </section>
 
 <section class="slide" data-title="Takeaways">
@@ -221,8 +221,8 @@
   <aside class="notes"><span class="tag time">⏱ 30 sec</span><p class="say"><b>🎤 Say</b> RAG lets AI know things. Next, let us let it do things.</p><ul><li>Bridge: “Now it can <i>know</i> things. Next, let’s let it <i>do</i> things: tools.”</li></ul></aside>
 </section>
 
-<script src="../assets/course.js?v=4.3"></script>
-<script src="../assets/widgets.js?v=4.3"></script>
+<script src="../assets/course.js?v=4.4"></script>
+<script src="../assets/widgets.js?v=4.4"></script>
 <script>
 const { $, $$, cv } = W;
 const fmt = (n) => n >= 1e9 ? (n / 1e9).toFixed(n < 1e10 ? 1 : 0) + " billion" : n >= 1e6 ? (n / 1e6).toFixed(n < 1e7 ? 1 : 0) + " million" : n >= 1e3 ? Math.round(n / 1e3) + ",000" : Math.round(n) + "";
@@ -427,7 +427,7 @@ W.clickInfo($("#tricks"), [
   { icon: "🔀", title: "Multi-query", c: "context", html: "<p>Generate 3–5 differently worded versions of the question, search with each, merge the results. Catches chunks that one wording would miss.</p>" },
   { icon: "🧪", title: "HyDE", c: "knowledge", html: "<p><b>Hypothetical Document Embeddings</b>: ask the model to write a fake answer, embed <i>that</i>, and search with it. Answers look more like documents than questions do.</p>" },
   { icon: "🏷️", title: "Contextual chunks", c: "action", html: "<p>Before embedding, prefix each chunk with where it comes from: “Bonus Policy 2026, §3 Calculation: …”. A lonely chunk like “It is paid in March” becomes findable.</p>" },
-  { icon: "🤖", title: "Agentic RAG", c: "autonomy", html: "<p>Give the model a <code>search</code> <b>tool</b> and let it decide when and what to search, read the results, and search again if needed. Great for multi-part questions. Covered in Topics 11–14.</p>" },
+  { icon: "🤖", title: "Agentic RAG", c: "autonomy", html: "<p>Give the model a <code>search</code> <b>tool</b> and let it decide when and what to search, read the results, and search again if needed. Great for multi-part questions. Covered in Topics 12–15.</p>" },
   { icon: "💾", title: "Caching", c: "trust", html: "<p>Cache embeddings of frequent questions and the answers to common ones. Cheaper and faster, but remember to invalidate when documents change.</p>" },
 ], { cols: 3, side: true });
 
@@ -485,6 +485,6 @@ W.quiz($("#quiz"), [
 /* ===== v3 story ===== */
 </script>
 <script>W.seq(document.getElementById("seqHybrid"), {"actors": [{"id": "app", "name": "Your app", "icon": "🖥️", "c": "autonomy"}, {"id": "vec", "name": "Vector index", "icon": "🧭", "c": "knowledge"}, {"id": "kw", "name": "Keyword index", "icon": "🔤", "c": "context"}, {"id": "rr", "name": "Re-ranker", "icon": "⚖️", "c": "trust"}, {"id": "model", "name": "Model", "icon": "🧠", "c": "model"}], "steps": [{"from": "app", "to": "vec", "label": "Meaning search, top 50", "note": "Finds chunks about claim history in general. POL-88821 looks almost the same as POL-88812 to an embedding."}, {"from": "app", "to": "kw", "label": "Keyword search, top 50", "note": "Run at the same time. BM25 matches the exact string POL-88812.", "code": "{ \"query\": \"POL-88812 claim history\", \"top_k\": 50 }"}, {"from": "vec", "to": "app", "label": "50 results by similarity", "ret": true}, {"from": "kw", "to": "app", "label": "50 results by exact match", "ret": true}, {"from": "app", "to": "app", "label": "Merge (reciprocal rank fusion)", "note": "Combine the two lists. A chunk ranked high in both lists rises to the top.", "code": "score(doc) = 1/(60 + rank_vector) + 1/(60 + rank_keyword)"}, {"from": "app", "to": "rr", "label": "Question + 30 candidates", "note": "A cross-encoder reads the question and each chunk together. Slower, so it only sees the shortlist."}, {"from": "rr", "to": "app", "label": "Top 5, re-scored", "code": "[ { \"id\": \"claims-POL-88812-2024\", \"relevance\": 0.96 },\n  { \"id\": \"claims-POL-88812-2023\", \"relevance\": 0.93 },\n  { \"id\": \"claims-POL-88821-2024\", \"relevance\": 0.12 }  // the look-alike drops ]", "ret": true}, {"from": "app", "to": "model", "label": "Augmented prompt (5 chunks)"}, {"from": "model", "to": "app", "label": "Answer about the right policy", "ret": true}], "frames": []});</script>
-<script src="../assets/deck.js?v=4.3"></script>
+<script src="../assets/deck.js?v=4.4"></script>
 </body>
 </html>

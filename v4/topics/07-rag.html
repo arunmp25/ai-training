@@ -3,10 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Topic 8 · RAG: grounding AI in your data</title>
-<link rel="stylesheet" href="../assets/style.css?v=4.3">
-<link rel="stylesheet" href="../assets/widgets.css?v=4.3">
-<link rel="stylesheet" href="../assets/story.css?v=4.3">
+<title>Topic 9 · RAG: grounding AI in your data</title>
+<link rel="stylesheet" href="../assets/style.css?v=4.4">
+<link rel="stylesheet" href="../assets/widgets.css?v=4.4">
+<link rel="stylesheet" href="../assets/story.css?v=4.4">
 <style>
   .pipe { display: grid; gap: 10px; }
   .pipe-row { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
@@ -30,7 +30,7 @@
 
 <section class="slide title-slide" data-title="Welcome">
   <div class="big-emoji">📚</div>
-  <div class="eyebrow">Session 2 · Topic 8</div>
+  <div class="eyebrow">Session 2 · Topic 9</div>
   <h1>RAG: an open-book exam for AI</h1>
   <p class="sub"><b>R</b>etrieval-<b>A</b>ugmented <b>G</b>eneration. Before answering, look up the relevant pages in <i>your</i> documents and put them on the desk.</p>
   <aside class="notes"><span class="tag time">⏱ 30 sec</span><p class="say"><b>🎤 Say</b> RAG is an open-book exam for AI. Before answering, look up the relevant pages in your own documents and put them on the desk.</p><ul><li>One-line definition: RAG = <b>search</b> your documents, then <b>add</b> the results to the prompt, then <b>generate</b> the answer.</li></ul></aside>
@@ -88,7 +88,7 @@
       <div id="strats"></div>
     </div>
   </div>
-  <aside class="notes"><span class="tag time">⏱ 3 min</span><p class="say"><b>🎤 Say</b> Overlap means neighbouring chunks share a few lines, so a sentence cut at a boundary still appears whole in one chunk.</p><ul><li>It starts at size 16, overlap 0: the “Tuesday or Thursday” sentence is cut across two chunks. Drag overlap to ~8 and it’s whole again. Then try size 40: whole, but each chunk carries lots of unrelated text.</li><li>Strategies on the right: most teams start with <b>structure-aware</b> (split on headings/paragraphs) plus a token limit and ~10–20% overlap.</li><li>Every chunk keeps <b>metadata</b>: source, section, date, who may see it. That powers citations and permission filters (Topic 10).</li></ul></aside>
+  <aside class="notes"><span class="tag time">⏱ 3 min</span><p class="say"><b>🎤 Say</b> Overlap means neighbouring chunks share a few lines, so a sentence cut at a boundary still appears whole in one chunk.</p><ul><li>It starts at size 16, overlap 0: the “Tuesday or Thursday” sentence is cut across two chunks. Drag overlap to ~8 and it’s whole again. Then try size 40: whole, but each chunk carries lots of unrelated text.</li><li>Strategies on the right: most teams start with <b>structure-aware</b> (split on headings/paragraphs) plus a token limit and ~10–20% overlap.</li><li>Every chunk keeps <b>metadata</b>: source, section, date, who may see it. That powers citations and permission filters (Topic 11).</li></ul></aside>
 </section>
 
 <section class="slide" data-title="The augmented prompt">
@@ -105,7 +105,7 @@
     </div>
     <div class="stack-v"><div class="label">Model’s answer</div><div id="augAns"></div></div>
   </div>
-  <aside class="notes"><span class="tag time">⏱ 3 min</span><p class="say"><b>🎤 Say</b> Retrieval does not change the model. It changes the prompt: instructions, numbered sources and then the question.</p><ul><li>Point out the structure: instructions, then numbered sources with their metadata, then the question. That’s Topic 6 (tags) applied to retrieval.</li><li>Turn on “off-topic question” with “use only these sources” OFF: the model fills the gap from memory, which is a hallucination with a citation-shaped wrapper. Turn it ON and it admits it doesn’t know.</li></ul></aside>
+  <aside class="notes"><span class="tag time">⏱ 3 min</span><p class="say"><b>🎤 Say</b> Retrieval does not change the model. It changes the prompt: instructions, numbered sources and then the question.</p><ul><li>Point out the structure: instructions, then numbered sources with their metadata, then the question. That’s Topic 7 (tags) applied to retrieval.</li><li>Turn on “off-topic question” with “use only these sources” OFF: the model fills the gap from memory, which is a hallucination with a citation-shaped wrapper. Turn it ON and it admits it doesn’t know.</li></ul></aside>
 </section>
 
 <section class="slide" data-title="RAG vs fine-tuning">
@@ -146,8 +146,8 @@
   <aside class="notes"><span class="tag time">⏱ 30 sec</span><p class="say"><b>🎤 Say</b> Keyword search only finds the words you typed. Next, how does a computer search by meaning?</p><ul><li>Bridge: “Keyword search only finds the words you typed. How does a computer search by <i>meaning</i>? Next: searching by meaning.”</li></ul></aside>
 </section>
 
-<script src="../assets/course.js?v=4.3"></script>
-<script src="../assets/widgets.js?v=4.3"></script>
+<script src="../assets/course.js?v=4.4"></script>
+<script src="../assets/widgets.js?v=4.4"></script>
 <script>
 const { $, $$, cv } = W;
 
@@ -329,6 +329,6 @@ W.BTS.augmented = {
 };
 </script>
 <script>W.seq(document.getElementById("seqRag"), {"actors": [{"id": "user", "name": "Customer", "icon": "🙋", "c": "accent"}, {"id": "app", "name": "Your app", "icon": "🖥️", "c": "autonomy"}, {"id": "emb", "name": "Embedding model", "icon": "🔢", "c": "context"}, {"id": "vdb", "name": "Vector DB", "icon": "🗄️", "c": "knowledge"}, {"id": "model", "name": "Model", "icon": "🧠", "c": "model"}], "steps": [{"sep": "Offline: indexing (once, then on every update)"}, {"from": "app", "to": "app", "label": "Split manual into chunks", "note": "20,000 pages become about 60,000 chunks of a few hundred tokens each, with some overlap."}, {"from": "app", "to": "emb", "label": "Embed each chunk", "note": "Each chunk becomes a vector: a list of numbers that captures its meaning (next topic).", "code": "POST /embeddings\n{ \"model\": \"your-embedding-model\",\n  \"input\": [\"Section 4.2: Young drivers under 21 attract a loading of...\"] }"}, {"from": "app", "to": "vdb", "label": "Store vectors + metadata", "code": "{ \"id\": \"uw-manual-4.2-c3\",\n  \"vector\": [0.021, -0.113, 0.087, ...],   // 1,024 numbers\n  \"metadata\": { \"doc\": \"Underwriting manual\", \"section\": \"4.2\", \"product\": \"motor\" } }"}, {"sep": "Online: every question"}, {"from": "user", "to": "app", "label": "“Are young drivers loaded?”"}, {"from": "app", "to": "emb", "label": "Embed the question", "note": "The question goes through the same embedding model, so it lands in the same space as the chunks."}, {"from": "app", "to": "vdb", "label": "Find the top 5 nearest chunks", "code": "{ \"vector\": [0.019, -0.120, 0.091, ...],\n  \"top_k\": 5,\n  \"filter\": { \"product\": \"motor\" } }"}, {"from": "vdb", "to": "app", "label": "5 chunks + scores", "code": "[ { \"id\": \"uw-manual-4.2-c3\", \"score\": 0.91, \"text\": \"Young drivers under 21...\" },\n  { \"id\": \"uw-manual-4.2-c4\", \"score\": 0.87, \"text\": \"...the loading is waived if...\" }, ... ]", "ret": true}, {"from": "app", "to": "model", "label": "Question + chunks + “cite sources”", "note": "The augmented prompt: only about 2,500 tokens instead of 12 million.", "code": "{ \"system\": \"Answer only from the provided extracts. Cite the section.\",\n  \"messages\": [{ \"role\": \"user\", \"content\":\n    \"<extracts>\\n[4.2] Young drivers under 21 attract a loading...\\n</extracts>\\n\\nAre young drivers loaded?\" }] }"}, {"from": "model", "to": "app", "label": "Grounded answer with citation", "ret": true}, {"from": "app", "to": "user", "label": "“Yes, see section 4.2”", "ret": true}], "frames": []});</script>
-<script src="../assets/deck.js?v=4.3"></script>
+<script src="../assets/deck.js?v=4.4"></script>
 </body>
 </html>

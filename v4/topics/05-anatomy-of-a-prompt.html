@@ -3,10 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Topic 6 · Anatomy of a prompt</title>
-<link rel="stylesheet" href="../assets/style.css?v=4.3">
-<link rel="stylesheet" href="../assets/widgets.css?v=4.3">
-<link rel="stylesheet" href="../assets/story.css?v=4.3">
+<title>Topic 7 · Anatomy of a prompt</title>
+<link rel="stylesheet" href="../assets/style.css?v=4.4">
+<link rel="stylesheet" href="../assets/widgets.css?v=4.4">
+<link rel="stylesheet" href="../assets/story.css?v=4.4">
 <style>
   .issues { margin-top: 10px; font-size: 13px; }
   .issues div { padding: 4px 0; }
@@ -24,7 +24,7 @@
 
 <section class="slide title-slide" data-title="Welcome">
   <div class="big-emoji">🧬</div>
-  <div class="eyebrow">Session 1 · Topic 6</div>
+  <div class="eyebrow">Session 1 · Topic 7</div>
   <h1>Anatomy of a prompt</h1>
   <p class="sub">A great prompt isn’t magic words. It’s a handful of <b>components</b>, each removing one thing the model would otherwise have to guess.</p>
   <aside class="notes"><span class="tag time">⏱ 30 sec</span><p class="say"><b>🎤 Say</b> A great prompt is not magic words. It is a handful of parts, and each part removes one thing the model would otherwise have to guess.</p><ul><li>Link back: the model predicts the most plausible continuation (Topic 3), and each component makes the <i>right</i> continuation the most plausible one.</li></ul></aside>
@@ -84,14 +84,14 @@ Never give legal advice; refer to HR.</pre></div>
       <pre class="code">How many days of parental leave do I get
 if I joined 8 months ago?</pre></div>
   </div>
-  <div class="callout" style="margin-top:16px">💡 Where you meet “system prompts” as a user: <b>custom instructions</b>, <b>project instructions</b> in chat apps, and <b>instruction files</b> like <code>CLAUDE.md</code> for agents (Topic 18). Same idea: write it once, and it applies to every message.</div>
+  <div class="callout" style="margin-top:16px">💡 Where you meet “system prompts” as a user: <b>custom instructions</b>, <b>project instructions</b> in chat apps, and <b>instruction files</b> like <code>CLAUDE.md</code> for agents (Topic 17). Same idea: write it once, and it applies to every message.</div>
   <aside class="notes"><span class="tag time">⏱ 2 min</span><p class="say"><b>🎤 Say</b> Apps split the prompt in two: a system prompt with standing instructions, and the user message for this turn. If you have set custom instructions in a chat app, you have written a system prompt.</p><ul><li>Ask: “Who here has set custom instructions in ChatGPT or Claude?” That’s a system prompt.</li></ul></aside>
 </section>
 
 <section class="slide" data-title="Structure with tags">
   <div class="eyebrow">Structure</div>
   <h2>Separate instructions from data</h2>
-  <p class="sub">When a prompt contains documents, wrap them in clear markers. It helps attention, and it’s a first defence against hidden instructions in documents (Topic 19).</p>
+  <p class="sub">When a prompt contains documents, wrap them in clear markers. It helps attention, and it’s a first defence against hidden instructions in documents (Topic 18).</p>
   <div id="tagTabs"></div>
   <aside class="notes"><span class="tag time">⏱ 2 min</span><p class="say"><b>🎤 Say</b> When a prompt includes documents, wrap them in clear markers. It helps the model, and it is a first defence against hidden instructions inside documents.</p><ul><li>In the messy version, is “Ignore the deadline” an instruction or part of the email? The model can’t be sure. With tags, it is clearly data.</li></ul></aside>
 </section>
@@ -116,7 +116,7 @@ if I joined 8 months ago?</pre></div>
   <h2>“Can I just paste our 20,000-page underwriting manual into the prompt?”</h2>
   
   <div class="big-emoji" style="margin:8px 0 6px">📚</div><div class="callout" style="--c:var(--accent);margin-top:16px;max-width:900px">It’s the obvious next step: if context matters, give it everything. The next topic does the maths on that idea, and then shows what works instead.</div>
-  <aside class="notes"><span class="tag time">⏱ 2 min</span><p class="say"><b>🎤 Say</b> Someone always asks this at the end of the session: can I just paste our 20,000-page underwriting manual into the prompt? Hold that thought: the next topic answers it.</p><ul><li>Leave the question hanging. Topic 7 opens with it.</li></ul></aside>
+  <aside class="notes"><span class="tag time">⏱ 2 min</span><p class="say"><b>🎤 Say</b> Someone always asks this at the end of the session: can I just paste our 20,000-page underwriting manual into the prompt? Hold that thought: the next topic answers it.</p><ul><li>Leave the question hanging. Topic 8 opens with it.</li></ul></aside>
 </section>
 
 <section class="slide" data-title="Takeaways">
@@ -128,11 +128,11 @@ if I joined 8 months ago?</pre></div>
     <div class="card"><b>🧱 Structure</b><p>Separate instructions from data with tags or headings. Clearer for the model and safer.</p></div>
   </div>
   <div class="row"><a class="btn primary" data-nexttopic>Next →</a></div>
-  <aside class="notes"><span class="tag time">⏱ 30 sec</span><p class="say"><b>🎤 Say</b> That is the engine, the desk and the prompt. Next we take on the 20,000-page question.</p><ul><li>Tease Topic 7: “Can you fit 20,000 pages into one prompt? Let us find out. (Spoiler: no.)”</li></ul></aside>
+  <aside class="notes"><span class="tag time">⏱ 30 sec</span><p class="say"><b>🎤 Say</b> That is the engine, the desk and the prompt. Next we take on the 20,000-page question.</p><ul><li>Tease Topic 8: “Can you fit 20,000 pages into one prompt? Let us find out. (Spoiler: no.)”</li></ul></aside>
 </section>
 
-<script src="../assets/course.js?v=4.3"></script>
-<script src="../assets/widgets.js?v=4.3"></script>
+<script src="../assets/course.js?v=4.4"></script>
+<script src="../assets/widgets.js?v=4.4"></script>
 <script>
 const { $, $$ } = W;
 
@@ -242,6 +242,6 @@ W.BTS.sysuser = {
   ],
 };
 </script>
-<script src="../assets/deck.js?v=4.3"></script>
+<script src="../assets/deck.js?v=4.4"></script>
 </body>
 </html>

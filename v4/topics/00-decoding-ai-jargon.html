@@ -4,8 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Topic 1 · Decoding the jargon</title>
-<link rel="stylesheet" href="../assets/style.css?v=4.3">
-<link rel="stylesheet" href="../assets/story.css?v=4.3">
+<link rel="stylesheet" href="../assets/style.css?v=4.4">
+<link rel="stylesheet" href="../assets/story.css?v=4.4">
 <style>
   /* ---------- Slide 1: jargon cloud ---------- */
   .hero-head { display: flex; align-items: flex-end; gap: 24px; flex-wrap: wrap; margin-bottom: 18px; }
@@ -164,7 +164,7 @@
   .gcard .an { color: var(--muted); font-size: 13px; }
 
   /* ---------- Slide 9: roadmap ---------- */
-  .road { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  .road { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
   .day h3 { font-size: 20px; margin-bottom: 4px; }
   .day .theme { color: var(--muted); font-size: 14px; margin-bottom: 12px; }
   .tcard { --c: var(--accent); padding: 12px 14px; border-radius: 6px; background: var(--card); border: 1px solid var(--line);
@@ -208,7 +208,7 @@
     .flips, .buckets, .road, .takeaways { grid-template-columns: 1fr 1fr; }
     .layer-grid { grid-template-columns: 1fr 1fr; }
   }
-  .road .tcard { padding: 5px 12px; margin-bottom: 4px; } .road .tcard b { font-size: 14.5px; } .road .day .theme { margin-bottom: 8px; }
+  .road .tcard { padding: 3px 10px; margin-bottom: 3px; } .road .tcard b { font-size: 13.5px; } .road .day .theme { margin-bottom: 8px; }
 </style>
 </head>
 <body class="deck" data-id="00">
@@ -402,9 +402,9 @@
   <p class="sub">Each session adds layers to the car. Click a topic to see the kind of jargon it clears up.</p>
   <div class="road" id="road"></div>
   <aside class="notes">
-    <span class="tag time">⏱ 1 min</span><p class="say"><b>🎤 Say</b> Here is the route. Session 1 is the engine and what it sees. Session 2 adds knowledge, hands and connectors. Session 3 adds the driver, the car around it and the brakes.</p>
+    <span class="tag time">⏱ 1 min</span><p class="say"><b>🎤 Say</b> Here is the route. Session 1 is the engine, which engine to choose, and what it sees. Session 2 adds knowledge, hands and connectors. Session 3 adds the driver, the car around it and the brakes.</p>
     <ul>
-      <li>Session 1 = the engine, what it sees and how to prompt it. Session 2 = knowledge, hands and connectors (RAG, tools, MCP). Session 3 = the driver (agents and patterns), the car (harness) and the brakes.</li>
+      <li>Session 1 = the engine, choosing a model, what it sees and how to prompt it. Session 2 = knowledge, hands and connectors (RAG, tools, MCP). Session 3 = the driver (the agentic loop), the car (harness) and the brakes. Optional extras: building agents in code and agent patterns.</li>
       <li>Point out the colours: they match the six layers.</li>
     </ul>
   </aside>
@@ -450,8 +450,8 @@
   </aside>
 </section>
 
-<script src="../assets/course.js?v=4.3"></script>
-<script src="../assets/widgets.js?v=4.3"></script>
+<script src="../assets/course.js?v=4.4"></script>
+<script src="../assets/widgets.js?v=4.4"></script>
 <script>
 /* ================= DATA ================= */
 const LAYERS = W.LAYERS, ORDER = W.ORDER, TERMS = W.TERMS;
@@ -863,6 +863,6 @@ const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { c
 
 /* ===== v3 story ===== */
 </script>
-<script src="../assets/deck.js?v=4.3"></script>
+<script src="../assets/deck.js?v=4.4"></script>
 </body>
 </html>

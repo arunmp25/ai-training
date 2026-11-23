@@ -3,10 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Topic 14 · The agentic loop</title>
-<link rel="stylesheet" href="../assets/style.css?v=4.3">
-<link rel="stylesheet" href="../assets/widgets.css?v=4.3">
-<link rel="stylesheet" href="../assets/story.css?v=4.3">
+<title>Topic 15 · The agentic loop</title>
+<link rel="stylesheet" href="../assets/style.css?v=4.4">
+<link rel="stylesheet" href="../assets/widgets.css?v=4.4">
+<link rel="stylesheet" href="../assets/story.css?v=4.4">
 <style>
   .flow { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin: 10px 0; }
   .flow span.b { padding: 10px 14px; border-radius: 6px; background: var(--card); border: 1px solid var(--line); font-weight: 700; font-size: 14px; }
@@ -20,7 +20,7 @@
 
 <section class="slide title-slide" data-title="Welcome">
   <div class="big-emoji">🔁</div>
-  <div class="eyebrow">Session 3 · Topic 14</div>
+  <div class="eyebrow">Session 3 · Topic 15</div>
   <h1>The agentic loop</h1>
   <p class="sub">An <b>agent</b> is a model using tools <b>in a loop</b>, deciding its own next step, until the goal is done. That’s the whole idea.</p>
   <aside class="notes"><span class="tag time">⏱ 30 sec</span><p class="say"><b>🎤 Say</b> An agent is a model using tools in a loop, deciding its own next step until the goal is done. That is the whole idea.</p><ul><li>A common definition: “an LLM using tools in a loop”. Everything else is detail.</li></ul></aside>
@@ -39,7 +39,7 @@
   <h2>Plan → Act → Observe → Done? → repeat</h2>
   <p class="sub">A coding agent (Claude Code, GitHub Copilot’s agent mode…) hunts a real-looking bug: drivers aged exactly 25 are charged the under-25 surcharge. Step through or auto-play and watch the loop go round. <button class="btn bts-btn" data-bts="loop" style="margin-left:6px;padding:4px 10px">🎬 Behind the scenes</button></p>
   <div id="loop"></div>
-  <aside class="notes"><span class="tag time">⏱ 4 min</span><p class="say"><b>🎤 Say</b> A coding agent hunts a pricing bug where drivers aged exactly 25 are charged the under-25 surcharge. It did not know the plan in advance. Each result changed the next step.</p><ul><li>Notice it <b>didn’t know the plan in advance</b>. Each observation changed the next step.</li><li>Loop 3 needed approval to edit a file. The harness enforces that (Topic 17).</li><li>Loop 4 is verification. Good agents check their work instead of claiming success.</li></ul></aside>
+  <aside class="notes"><span class="tag time">⏱ 4 min</span><p class="say"><b>🎤 Say</b> A coding agent hunts a pricing bug where drivers aged exactly 25 are charged the under-25 surcharge. It did not know the plan in advance. Each result changed the next step.</p><ul><li>Notice it <b>didn’t know the plan in advance</b>. Each observation changed the next step.</li><li>Loop 3 needed approval to edit a file. The harness enforces that (Topic 16).</li><li>Loop 4 is verification. Good agents check their work instead of claiming success.</li></ul></aside>
 </section>
 
 <section class="slide seq-slide" data-title="Sequence: The agent loop as a sequence diagram">
@@ -61,7 +61,7 @@
 <section class="slide" data-title="When loops go wrong">
   <div class="eyebrow">Failure modes</div>
   <h2>When loops go wrong</h2>
-  <p class="sub">Flip each card for the fix. Most fixes live in the harness (Topic 17).</p>
+  <p class="sub">Flip each card for the fix. Most fixes live in the harness (Topic 16).</p>
   <div id="fails"></div>
   <aside class="notes"><span class="tag time">⏱ 2 min</span><p class="say"><b>🎤 Say</b> Loops go wrong in predictable ways: endless retries, fake success, drifting off task. Most fixes live in the harness.</p></aside>
 </section>
@@ -88,7 +88,7 @@
   <h2>Many agents, one answer</h2>
   <p class="sub">A full application: one lead agent plans and delegates to three specialists, each running its own loop. Press → to follow the data.</p>
   <div id="archMulti"></div>
-  <aside class="notes"><span class="tag time">⏱ 5 min</span><p class="say"><b>🎤 Say</b> This is how the pieces from the last few topics fit together in a real application. One lead agent breaks the question into tasks and hands them to three specialist agents at the same time. Each specialist runs its own loop with its own tools, and only a short summary comes back.</p><ul><li>Step through with → or the clicker; Play runs it automatically. Click any box to explain that component.</li><li>Point out the fan-out in step 5: three tool_use blocks in one reply, run in parallel.</li><li>Step 8 is the key idea: about 8,000 tokens of raw results shrink to under 200 for the lead agent (context isolation, Topic 7; subagents, Topic 18).</li><li>Recap where earlier topics appear: RAG (Topic 8), vector database (Topic 10), tools (Topic 11), MCP (Topic 13), guardrails (Topic 19).</li><li>Switch to “Blocked by guardrail” to show that a cheap check stops an injection before any agent runs.</li></ul></aside>
+  <aside class="notes"><span class="tag time">⏱ 5 min</span><p class="say"><b>🎤 Say</b> This is how the pieces from the last few topics fit together in a real application. One lead agent breaks the question into tasks and hands them to three specialist agents at the same time. Each specialist runs its own loop with its own tools, and only a short summary comes back.</p><ul><li>Step through with → or the clicker; Play runs it automatically. Click any box to explain that component.</li><li>Point out the fan-out in step 5: three tool_use blocks in one reply, run in parallel.</li><li>Step 8 is the key idea: about 8,000 tokens of raw results shrink to under 200 for the lead agent (context isolation, Topic 8; subagents, Topic 17).</li><li>Recap where earlier topics appear: RAG (Topic 9), vector database (Topic 11), tools (Topic 12), MCP (Topic 14), guardrails (Topic 18).</li><li>Switch to “Blocked by guardrail” to show that a cheap check stops an injection before any agent runs.</li></ul></aside>
 </section>
 
 <section class="slide" data-title="Quick check">
@@ -107,11 +107,11 @@
     <div class="card"><b>🎚️ Dial up gradually</b><p>Limits, checkpoints and verification make loops safe.</p></div>
   </div>
   <div class="row"><a class="btn primary" data-nexttopic>Next →</a></div>
-  <aside class="notes"><span class="tag time">⏱ 30 sec</span><p class="say"><b>🎤 Say</b> That is the loop. Next: how an agent differs from plain prompting, and how teams build one in code with LangChain and LangGraph.</p><ul><li>Bridge: “You have seen the loop. Next, let us build an agent and compare it with plain prompting.”</li></ul></aside>
+  <aside class="notes"><span class="tag time">⏱ 30 sec</span><p class="say"><b>🎤 Say</b> Who runs this loop, executes the tools and asks for approval? Not the model. The harness.</p><ul><li>Bridge: “Who runs this loop, executes the tools, asks for approval and manages memory? Not the model. The <b>harness</b>.”</li><li>Building agents in code (LangChain, LangGraph) and agent patterns are optional Topics 19 and 20 at the end of the course.</li></ul></aside>
 </section>
 
-<script src="../assets/course.js?v=4.3"></script>
-<script src="../assets/widgets.js?v=4.3"></script>
+<script src="../assets/course.js?v=4.4"></script>
+<script src="../assets/widgets.js?v=4.4"></script>
 <script>
 const { $ } = W;
 
@@ -193,7 +193,7 @@ turn 4 ← tool_use  Edit { "file_path": "rating/motor/driver_factors.py",
 turn 5 ← tool_use  Bash { "command": "pytest -q" }
        → tool_result  "312 passed in 4.81s"
 turn 6 ← stop_reason: "end_turn"
-         "Fixed an off-by-one in driver_factors.py:88 (<= should be <). Added a regression test. All 312 tests pass."`, note: "This is the same request/response pattern as the insurance quote in Topic 11. The only new thing is that the harness keeps going round until the model decides it’s finished." },
+         "Fixed an off-by-one in driver_factors.py:88 (<= should be <). Added a regression test. All 312 tests pass."`, note: "This is the same request/response pattern as the insurance quote in Topic 12. The only new thing is that the harness keeps going round until the model decides it’s finished." },
   ],
 };
 </script>
@@ -346,6 +346,6 @@ W.arch(document.getElementById("archMulti"), {
   nodes: AN, edges: AE, flows: AF, obs: "Observability · traces, cost, evals",
 });
 </script>
-<script src="../assets/deck.js?v=4.3"></script>
+<script src="../assets/deck.js?v=4.4"></script>
 </body>
 </html>

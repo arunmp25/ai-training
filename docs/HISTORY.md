@@ -83,6 +83,11 @@ The user asked for relatable or funny references only, no Day labels (sessions o
 - Session 1 “How AI works, prompts and context” = Topics 1–7; Session 2 “Knowledge, tools and MCP” = Topics 8–13; Session 3 “Agents, harnesses and safety” = Topics 14–19. Session 4 is gone.
 - Eyebrows, the roadmap (back to three columns), session hand-off notes (end of Session 1 now on Topic 7, end of Session 2 on Topic 13) and the jargon quiz text updated. Topic 17’s eyebrow wrongly said Topic 19; fixed. Assets `?v=4.3`.
 
+### Model selection topic + three-session re-order (v4)
+- New **Topic 6 “Choosing a model”** (`04b-model-selection.html`, 11 slides) in Session 1, after The context window: big/medium/small tiers with Anthropic list prices, a five-point checklist, an animated cost calculator, an animated router (route the request to the cheapest model that fits, with an escalation flow), the effort/thinking dial, an animated “test on your own examples” table with a 95% bar, a which-size exercise and a quiz. Uses Opus/Sonnet/Haiku 5.x model names.
+- Session 3 re-ordered to The agentic loop → Agent harnesses → Customising the harness → Safety and evals (Topics 15–18). The two code-heavy topics, **AI agents** and **Agent design patterns**, moved to the end as **optional Topics 19–20** (files 10b/10c kept, not deleted); their eyebrows now read “Optional”.
+- Everything renumbered (file ids unchanged; audience numbers shifted): Session 1 = Topics 1–8, Session 2 = 9–14, Session 3 = 15–18, optional 19–20. All cross-references, the roadmap (four columns: three sessions + Optional), the course page, the jargon recap and the docs updated. Assets `?v=4.4`.
+
 ## Known loose ends
 - Three v2 slides still scroll slightly at 1280×720: Topic 15 “The landscape” and “Which harness?”, Topic 16 “Which one?”. A few others overflow by a few pixels; the jargon dictionary scrolls by design.
 - Four sequence diagrams scroll inside their box at projector size (RAG, tool retry, MCP, agent loop). The user was offered tighter rows; no answer yet.

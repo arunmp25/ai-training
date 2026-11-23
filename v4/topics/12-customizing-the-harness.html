@@ -3,10 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Topic 18 · Customising the harness</title>
-<link rel="stylesheet" href="../assets/style.css?v=4.3">
-<link rel="stylesheet" href="../assets/widgets.css?v=4.3">
-<link rel="stylesheet" href="../assets/story.css?v=4.3">
+<title>Topic 17 · Customising the harness</title>
+<link rel="stylesheet" href="../assets/style.css?v=4.4">
+<link rel="stylesheet" href="../assets/widgets.css?v=4.4">
+<link rel="stylesheet" href="../assets/story.css?v=4.4">
 <style>
   .explorer { display: grid; grid-template-columns: 300px 1fr; gap: 18px; align-items: start; }
   .tree { background: var(--card); border: 1px solid var(--line); border-radius: 6px; padding: 12px 8px; color: var(--muted); }
@@ -32,7 +32,7 @@
 
 <section class="slide title-slide" data-title="Welcome">
   <div class="big-emoji">🛠️</div>
-  <div class="eyebrow">Session 3 · Topic 18</div>
+  <div class="eyebrow">Session 3 · Topic 17</div>
   <h1>Make the harness yours</h1>
   <p class="sub">Instruction files, slash commands, skills, subagents, hooks, MCP servers, permissions and plugins: how teams turn a generic agent into <b>their</b> agent.</p>
   <aside class="notes"><span class="tag time">⏱ 30 sec</span><p class="say"><b>🎤 Say</b> Instruction files, skills, subagents, hooks, permissions and more: how teams turn a generic agent into their agent.</p><ul><li>Examples use Claude Code because it exposes all of these. Most other harnesses have similar features with different names (see the comparison slide).</li></ul></aside>
@@ -86,7 +86,7 @@
   <h2>Subagents keep the main desk clean</h2>
   <p class="sub">Task: <b>“Research three competitors’ pricing and write a summary.”</b> Compare.</p>
   <div id="subTabs"></div>
-  <aside class="notes"><span class="tag time">⏱ 3 min</span><p class="say"><b>🎤 Say</b> Subagents keep the main desk clean. They do the research in their own context and return only a summary.</p><ul><li>Subagents = the “isolate” move from Topic 7.</li><li>Also useful for <b>specialists</b>: a security reviewer with read-only tools and a strict checklist, or a test writer.</li><li>Trade-off: more total tokens, and they can’t see each other’s work.</li></ul></aside>
+  <aside class="notes"><span class="tag time">⏱ 3 min</span><p class="say"><b>🎤 Say</b> Subagents keep the main desk clean. They do the research in their own context and return only a summary.</p><ul><li>Subagents = the “isolate” move from Topic 8.</li><li>Also useful for <b>specialists</b>: a security reviewer with read-only tools and a strict checklist, or a test writer.</li><li>Trade-off: more total tokens, and they can’t see each other’s work.</li></ul></aside>
 </section>
 
 <section class="slide" data-title="Hooks and permissions">
@@ -179,8 +179,8 @@
   <aside class="notes"><span class="tag time">⏱ 30 sec</span><p class="say"><b>🎤 Say</b> Make the agent yours with files, and make the important rules enforced, not just written down.</p></aside>
 </section>
 
-<script src="../assets/course.js?v=4.3"></script>
-<script src="../assets/widgets.js?v=4.3"></script>
+<script src="../assets/course.js?v=4.4"></script>
+<script src="../assets/widgets.js?v=4.4"></script>
 <script>
 const { $, $$, cv } = W;
 
@@ -190,7 +190,7 @@ W.clickInfo($("#kit"), [
   { icon: "📚", title: "Skills", sub: "SKILL.md + files", c: "knowledge", html: "<p>A folder with instructions, templates and scripts. Only its <b>description</b> sits in context; the rest loads when a task matches.</p><p><b>Use for:</b> procedures and know-how: “how we write release notes”, “how to build our decks”.</p>" },
   { icon: "👥", title: "Subagents", sub: "specialist helpers", c: "model", html: "<p>A separate agent with its own instructions, tools and <b>fresh context</b>. The main agent delegates and gets back a summary.</p><p><b>Use for:</b> research that would flood the context, specialists (reviewer, tester), parallel work.</p>" },
   { icon: "🪝", title: "Hooks", sub: "run on events, always", c: "warn", html: "<p>Your scripts, run by the harness at set moments: before or after a tool, at session start, when the agent stops…</p><p><b>Use for:</b> things that <b>must</b> happen: format code, block dangerous commands, notify you, log activity.</p>" },
-  { icon: "🔌", title: "MCP servers", sub: "connect systems", c: "action", html: "<p>Add external tools and data: Jira, GitHub, databases, docs (Topic 13).</p><p><b>Use for:</b> letting the agent reach systems beyond your files.</p>" },
+  { icon: "🔌", title: "MCP servers", sub: "connect systems", c: "action", html: "<p>Add external tools and data: Jira, GitHub, databases, docs (Topic 14).</p><p><b>Use for:</b> letting the agent reach systems beyond your files.</p>" },
   { icon: "🔐", title: "Permissions", sub: "allow / ask / deny", c: "trust", html: "<p>Rules for which tools and commands may run without asking, need approval, or are forbidden.</p><p><b>Use for:</b> less approval-clicking on safe commands, and hard blocks on dangerous ones.</p>" },
   { icon: "📦", title: "Plugins", sub: "bundle & share", c: "accent", html: "<p>A package of commands, skills, subagents, hooks and MCP servers installed in one step, often from a team or company marketplace.</p><p><b>Use for:</b> rolling out a standard setup to many people.</p>" },
 ], { cols: 4 });
@@ -335,6 +335,6 @@ description: How to release a new rating engine version. Use when asked to cut a
 };
 </script>
 <script>W.seq(document.getElementById("seqHook"), {"actors": [{"id": "model", "name": "Model", "icon": "🧠", "c": "model"}, {"id": "app", "name": "Harness", "icon": "🧰", "c": "autonomy"}, {"id": "hook", "name": "Hooks + rules", "icon": "🪝", "c": "trust"}, {"id": "user", "name": "Developer", "icon": "👩‍💻", "c": "accent"}, {"id": "tools", "name": "Files + terminal", "icon": "🛠️", "c": "action"}], "steps": [{"from": "model", "to": "app", "label": "tool_use: Edit rates.json"}, {"from": "app", "to": "hook", "label": "Check settings.json rules", "note": "Deny rules win, then ask, then allow.", "code": "\"permissions\": {\n  \"allow\": [\"Read\", \"Bash(pytest:*)\"],\n  \"ask\":   [\"Edit(pricing/**)\"],\n  \"deny\":  [\"Edit(rates/*.json)\", \"Bash(git push:*)\"] }"}, {"from": "hook", "to": "app", "label": "deny: rates/*.json", "ret": true}, {"from": "app", "to": "model", "label": "tool_result: blocked", "note": "The model is told why, and can change its plan.", "code": "{ \"type\": \"tool_result\", \"is_error\": true,\n  \"content\": \"Permission denied: editing rates/*.json is not allowed in this project.\" }"}, {"from": "model", "to": "app", "label": "tool_use: Edit pricing/bands.py", "ret": true}, {"from": "app", "to": "hook", "label": "PreToolUse hook", "note": "Your own script runs before the tool. It can block, allow or change the call.", "code": "\"hooks\": { \"PreToolUse\": [{ \"matcher\": \"Edit\",\n  \"hooks\": [{ \"type\": \"command\", \"command\": \"scripts/check_no_secrets.sh\" }] }] }"}, {"from": "hook", "to": "app", "label": "exit 0 (ok), rule says ask", "ret": true}, {"from": "app", "to": "user", "label": "“Allow edit to bands.py?”", "note": "Rules marked ask stop and wait for a person."}, {"from": "user", "to": "app", "label": "Approve", "ret": true}, {"from": "app", "to": "tools", "label": "Apply the edit"}, {"from": "app", "to": "hook", "label": "PostToolUse: run formatter", "note": "Runs after the tool, every time, for example to format and lint the file."}, {"from": "app", "to": "model", "label": "tool_result: edited"}], "frames": []});</script>
-<script src="../assets/deck.js?v=4.3"></script>
+<script src="../assets/deck.js?v=4.4"></script>
 </body>
 </html>

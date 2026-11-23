@@ -3,10 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Topic 13 · MCP: the universal connector</title>
-<link rel="stylesheet" href="../assets/style.css?v=4.3">
-<link rel="stylesheet" href="../assets/widgets.css?v=4.3">
-<link rel="stylesheet" href="../assets/story.css?v=4.3">
+<title>Topic 14 · MCP: the universal connector</title>
+<link rel="stylesheet" href="../assets/style.css?v=4.4">
+<link rel="stylesheet" href="../assets/widgets.css?v=4.4">
+<link rel="stylesheet" href="../assets/story.css?v=4.4">
 <style>
   #nm { width: 100%; height: 340px; background: var(--card); border: 1px solid var(--line); border-radius: 6px; }
   .count { font-size: 44px; font-weight: 800; }
@@ -33,7 +33,7 @@
 
 <section class="slide title-slide" data-title="Welcome">
   <div class="big-emoji">🔌</div>
-  <div class="eyebrow">Session 2 · Topic 13</div>
+  <div class="eyebrow">Session 2 · Topic 14</div>
   <h1>MCP: USB-C for AI</h1>
   <p class="sub">The <b>Model Context Protocol</b> is an open standard for plugging AI apps into tools and data. Build a connector once, and any MCP-compatible AI app can use it. Remember the drawer of old phone chargers? This is the USB-C moment.</p>
   <aside class="notes"><span class="tag time">⏱ 30 sec</span><p class="say"><b>🎤 Say</b> MCP is like USB-C for AI: one standard plug between AI apps and tools or data. Build the connector once and any compatible app can use it.</p><ul><li>Introduced by Anthropic in late 2024 as an open standard, and now supported across many AI apps and vendors.</li><li>Analogy: before USB, every device had its own plug.</li></ul></aside>
@@ -71,7 +71,7 @@
   <h2>An MCP session, start to finish</h2>
   <p class="sub">The host connects to the rating-engine MCP server, learns its tools, then uses one.</p>
   <div id="seqMcp"></div>
-  <aside class="notes"><span class="tag time">⏱ 3 min</span><p class="say"><b>🎤 Say</b> Here is a full MCP session. At start-up the app connects and asks the server which tools it has. Then, when a user asks, the model requests a tool and the app forwards it to the server. The model never knows MCP is involved.</p><ul><li>Step through with → or the clicker. Each step shows the real message on the right.</li><li>Steps 1 to 4 happen once per session. Steps 5 to 12 repeat for every tool call.</li><li>Compare with the tool-call diagram in Topic 11: the only new part is the JSON-RPC hop to the server.</li></ul></aside>
+  <aside class="notes"><span class="tag time">⏱ 3 min</span><p class="say"><b>🎤 Say</b> Here is a full MCP session. At start-up the app connects and asks the server which tools it has. Then, when a user asks, the model requests a tool and the app forwards it to the server. The model never knows MCP is involved.</p><ul><li>Step through with → or the clicker. Each step shows the real message on the right.</li><li>Steps 1 to 4 happen once per session. Steps 5 to 12 repeat for every tool call.</li><li>Compare with the tool-call diagram in Topic 12: the only new part is the JSON-RPC hop to the server.</li></ul></aside>
 </section>
 
 <section class="slide" data-title="Tool call vs MCP">
@@ -79,7 +79,7 @@
   <h2>A regular tool call vs an MCP tool</h2>
   <p class="sub">To the model they look exactly the same. What changes is where the tool lives and how your app finds and runs it.</p>
   <div id="toolVsMcp"></div>
-  <aside class="notes"><span class="tag time">⏱ 3 min</span><p class="say"><b>🎤 Say</b> A common question: is an MCP tool different from the tool calls we saw in Topic 11? For the model, no. It still gets a tool list, replies with tool_use and receives a tool_result. MCP changes the plumbing on our side: the tool is described and run by a separate server, and the app discovers it instead of hard-coding it.</p><ul><li>Start on “Side by side”, then switch to “On the wire” and point out that steps 2 and 4 are identical in both columns.</li><li>The prefix <code>mcp__rating__</code> is how Claude Code names MCP tools, so tools from different servers never clash.</li><li>Rule of thumb: one app and a few tools you own, a regular tool call is fine. Many apps, or tools supplied by a vendor, use MCP.</li></ul></aside>
+  <aside class="notes"><span class="tag time">⏱ 3 min</span><p class="say"><b>🎤 Say</b> A common question: is an MCP tool different from the tool calls we saw in Topic 12? For the model, no. It still gets a tool list, replies with tool_use and receives a tool_result. MCP changes the plumbing on our side: the tool is described and run by a separate server, and the app discovers it instead of hard-coding it.</p><ul><li>Start on “Side by side”, then switch to “On the wire” and point out that steps 2 and 4 are identical in both columns.</li><li>The prefix <code>mcp__rating__</code> is how Claude Code names MCP tools, so tools from different servers never clash.</li><li>Rule of thumb: one app and a few tools you own, a regular tool call is fine. Many apps, or tools supplied by a vendor, use MCP.</li></ul></aside>
 </section>
 
 <section class="slide" data-title="API vs MCP">
@@ -133,7 +133,7 @@
   <h2>An MCP server is code you are trusting</h2>
   <p class="sub">Flip each card.</p>
   <div id="sec"></div>
-  <aside class="notes"><span class="tag time">⏱ 2 min</span><p class="say"><b>🎤 Say</b> An MCP server is code you are trusting. A malicious one can hide instructions in its tool descriptions.</p><ul><li>“Tool poisoning” is real: a malicious server can hide instructions inside its tool descriptions, which the model reads (Topic 19).</li></ul></aside>
+  <aside class="notes"><span class="tag time">⏱ 2 min</span><p class="say"><b>🎤 Say</b> An MCP server is code you are trusting. A malicious one can hide instructions in its tool descriptions.</p><ul><li>“Tool poisoning” is real: a malicious server can hide instructions inside its tool descriptions, which the model reads (Topic 18).</li></ul></aside>
 </section>
 
 <section class="slide" data-title="Quick check">
@@ -155,8 +155,8 @@
   <aside class="notes"><span class="tag time">⏱ 30 sec</span><p class="say"><b>🎤 Say</b> AI can now know things and do things. What if it decides for itself what to do next? That is an agent.</p><ul><li>Bridge: “It can know things (RAG) and do things (tools/MCP). What if it decides by itself what to do next? That’s an agent.”</li><li>End of Session 2. Session 3 opens with the agentic loop.</li></ul></aside>
 </section>
 
-<script src="../assets/course.js?v=4.3"></script>
-<script src="../assets/widgets.js?v=4.3"></script>
+<script src="../assets/course.js?v=4.4"></script>
+<script src="../assets/widgets.js?v=4.4"></script>
 <script>
 const { $, $$ } = W;
 
@@ -194,7 +194,7 @@ W.clickInfo($("#arch"), [
 ], { layout: "flow" });
 
 W.clickInfo($("#prims"), [
-  { icon: "🔧", title: "Tools", sub: "actions the AI can call", c: "action", html: "<p>Functions like <code>create_issue</code>, <code>search_messages</code>, <code>run_query</code>. Exactly the tools from Topic 11, packaged in a standard way. <b>By far the most used.</b></p>" },
+  { icon: "🔧", title: "Tools", sub: "actions the AI can call", c: "action", html: "<p>Functions like <code>create_issue</code>, <code>search_messages</code>, <code>run_query</code>. Exactly the tools from Topic 12, packaged in a standard way. <b>By far the most used.</b></p>" },
   { icon: "📄", title: "Resources", sub: "data the app can read", c: "knowledge", html: "<p>Read-only content such as files, records or schemas that the app can attach as context.</p>" },
   { icon: "📋", title: "Prompts", sub: "ready-made templates", c: "context", html: "<p>Pre-written prompt templates the server offers, like “summarise this pull request”. Users often see them as slash commands.</p>" },
 ], { cols: 3, side: true });
@@ -260,7 +260,7 @@ W.BTS.mcp = {
     "description": "Live annual motor premium from HarborShield's rating engine...",
     "inputSchema": { "type": "object", "properties": { "policy_id": { "type": "string" }, ... } } },
   { "name": "get_claim_status", "description": "...", "inputSchema": { ... } }
-] } }`, note: "The app turns these into the same tool definitions you saw in Topic 12, and puts them on the model’s desk." },
+] } }`, note: "The app turns these into the same tool definitions you saw in Topic 13, and puts them on the model’s desk." },
     { label: "2 · Later, the model asks for a quote → client calls the server", c: "accent", json: `{ "jsonrpc": "2.0", "id": 7, "method": "tools/call",
   "params": { "name": "get_motor_quote",
               "arguments": { "policy_id": "MTR-55120", "add_driver": { "age": 18, "licence_years": 0 } } } }` },
@@ -280,7 +280,7 @@ W.BTS.mcp = {
   const col = (label, c, body) => `<div><div class="code-lab" style="color:${W.cv(c)}">${label}</div><pre class="code" style="font-size:12px;line-height:1.45;white-space:pre">${body}</pre></div>`;
 
   W.tabs(W.$("#toolVsMcp"), [
-    { label: "📋 Side by side", html: table(["", "🔧 Regular tool call (Topic 11)", "🔌 MCP tool"], [
+    { label: "📋 Side by side", html: table(["", "🔧 Regular tool call (Topic 12)", "🔌 MCP tool"], [
       ["Where the tool is described", "In your app’s own code: the <code>tools</code> list", "In the MCP server. The app fetches it with <code>tools/list</code>"],
       ["Where the code runs", "A function inside your app", "Inside the MCP server, on your machine or remote"],
       ["How the app learns the tools", "Hard-coded. A change means redeploying the app", "Discovered when the app connects. Server updates appear on their own"],
@@ -366,6 +366,6 @@ if __name__ == "__main__":
   ]);
 })();
 </script>
-<script src="../assets/deck.js?v=4.3"></script>
+<script src="../assets/deck.js?v=4.4"></script>
 </body>
 </html>

@@ -1,4 +1,4 @@
-"""Topic 12: the tool loop. Parallel calls, an error, and a retry.
+"""Topic 13: the tool loop. Parallel calls, an error, and a retry.
 Run:  pip install anthropic
       export ANTHROPIC_API_KEY=...
       python tool_loop.py
