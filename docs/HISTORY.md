@@ -119,6 +119,16 @@ The user asked for relatable or funny references only, no Day labels (sessions o
   - **Inside one layer** (new): attention as the meeting, feed-forward as desk work, repeated dozens of times; a slider follows “bank” sharpening from “just the word” to “the flooded river bank where the insured car ended up”; four flip cards: parameters, context window, why long prompts cost more, and encoder or decoder (the user asked for this note; links to embeddings in Topic 10).
 - Two quiz questions added; the transformer takeaway reworded; Topic 4’s opening line now says attention is the “meeting” step inside every transformer layer. Topic 3 minutes 14 → 22. Assets `?v=4.8`. v4 now has 243 slides.
 
+### Transformer section simplified (Topic 3, v4, 23 Nov 2026)
+- Feedback: “the slides are confusing for transformers, simplify and add more animation”. Too much per slide (flip cards, a slider, token IDs, decimal vectors, small text). The user approved a plan first.
+- Rebuilt as four slides, one idea and one big animation each, all on → with Next and Reset buttons:
+  1. **The old way forgot. The transformer sees everything.** One large sentence; a spotlight reads word by word while earlier words fade (“ended?”), then every word lights at once, arcs reach back and “expired” pops in.
+  2. **The transformer is an assembly line.** Four stations (Cut, Numbers, Layers, Guess) over a moving belt; the sentence becomes token chips, then bar-code “numbers”, which flicker through a Layer 1 → 40 counter, then guess bars and “expired”, then the sentence loops back to the start.
+  3. **Inside each layer: meet, then think.** Word bubbles; lines from “bank” to the earlier words (meet), each word glowing on its own (think), then a layer counter while “bank” becomes “the flooded river bank where the car was found”.
+  4. **Two kinds of transformer: writers and readers.** A decoder writes word by word; an encoder scans the whole sentence, outputs a bar code and files it in a database (“ready to search”, Topic 10).
+- Dropped the parameters, context window and cost flip cards (covered in Topics 5 and 6). Topic 3 minutes 22 → 23. Assets `?v=4.9`. v4 now has 244 slides.
+- Lesson: the deck bar uses `.counter` (and `.cursor` exists in the theme); page CSS must not reuse those class names.
+
 ## Known loose ends
 - These slides still scroll slightly at 1280×720: Topic 15 “The loop in action” (+32px), Topic 16 “The landscape” (+198px) and “Which harness?” (+14px), Topic 17 “Which one?” (+121px). The jargon dictionary scrolls by design.
 - Four sequence diagrams scroll inside their box at projector size (RAG, tool retry, MCP, agent loop). The user was offered tighter rows; no answer yet.

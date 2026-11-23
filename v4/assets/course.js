@@ -29,7 +29,7 @@ window.COURSE = {
       short: "", name: "Building with AI",
       desc: "Three sessions. Session 3 ends with two optional topics on building agents in code. Each topic adds one layer, using everyday examples from an insurance business.",
       days: [
-        { d: "Session 1", theme: "How AI works, models, prompts and context", items: [["00", 16], ["01", 16], ["02", 22], ["03", 15], ["04", 10], ["04b", 16], ["05", 17], ["06", 15]] },
+        { d: "Session 1", theme: "How AI works, models, prompts and context", items: [["00", 16], ["01", 16], ["02", 23], ["03", 15], ["04", 10], ["04b", 16], ["05", 17], ["06", 15]] },
         { d: "Session 2", theme: "Knowledge, tools and MCP",                  items: [["07", 12], ["07b", 19], ["07c", 16], ["08", 17], ["08b", 19], ["09", 16]] },
         { d: "Session 3", theme: "Agents, harnesses and safety",              items: [["10", 17], ["11", 15], ["12", 22], ["13", 16], ["10b", 22], ["10c", 26]] },
       ],
