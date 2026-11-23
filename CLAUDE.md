@@ -49,7 +49,7 @@ File ids are the old v2 ids; the audience sees `n` from `course.js`. Always writ
 | 00 | 1 | Decoding the jargon | 08 | 12 | Tools and function calling |
 | 01 | 2 | Talking to AI | 08b | 13 | Tools deep dive |
 | 02 | 3 | How AI generates text | 09 | 14 | MCP |
-| 03 | 4 | Attention | 10 | 15 | The agentic loop |
+| 03 | 4 | Transformers and attention | 10 | 15 | The agentic loop |
 | 04 | 5 | The context window | 11 | 16 | Agent harnesses (Topic 15 in v3) |
 | 04b | 6 | Choosing a model (v4 only) | 12 | 17 | Customising the harness (Topic 16 in v3) |
 | 05 | 7 | Anatomy of a prompt | 13 | 18 | Safety, trust and evals (Topic 17 in v3) |
@@ -63,7 +63,7 @@ Sessions (v4): 1 = topics 1–8, 2 = topics 9–14, 3 = topics 15–20: the agen
 ## Run and check
 - Start the preview server (`.claude/launch.json`, name `ai-training`) and open `http://localhost:8765/v4/index.html`. v4 also works from `file://`.
 - Test at **1280×720** (projector size). Slides should not need scrolling; a few long v2 slides still do (Topic 15 “The loop in action”, Topic 16 “The landscape” and “Which harness?”, Topic 17 “Which one?”).
-- Browsers cache aggressively. Asset links carry `?v=4.9` in v4; bump the number in every v4 page when you change files in `v4/assets/`, or force reload with `fetch(url, {cache: "reload"})` while testing.
+- Browsers cache aggressively. Asset links carry `?v=5.0` in v4; bump the number in every v4 page when you change files in `v4/assets/`, or force reload with `fetch(url, {cache: "reload"})` while testing.
 - Before finishing, load every v4 topic and check: no script errors, every slide has a `.say` note, every `.seq` renders arrows, `data-bts` buttons have a matching `W.BTS` key.
 
 ## Packaging and git

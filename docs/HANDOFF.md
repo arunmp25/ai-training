@@ -12,8 +12,8 @@ Then say: "Read docs/HANDOFF.md and docs/HISTORY.md, then continue."
 
 ## Where things stand
 - Repo: github.com/arunmp25/ai-training, branch `main`. Last pushed commit **81ae20a**. The worked examples and the Topic 5 context-bar fix are committed on top of it (see `git log`). Check `git status -sb` to see whether they have been pushed.
-- Work only in `v4/`. Asset version is `?v=4.9`. If you change `v4/assets/`, bump it to 5.0 in every v4 page.
-- v4 has 244 slides. All 20 topics load at 1280×720 with no script errors, and every slide has a speaker note.
+- Work only in `v4/`. Asset version is `?v=5.0`. If you change `v4/assets/`, bump it to 5.1 in every v4 page.
+- v4 has 245 slides. All 20 topics load at 1280×720 with no script errors, and every slide has a speaker note.
 
 ## Course layout (v4)
 | Session | Topics | File ids |

@@ -4,9 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Topic 9 · RAG: grounding AI in your data</title>
-<link rel="stylesheet" href="../assets/style.css?v=4.9">
-<link rel="stylesheet" href="../assets/widgets.css?v=4.9">
-<link rel="stylesheet" href="../assets/story.css?v=4.9">
+<link rel="stylesheet" href="../assets/style.css?v=5.0">
+<link rel="stylesheet" href="../assets/widgets.css?v=5.0">
+<link rel="stylesheet" href="../assets/story.css?v=5.0">
 <style>
   .pipe { display: grid; gap: 10px; }
   .pipe-row { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
@@ -146,8 +146,8 @@
   <aside class="notes"><span class="tag time">⏱ 30 sec</span><p class="say"><b>🎤 Say</b> Keyword search only finds the words you typed. Next, how does a computer search by meaning?</p><ul><li>Bridge: “Keyword search only finds the words you typed. How does a computer search by <i>meaning</i>? Next: searching by meaning.”</li></ul></aside>
 </section>
 
-<script src="../assets/course.js?v=4.9"></script>
-<script src="../assets/widgets.js?v=4.9"></script>
+<script src="../assets/course.js?v=5.0"></script>
+<script src="../assets/widgets.js?v=5.0"></script>
 <script>
 const { $, $$, cv } = W;
 
@@ -329,6 +329,6 @@ W.BTS.augmented = {
 };
 </script>
 <script>W.seq(document.getElementById("seqRag"), {"actors": [{"id": "user", "name": "Customer", "icon": "🙋", "c": "accent"}, {"id": "app", "name": "Your app", "icon": "🖥️", "c": "autonomy"}, {"id": "emb", "name": "Embedding model", "icon": "🔢", "c": "context"}, {"id": "vdb", "name": "Vector DB", "icon": "🗄️", "c": "knowledge"}, {"id": "model", "name": "Model", "icon": "🧠", "c": "model"}], "steps": [{"sep": "Offline: indexing (once, then on every update)"}, {"from": "app", "to": "app", "label": "Split manual into chunks", "note": "20,000 pages become about 60,000 chunks of a few hundred tokens each, with some overlap."}, {"from": "app", "to": "emb", "label": "Embed each chunk", "note": "Each chunk becomes a vector: a list of numbers that captures its meaning (next topic).", "code": "POST /embeddings\n{ \"model\": \"your-embedding-model\",\n  \"input\": [\"Section 4.2: Young drivers under 21 attract a loading of...\"] }"}, {"from": "app", "to": "vdb", "label": "Store vectors + metadata", "code": "{ \"id\": \"uw-manual-4.2-c3\",\n  \"vector\": [0.021, -0.113, 0.087, ...],   // 1,024 numbers\n  \"metadata\": { \"doc\": \"Underwriting manual\", \"section\": \"4.2\", \"product\": \"motor\" } }"}, {"sep": "Online: every question"}, {"from": "user", "to": "app", "label": "“Are young drivers loaded?”"}, {"from": "app", "to": "emb", "label": "Embed the question", "note": "The question goes through the same embedding model, so it lands in the same space as the chunks."}, {"from": "app", "to": "vdb", "label": "Find the top 5 nearest chunks", "code": "{ \"vector\": [0.019, -0.120, 0.091, ...],\n  \"top_k\": 5,\n  \"filter\": { \"product\": \"motor\" } }"}, {"from": "vdb", "to": "app", "label": "5 chunks + scores", "code": "[ { \"id\": \"uw-manual-4.2-c3\", \"score\": 0.91, \"text\": \"Young drivers under 21...\" },\n  { \"id\": \"uw-manual-4.2-c4\", \"score\": 0.87, \"text\": \"...the loading is waived if...\" }, ... ]", "ret": true}, {"from": "app", "to": "model", "label": "Question + chunks + “cite sources”", "note": "The augmented prompt: only about 2,500 tokens instead of 12 million.", "code": "{ \"system\": \"Answer only from the provided extracts. Cite the section.\",\n  \"messages\": [{ \"role\": \"user\", \"content\":\n    \"<extracts>\\n[4.2] Young drivers under 21 attract a loading...\\n</extracts>\\n\\nAre young drivers loaded?\" }] }"}, {"from": "model", "to": "app", "label": "Grounded answer with citation", "ret": true}, {"from": "app", "to": "user", "label": "“Yes, see section 4.2”", "ret": true}], "frames": []});</script>
-<script src="../assets/deck.js?v=4.9"></script>
+<script src="../assets/deck.js?v=5.0"></script>
 </body>
 </html>

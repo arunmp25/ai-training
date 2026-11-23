@@ -4,9 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Topic 11 · Vector databases and retrieval</title>
-<link rel="stylesheet" href="../assets/style.css?v=4.9">
-<link rel="stylesheet" href="../assets/widgets.css?v=4.9">
-<link rel="stylesheet" href="../assets/story.css?v=4.9">
+<link rel="stylesheet" href="../assets/style.css?v=5.0">
+<link rel="stylesheet" href="../assets/widgets.css?v=5.0">
+<link rel="stylesheet" href="../assets/story.css?v=5.0">
 <style>
   .rec-list { display: grid; gap: 6px; max-height: 52vh; overflow-y: auto; }
   .rec { display: grid; grid-template-columns: 70px 1fr; gap: 8px; padding: 8px 10px; border-radius: 6px; border: 1px solid var(--line); background: var(--card); cursor: pointer; font-size: 14px; transition: opacity .3s; }
@@ -221,8 +221,8 @@
   <aside class="notes"><span class="tag time">⏱ 30 sec</span><p class="say"><b>🎤 Say</b> RAG lets AI know things. Next, let us let it do things.</p><ul><li>Bridge: “Now it can <i>know</i> things. Next, let’s let it <i>do</i> things: tools.”</li></ul></aside>
 </section>
 
-<script src="../assets/course.js?v=4.9"></script>
-<script src="../assets/widgets.js?v=4.9"></script>
+<script src="../assets/course.js?v=5.0"></script>
+<script src="../assets/widgets.js?v=5.0"></script>
 <script>
 const { $, $$, cv } = W;
 const fmt = (n) => n >= 1e9 ? (n / 1e9).toFixed(n < 1e10 ? 1 : 0) + " billion" : n >= 1e6 ? (n / 1e6).toFixed(n < 1e7 ? 1 : 0) + " million" : n >= 1e3 ? Math.round(n / 1e3) + ",000" : Math.round(n) + "";
@@ -485,6 +485,6 @@ W.quiz($("#quiz"), [
 /* ===== v3 story ===== */
 </script>
 <script>W.seq(document.getElementById("seqHybrid"), {"actors": [{"id": "app", "name": "Your app", "icon": "🖥️", "c": "autonomy"}, {"id": "vec", "name": "Vector index", "icon": "🧭", "c": "knowledge"}, {"id": "kw", "name": "Keyword index", "icon": "🔤", "c": "context"}, {"id": "rr", "name": "Re-ranker", "icon": "⚖️", "c": "trust"}, {"id": "model", "name": "Model", "icon": "🧠", "c": "model"}], "steps": [{"from": "app", "to": "vec", "label": "Meaning search, top 50", "note": "Finds chunks about claim history in general. POL-88821 looks almost the same as POL-88812 to an embedding."}, {"from": "app", "to": "kw", "label": "Keyword search, top 50", "note": "Run at the same time. BM25 matches the exact string POL-88812.", "code": "{ \"query\": \"POL-88812 claim history\", \"top_k\": 50 }"}, {"from": "vec", "to": "app", "label": "50 results by similarity", "ret": true}, {"from": "kw", "to": "app", "label": "50 results by exact match", "ret": true}, {"from": "app", "to": "app", "label": "Merge (reciprocal rank fusion)", "note": "Combine the two lists. A chunk ranked high in both lists rises to the top.", "code": "score(doc) = 1/(60 + rank_vector) + 1/(60 + rank_keyword)"}, {"from": "app", "to": "rr", "label": "Question + 30 candidates", "note": "A cross-encoder reads the question and each chunk together. Slower, so it only sees the shortlist."}, {"from": "rr", "to": "app", "label": "Top 5, re-scored", "code": "[ { \"id\": \"claims-POL-88812-2024\", \"relevance\": 0.96 },\n  { \"id\": \"claims-POL-88812-2023\", \"relevance\": 0.93 },\n  { \"id\": \"claims-POL-88821-2024\", \"relevance\": 0.12 }  // the look-alike drops ]", "ret": true}, {"from": "app", "to": "model", "label": "Augmented prompt (5 chunks)"}, {"from": "model", "to": "app", "label": "Answer about the right policy", "ret": true}], "frames": []});</script>
-<script src="../assets/deck.js?v=4.9"></script>
+<script src="../assets/deck.js?v=5.0"></script>
 </body>
 </html>

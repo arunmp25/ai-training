@@ -129,6 +129,12 @@ The user asked for relatable or funny references only, no Day labels (sessions o
 - Dropped the parameters, context window and cost flip cards (covered in Topics 5 and 6). Topic 3 minutes 22 → 23. Assets `?v=4.9`. v4 now has 244 slides.
 - Lesson: the deck bar uses `.counter` (and `.cursor` exists in the theme); page CSS must not reuse those class names.
 
+### Transformers and attention merged (Topic 4, v4, 23 Nov 2026)
+- The user noticed the transformer slides in Topic 3 repeated Topic 4 (the arcs were attention, and both used the “bank” example) and asked for one section, “Transformers and attention”. Plan approved first.
+- Topic 4 renamed **Transformers and attention** (file id `03` unchanged, no renumbering). Part 1 is the four transformer slides moved from Topic 3; part 2 (“Zoom into ‘meet’: attention”) is the existing attention slides.
+- The “Inside each layer” slide now follows the word **“policy”** (just a word → an insurance policy → the customer’s home insurance policy → the home policy that may not cover flood damage), so “bank” appears only on the attention slide.
+- Topic 4 gained a Quick check (the attention question from Topic 3 plus the 2017 and encoder questions) and a transformer takeaway. Topic 3 is back to tokens and next-token prediction, with a bridge to Topic 4. Minutes: Topic 3 23 → 11, Topic 4 15 → 29. Assets `?v=5.0`. v4 now has 245 slides.
+
 ## Known loose ends
 - These slides still scroll slightly at 1280×720: Topic 15 “The loop in action” (+32px), Topic 16 “The landscape” (+198px) and “Which harness?” (+14px), Topic 17 “Which one?” (+121px). The jargon dictionary scrolls by design.
 - Four sequence diagrams scroll inside their box at projector size (RAG, tool retry, MCP, agent loop). The user was offered tighter rows; no answer yet.
