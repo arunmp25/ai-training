@@ -1,4 +1,4 @@
-# Hand-off: AI Training v5 (24 Nov 2026)
+# Hand-off: AI Training v6 (24 Nov 2026)
 
 For a Claude Code session in the terminal. Start in the repo folder:
 
@@ -8,13 +8,14 @@ claude
 ```
 
 Then say: "Read docs/HANDOFF.md and docs/HISTORY.md, then continue."
-`CLAUDE.md` (root) and `v5/CLAUDE.md` load automatically and hold the ground rules.
+`CLAUDE.md` (root) and `v6/CLAUDE.md` load automatically and hold the ground rules.
 
 ## Where things stand
 - Repo: github.com/arunmp25/ai-training, branch `main`. Last pushed commit **81ae20a**. The worked examples and the Topic 5 context-bar fix are committed on top of it (see `git log`). Check `git status -sb` to see whether they have been pushed.
-- Work only in `v5/` (copied from v4 on 24 Nov 2026; v4 is now frozen). Asset version is `?v=5.0`. If you change `v5/assets/`, bump it to 5.1 in every v5 page.
+- Work only in `v6/` (copied from v5 on 24 Nov 2026; v5 is now frozen). Asset version is `?v=6.0`. If you change `v6/assets/`, bump it to 6.1 in every v6 page.
+- v6 adds the completion criteria popup and a “Before we start” slide in Topic 1. Pending: a contrast pass (faint unrevealed states, small labels); see `v6/CLAUDE.md`.
 - v5 reworked Session 2 Topics 10 and 11 to be practical (see HISTORY). Next candidate the user was offered: Topic 13, Tools deep dive.
-- v5 has 254 slides (v4 has 245). All 20 topics load at 1280×720 with no script errors, and every slide has a speaker note.
+- v6 has 255 slides (v5 has 254, v4 has 245). All 20 topics load at 1280×720 with no script errors, and every slide has a speaker note.
 
 ## Course layout (v4)
 | Session | Topics | File ids |

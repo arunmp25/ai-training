@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Topic 10 · Embeddings in practice</title>
+<link rel="stylesheet" href="../assets/style.css?v=6.0">
+<link rel="stylesheet" href="../assets/widgets.css?v=6.0">
+<link rel="stylesheet" href="../assets/story.css?v=6.0">
+<style>
+  .words { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+  .vec-tbl { width: 100%; border-collapse: collapse; font-size: 14px; }
+  .vec-tbl th, .vec-tbl td { padding: 4px 8px; border-bottom: 1px solid var(--line); text-align: left; }
+  .vec-tbl th { font-size: 11.5px; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; }
+  .vec-tbl td.n { font-family: ui-monospace, Menlo, monospace; text-align: right; }
+  .vec-tbl tr.sel td { background: color-mix(in srgb, var(--accent) 14%, transparent); font-weight: 700; }
+  .mini { display: inline-block; height: 9px; border-radius: 3px; background: var(--c-knowledge); vertical-align: middle; }
+  .strip { display: grid; grid-template-columns: repeat(48, 1fr); gap: 2px; height: 28px; }
+  .strip i { border-radius: 2px; }
+  .sent { display: grid; grid-template-columns: 26px 1fr; gap: 10px; align-items: center; padding: 7px 12px; border-radius: 6px; border: 1px solid var(--line); background: var(--card); cursor: pointer; }
+  .sent.on { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+  .sent .t { font-weight: 700; margin-bottom: 6px; font-size: 14.5px; }
+  .sent .nums { font-family: ui-monospace, Menlo, monospace; font-size: 12px; color: var(--muted); margin-top: 4px; }
+  .cos-svg { width: 100%; max-height: 52vh; aspect-ratio: 1.25; background: var(--card); border: 1px solid var(--line); border-radius: 6px; touch-action: none; user-select: none; }
+  .cos-svg .handle { cursor: grab; }
+  .big-num { font-size: 40px; font-weight: 800; font-variant-numeric: tabular-nums; }
+  .calc input { width: 64px; padding: 6px; border-radius: 8px; border: 1px solid var(--line); background: var(--card2); color: var(--text); font: 600 14px ui-monospace, Menlo, monospace; text-align: right; }
+  .calc td, .calc th { padding: 6px 8px; border-bottom: 1px solid var(--line); text-align: right; font-size: 14px; }
+  .calc th { font-size: 11.5px; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; }
+  .calc td:first-child, .calc th:first-child { text-align: left; }
+  .calc .mono { font-family: ui-monospace, Menlo, monospace; font-size: 13px; }
+  .emb svg { width: 100%; max-height: 46vh; aspect-ratio: 1.6; height: auto; background: var(--card); border-radius: 6px; border: 1px solid var(--line); }
+  .emb .pt { cursor: help; }
+  .res { font-size: 14px; display: grid; gap: 6px; }
+  .res div { padding: 8px 10px; border-radius: 8px; background: var(--card); border: 1px solid var(--line); transition: opacity .3s; }
+  .res .sim { float: right; font-weight: 800; color: var(--good); font-variant-numeric: tabular-nums; }
+  .res div.out { opacity: .35; }
+  #nearW div { padding: 5px 10px; }
+  .slide .sub { margin-bottom: 16px; }
+  .res div.out .sim { color: var(--muted); }
+  .royal { display: grid; grid-template-columns: 1.55fr 1fr; gap: 18px; align-items: start; margin-top: 12px; }
+  .r-items { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+  .r-item { padding: 7px 10px; border-radius: 6px; border: 1px solid var(--line); background: var(--card); font-size: 14px; display: flex; justify-content: space-between; gap: 8px; transition: all .3s; }
+  .r-item.hit { border-color: var(--good); background: color-mix(in srgb, var(--good) 12%, var(--card)); }
+  .r-item.junk { border-color: var(--bad); background: color-mix(in srgb, var(--bad) 12%, var(--card)); }
+  .r-item.miss { opacity: .38; }
+  .r-item .sc { font-weight: 800; font-variant-numeric: tabular-nums; white-space: nowrap; font-size: 12.5px; color: var(--muted); }
+  .r-item.hit .sc { color: var(--good); } .r-item.junk .sc { color: var(--bad); }
+  .queen-face { font-size: 64px; text-align: center; line-height: 1.1; }
+  .queen-says { text-align: center; font-weight: 800; font-size: 18px; margin: 6px 0 8px; }
+  .arith { display: grid; grid-template-columns: 1.2fr 1fr; gap: 18px; align-items: start; }
+  .ws-row { display: grid; grid-template-columns: 34px 1fr 170px; gap: 12px; align-items: center; padding: 8px 12px; border-radius: 6px; border: 1px solid var(--line); background: var(--card); font-size: 14.5px; transition: all .35s; }
+  .ws-row.best { border-color: var(--good); background: color-mix(in srgb, var(--good) 10%, var(--card)); }
+  .ws-row .rk { font-weight: 800; font-size: 18px; color: var(--muted); text-align: center; }
+  .ws-row .wsbar { height: 10px; border-radius: 5px; background: var(--card2); overflow: hidden; }
+  .ws-row .wsbar i { display: block; height: 100%; background: var(--c-knowledge); transition: width .6s ease; }
+  .ws-row .sc { font-size: 12.5px; color: var(--muted); margin-top: 3px; }
+  #wsList { display: grid; gap: 6px; }
+  /* ---- v5: practical slides ---- */
+  .use-wrap { display: grid; grid-template-columns: 380px 1fr; gap: 18px; }
+  .use-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; align-content: start; }
+  .use-card { padding: 10px 12px; border-radius: 6px; border: 1px solid var(--line); background: var(--card); cursor: pointer; font-size: 13.5px; transition: all .25s; }
+  .use-card .ic { font-size: 22px; line-height: 1.2; }
+  .use-card b { display: block; font-size: 15px; margin: 2px 0; }
+  .use-card small { color: var(--muted); }
+  .use-card.on { border-color: var(--brand); box-shadow: 0 0 0 1px var(--brand); background: color-mix(in srgb, var(--brand) 10%, var(--card)); }
+  .use-panel { padding: 14px 16px; }
+  .use-what { font-size: 15px; }
+  .use-map { position: relative; height: 240px; margin: 10px 0; border-radius: 6px; background: var(--card2); overflow: hidden; }
+  .use-map svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .use-map line { stroke: var(--good); stroke-width: 3; vector-effect: non-scaling-stroke; stroke-dasharray: 4 4; opacity: 0; transition: opacity .4s; }
+  .use-map line.in { opacity: 1; }
+  .use-dot { position: absolute; transform: translate(-50%, -50%); padding: 4px 10px; border-radius: 999px; font-size: 13px; background: var(--card); border: 1px solid var(--line); white-space: nowrap; opacity: 0; transition: opacity .4s, border-color .3s, background .3s; }
+  .use-dot.in { opacity: 1; }
+  .use-dot.hit { border: 2px solid var(--good); background: color-mix(in srgb, var(--good) 18%, var(--card)); font-weight: 700; }
+  .use-q { position: absolute; transform: translate(-50%, -50%); padding: 6px 12px; border-radius: 999px; font-size: 14px; font-weight: 800; background: var(--brand); color: var(--on-brand); white-space: nowrap; z-index: 2; transition: left 1s cubic-bezier(.5,0,.3,1), top 1s cubic-bezier(.5,0,.3,1); }
+  .use-res { font-size: 15.5px; padding: 10px 12px; border-left: 4px solid var(--good); border-radius: 4px; background: color-mix(in srgb, var(--good) 8%, var(--card)); opacity: 0; transition: opacity .4s; min-height: 46px; }
+  .use-res.in { opacity: 1; }
+  .cbars { display: grid; gap: 16px; }
+  .cbar .l { font-size: 15px; margin-bottom: 6px; display: flex; justify-content: space-between; gap: 10px; }
+  .cbar .l b { font-size: 22px; font-variant-numeric: tabular-nums; }
+  .cbar .t { height: 26px; border-radius: 6px; background: var(--card2); overflow: hidden; }
+  .cbar .t i { display: block; height: 100%; min-width: 4px; border-radius: 6px; transition: width .6s ease; }
+  .mfam { display: grid; gap: 6px; margin-bottom: 12px; font-size: 14px; }
+  .mfam div { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+  .mfam b { margin-right: 4px; min-width: 230px; }
+  .mfam span { padding: 3px 10px; border-radius: 999px; border: 1px solid var(--line); background: var(--card); }
+  .dd-list { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; max-width: 980px; }
+  .dd-list a { display: flex; gap: 10px; align-items: center; padding: 14px 16px; border-radius: 6px; border: 1px solid var(--line); background: var(--card); cursor: pointer; font-size: 16px; font-weight: 600; color: var(--text); text-decoration: none; }
+  .dd-list a:hover { border-color: var(--brand); }
+  .dd-list a b { font-size: 24px; }
+</style>
+</head>
+<body class="deck" data-id="07b">
+
+<section class="slide title-slide" data-title="Welcome">
+  <div class="big-emoji">📍</div>
+  <div class="eyebrow">Session 2 · Topic 10</div>
+  <h1>Embeddings in practice: search by meaning</h1>
+  <p class="sub">An <b>embedding</b> turns any text into a list of numbers that captures its meaning, so a computer can find things by <i>what they mean</i>, not the words they use. Where it helps, what it costs, and how to choose a model.</p>
+  <aside class="notes"><span class="tag time">⏱ 30 sec</span><p class="say"><b>🎤 Say</b> RAG needs to find the right pages by meaning, not by matching words. Embeddings are how. Today is about where they help, what they cost and how to choose one; the maths is in an optional deep dive at the end.</p><ul><li>Promise: by the end everyone can explain “embedding” in one sentence and name three jobs it does at an insurer.</li><li>The deep dive (vectors, cosine similarity, a hand calculation) comes after the takeaways. Skip it in a live session unless the room asks.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="The royal search">
+  <div class="eyebrow">Try it</div>
+  <h2>Search the royal inventory: keywords vs meaning</h2>
+  <p class="sub">Pick a search and a method. <b>Keyword</b> search matches the exact words. <b>Meaning</b> search compares embeddings and keeps everything scoring above 0.65. Green = right, red = wrong.</p>
+  <div class="row"><div id="rq"></div><div id="rm"></div><button class="btn bts-btn" data-bts="royal">🎬 Behind the scenes</button></div>
+  <div class="royal"><div class="r-items" id="rRes"></div><div class="card" id="rQueen"></div></div>
+  <aside class="notes"><span class="tag time">⏱ 3 min</span><p class="say"><b>🎤 Say</b> Search the royal inventory for things belonging to the King. Keyword search finds a King prawn curry and misses the Queen’s tiara. Meaning search finds everything royal.</p><ul><li>Start with “things belonging to the King” + Keyword: 3 right, a curry recipe wrong, and none of the Queen’s items. Switch to Meaning: everything royal comes back, the curry doesn’t.</li><li>Try “royal jewellery” on keywords: it finds… the corgis, because they’re the only thing with “royal” in the name.</li><li>“How does the monarch get around?” on meaning even finds the lawnmower (it is, technically, transport). Meaning search is fuzzy, which matters later (hybrid search, Topic 11).</li><li>The scores here come from small hand-made vectors. How real ones work is in the deep dive at the end of this topic.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="The meaning map">
+  <div class="eyebrow">Searching by meaning</div>
+  <h2>Every chunk becomes a point on a meaning map</h2>
+  <p class="sub">Every chunk becomes a list of hundreds of numbers. Squash them onto a 2D map and you can see it: chunks about the same topic cluster together. A question lands near the chunks that <i>mean</i> the same thing, even with no words in common. Pick a question.</p>
+  <div class="row" style="margin-bottom:10px" id="queries"></div>
+  <div class="split wide-left emb">
+    <svg id="map" viewBox="0 0 160 100"></svg>
+    <div class="stack-v">
+      <div><div class="label">🔎 Meaning search (embeddings): top 3</div><div class="res" id="semRes"></div></div>
+      <div><div class="label">🔤 Keyword search</div><div class="res" id="kwRes"></div></div>
+    </div>
+  </div>
+  <aside class="notes"><span class="tag time">⏱ 3 min</span><p class="say"><b>🎤 Say</b> Squash those numbers onto a map and chunks about the same topic cluster together. A question lands near the chunks that mean the same thing, even with no shared words.</p><ul><li>“Can I work from my sofa?” shares <b>no words</b> with “Employees may work from home”, so keyword search fails and meaning search nails it.</li><li>This 2D picture is a projection (a squashed view) of the real high-dimensional space.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="Where you’d use it">
+  <div class="eyebrow">Practical uses</div>
+  <h2>Six everyday jobs for embeddings</h2>
+  <p class="sub">The same trick every time: embed the things, embed the question, take the nearest. Press <b>→</b> for the next job, or click one.</p>
+  <div class="use-wrap">
+    <div class="use-cards" id="useCards"></div>
+    <div class="card use-panel">
+      <div class="use-what" id="useWhat"></div>
+      <div class="use-map" id="useMap"><svg viewBox="0 0 100 100" preserveAspectRatio="none" id="useSvg"></svg></div>
+      <div class="use-res" id="useRes"></div>
+    </div>
+  </div>
+  <aside class="notes"><span class="tag time">⏱ 4 min</span><p class="say"><b>🎤 Say</b> RAG is only one use. Anything you can describe in words can be embedded and compared: policy clauses, emails, claims, FAQs, IT tickets. Embed them once, embed the new item, and take the nearest ones.</p><ul><li>Each → shows the next job: the dots are the stored items, the yellow chip is the new question, the green lines are the nearest matches.</li><li>Routing emails: instead of writing rules, keep a few example emails per team. New examples improve it without code.</li><li>Duplicates: a very high score (0.97) is a signal for a person to check, never an automatic rejection.</li><li>FAQs: when the stored item is an approved answer, you can show it as is. No text generation, so no hallucination.</li><li>Positions are illustrative, like the meaning map.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="The burst pipe">
+  <div class="eyebrow">Worked example</div>
+  <h2>Customers say “burst pipe”. Policies say “escape of water”.</h2>
+  <p class="sub">Search the home policy wording for the customer’s sentence. Switch between keyword matching and meaning (embeddings).</p>
+  <div class="row" style="margin-bottom:8px;gap:10px">
+    <div class="bubble user" style="margin:0">A pipe burst under the sink and flooded my kitchen.</div>
+    <button class="btn" id="wsKey">🔤 Keyword search</button><button class="btn primary" id="wsSem">🧭 Search by meaning</button>
+  </div>
+  <div id="wsList"></div>
+  <div class="callout" id="wsNote" style="font-size:14px;margin-top:10px"></div>
+  <aside class="notes"><span class="tag time">⏱ 3 min</span><p class="say"><b>🎤 Say</b> This is the royal search in our own world. Customers say “burst pipe”; policy wordings say “escape of water”. Keyword search shares no words with the right clause, so it ranks it last. Search by meaning puts it first, because the two sentences mean the same thing.</p><ul><li>Start on Keyword search and ask the room which clause should win. Then switch.</li><li>Point out that the unoccupied-home exclusion still ranks high by meaning, which is good: a claims handler needs to see it.</li><li>“Flood” is the trap: it shares a word with the customer’s sentence but is a different peril (rising water from outside). Topic 11 shows how hybrid search and re-ranking combine both signals.</li><li>Scores are illustrative.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="Scores and thresholds">
+  <div class="eyebrow">Using the score</div>
+  <h2>Top-k and thresholds: how many chunks make the cut?</h2>
+  <p class="sub">Question: <b>“Can I expense a taxi home after a late shift?”</b> Every chunk gets a score. Choose how many to keep (<b>top-k</b>) and the minimum score (<b>threshold</b>).</p>
+  <div class="split wide-left">
+    <div class="res" id="thrRes"></div>
+    <div class="stack-v">
+      <div><div class="label">Top-k: <span id="kLbl"></span></div><input type="range" id="kSl" min="1" max="8" value="3"></div>
+      <div><div class="label">Minimum score: <span id="tLbl"></span></div><input type="range" id="tSl" min="30" max="95" value="50"></div>
+      <div class="callout" id="thrNote" style="font-size:14.5px"></div>
+    </div>
+  </div>
+  <aside class="notes"><span class="tag time">⏱ 2 min</span><p class="say"><b>🎤 Say</b> Every chunk gets a score. Top-k decides how many to keep and the threshold decides the minimum score. Too many adds noise, too few misses part of the answer.</p><ul><li>k too high: noise and cost (and attention dilution, Topic 4). k too low: you miss the second half of the answer.</li><li>Scores are <b>relative</b>, not percentages of truth. 0.78 is “good” for one model and “meh” for another, so tune thresholds on your own data.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="What does it cost?">
+  <div class="eyebrow">Cost and speed</div>
+  <h2>Embedding is cheap. Answering is where the money goes.</h2>
+  <p class="sub">You embed your documents <b>once</b> (and again only when they change). Drag the size of the library.</p>
+  <div class="split wide-left">
+    <div class="stack-v">
+      <div><div class="label">Your documents: <span id="cPages"></span></div><input type="range" id="cSl" min="2" max="5" step="0.05" value="4.3"></div>
+      <div class="card"><div class="kv" id="cKv"></div></div>
+      <p class="muted" style="font-size:12.5px;margin:0">Illustrative list prices (November 2026): embedding about $0.10 per million tokens; a mid-size model about $3 per million tokens read and $15 written. Check current rates.</p>
+    </div>
+    <div class="stack-v">
+      <div class="cbars" id="cBars"></div>
+      <div class="callout" style="--c:var(--c-knowledge);font-size:14.5px">Embedding the library is a one-off and costs little. The running cost is the model <b>reading the retrieved chunks and writing answers</b>, every question, every day. That is why top-k stays small (Topic 8).</div>
+    </div>
+  </div>
+  <aside class="notes"><span class="tag time">⏱ 2 min</span><p class="say"><b>🎤 Say</b> Embedding the whole 20,000-page manual costs about a dollar and takes minutes. Answering a thousand questions a day costs hundreds of dollars a month. So search is cheap; the model reading and writing is the cost to watch.</p><ul><li>Start at 20,000 pages (the manual from Topic 8). Then drag to 100,000: the embedding cost is still a few dollars.</li><li>The monthly answer cost does not depend on library size: each question still sends about five chunks.</li><li>Switching embedding model means re-embedding everything. Cheap in money, but plan the time and testing.</li><li>Self-hosted open models cost no per-token fee, but you pay for the servers.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="Choosing an embedding model">
+  <div class="eyebrow">Practical choices</div>
+  <h2>Choosing an embedding model</h2>
+  <p class="sub">Shortlist two or three, test them on <b>your own questions</b>, and pick the cheapest that passes. Click each factor.</p>
+  <div class="mfam">
+    <div><b>☁️ Hosted, pay per use</b><span>OpenAI text-embedding-3</span><span>Google Gemini Embedding</span><span>Voyage AI</span><span>Cohere Embed</span><span>Amazon Titan / Nova</span></div>
+    <div><b>🖥️ Open models, run it yourself</b><span>BGE-M3</span><span>Qwen3 Embedding</span><span>E5</span><span>Nomic Embed</span></div>
+  </div>
+  <div id="choose"></div>
+  <aside class="notes"><span class="tag time">⏱ 2 min</span><p class="say"><b>🎤 Say</b> When choosing an embedding model, the rule that catches teams out: documents and questions must be embedded with the same model.</p><ul><li>The rule that bites teams: <b>documents and questions must be embedded by the same model</b>. Vectors from two different models are like coordinates on two different maps.</li><li>Public leaderboards (e.g. MTEB) are a starting point; test on your own questions. In 2026 benchmarks the top hosted models score within a whisker of each other, so cost, languages and where it runs usually decide.</li><li>Names change fast; this list is November 2026. Claude has no embedding model of its own; Anthropic’s documentation points to Voyage AI.</li><li>For Indian customers, check Hindi and other Indian languages on your own sample questions.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="Where embeddings struggle">
+  <div class="eyebrow">Limits</div>
+  <h2>Where embeddings struggle</h2>
+  <p class="sub">Meaning search is powerful but not magic. Flip for the fix.</p>
+  <div id="limits"></div>
+  <aside class="notes"><span class="tag time">⏱ 2 min</span><p class="say"><b>🎤 Say</b> Meaning search is powerful but not magic. It struggles with exact codes, negation and rare terms. That is why real systems add keyword search and re-ranking.</p><ul><li>These limits are why real systems combine embeddings with keyword search and re-ranking. That’s the next topic.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="Quick check">
+  <div class="eyebrow">Quick check</div>
+  <h2>Did it click?</h2>
+  <div id="quiz"></div>
+  <aside class="notes"><span class="tag time">⏱ 1 min</span><p class="say"><b>🎤 Say</b> Quick check.</p></aside>
+</section>
+
+<section class="slide" data-title="Takeaways">
+  <div class="eyebrow">Takeaways</div>
+  <h2>What to remember</h2>
+  <div class="cols-3" style="margin:10px 0 24px">
+    <div class="card"><b>📍 Embedding = meaning as numbers</b><p>A model turns text into a list of numbers. Similar meaning, similar numbers, so search works without shared words.</p></div>
+    <div class="card"><b>🧰 Embed once, find the nearest</b><p>Search, routing emails, similar claims, duplicates, FAQs, tickets. Embedding is cheap; answering is the cost.</p></div>
+    <div class="card"><b>⚖️ Choose by testing</b><p>Same model for documents and questions. Shortlist two or three, test on your own questions, tune top-k.</p></div>
+  </div>
+  <div class="row"><a class="btn primary" data-nexttopic>Next →</a></div>
+  <aside class="notes"><span class="tag time">⏱ 30 sec</span><p class="say"><b>🎤 Say</b> Finding the nearest chunks is the start. Next: how to make sure they are the right ones, the patterns teams use, and where to store it all.</p><ul><li>Bridge: “Nearest isn’t always right. Topic 11 is how teams make retrieval right, and which database to use.”</li><li>The optional deep dive follows this slide. In a live session press <b>Next →</b> to skip it.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="Deep dive">
+  <div class="eyebrow">Optional · Deep dive</div>
+  <h2>Deep dive: how embeddings work inside</h2>
+  <p class="sub">For the curious, or for self-study. In a live session, skip to the next topic.</p>
+  <div class="dd-list">
+    <a data-goto="13"><b>🔢</b>Describing things with numbers</a>
+    <a data-goto="14"><b>🤴</b>King − man + woman ≈ queen</a>
+    <a data-goto="15"><b>🌈</b>A real embedding</a>
+    <a data-goto="16"><b>📐</b>Cosine similarity</a>
+    <a data-goto="17"><b>✍️</b>Calculate one by hand</a>
+    <a data-goto="18"><b>📏</b>Cosine, dot product or distance?</a>
+  </div>
+  <div class="row" style="margin-top:22px"><a class="btn primary" data-nexttopic>Skip to the next topic →</a></div>
+  <aside class="notes"><span class="tag time">⏱ 30 sec</span><p class="say"><b>🎤 Say</b> The next six slides show how embeddings work inside: vectors, dimensions and cosine similarity. They are optional; we will skip them today.</p><ul><li>Point people here for self-study. Every slide is interactive.</li><li>If the room is technical and there is time, “Cosine similarity” and “Do one by hand” are the two to show.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="Describing things with numbers">
+  <div class="eyebrow">Deep dive · The intuition</div>
+  <h2>Describe each word with a few scores</h2>
+  <p class="sub">Imagine rating every word on 4 qualities, from 0 to 1. That list of scores is a <b>vector</b>. Each quality is a <b>dimension</b>. Click a word: words with similar scores come out as similar.</p>
+  <div class="words" id="words"></div>
+  <div class="split">
+    <div class="card"><div class="label">The vectors (4 dimensions)</div><table class="vec-tbl" id="vecTbl"></table></div>
+    <div class="card"><div class="label">Most similar to <span id="selW"></span> (cosine similarity)</div><div class="res" id="nearW"></div></div>
+  </div>
+  <aside class="notes"><span class="tag time">⏱ 3 min</span><p class="say"><b>🎤 Say</b> Imagine scoring every word on a few qualities. That list of scores is a vector, and each quality is a dimension. Words with similar scores have similar meanings.</p><ul><li>Click “puppy”: dog, kitten and cat are top. Click “truck”: car and bicycle.</li><li>Here <i>we</i> chose the 4 qualities. A real embedding model <b>learns</b> hundreds of them from reading huge amounts of text, and they don’t have human names. The idea is the same.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="King − man + woman">
+  <div class="eyebrow">Deep dive · Directions carry meaning</div>
+  <h2>Directions carry meaning: king − man + woman ≈ queen</h2>
+  <p class="sub">Each word is scored on 4 qualities. Subtract one word’s vector, add another’s, and see which word is nearest to the result. Pick an equation.</p>
+  <div id="arEq"></div>
+  <div class="arith" style="margin-top:12px">
+    <div class="card"><table class="vec-tbl" id="arTbl"></table></div>
+    <div class="card"><div class="label">Nearest words to the result (cosine)</div><div class="res" id="arNear"></div></div>
+  </div>
+  <aside class="notes"><span class="tag time">⏱ 2 min</span><p class="say"><b>🎤 Say</b> Directions in this space carry meaning. King minus man plus woman lands near queen. In real models it is approximate, but the idea holds.</p><ul><li>This is the famous example from early word-embedding research. In real models it only works roughly, but the point stands: <b>directions in the space mean something</b> (royal, female, plural, past tense…).</li><li>That’s why the Queen’s items were found: “royal” is a strong shared direction.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="Real embeddings">
+  <div class="eyebrow">Deep dive · What a real one looks like</div>
+  <h2>A real embedding: hundreds of numbers nobody can read</h2>
+  <p class="sub">An <b>embedding model</b> reads a whole sentence and outputs e.g. 1,536 numbers. Below: 48 of them as colours (blue = negative, orange = positive). Click two sentences to compare them.</p>
+  <div class="split wide-left">
+    <div class="stack-v" id="sents"></div>
+    <div class="stack-v">
+      <div class="card" style="text-align:center"><div class="label">Cosine similarity of the two selected</div><div class="big-num" id="pairCos"></div><div class="muted" id="pairNote"></div></div>
+      <div class="callout" style="--c:var(--c-knowledge);font-size:14.5px">
+        <b>Facts worth knowing</b><br>
+        • Typical sizes: 384, 768, 1,024, 1,536 or 3,072 dimensions.<br>
+        • Same input + same model = same vector, every time.<br>
+        • Multilingual models put “reset password” and “Passwort zurücksetzen” close together.<br>
+        • Embedding is fast and cheap compared with generating text.
+      </div>
+    </div>
+  </div>
+  <aside class="notes"><span class="tag time">⏱ 3 min</span><p class="say"><b>🎤 Say</b> A real embedding has hundreds or thousands of numbers that nobody can read individually. Sentences with the same meaning produce similar patterns, even in different words or languages.</p><ul><li>Compare 1 and 2: different words, same meaning, so the colour patterns look alike and the score is high.</li><li>Compare 1 and 4: different language, still close (multilingual model).</li><li>Compare 1 and 3: unrelated, so the score is low.</li><li>The colours here are simulated to show the idea; real values look just as unreadable.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="Cosine similarity">
+  <div class="eyebrow">Deep dive · Measuring closeness</div>
+  <h2>Cosine similarity: do two arrows point the same way?</h2>
+  <p class="sub">Think of each vector as an arrow from the origin. Cosine similarity looks only at the <b>angle</b> between them: same direction = 1, unrelated (90°) = 0, opposite = −1. <b>Drag the arrow tips.</b></p>
+  <div class="split wide-left">
+    <svg class="cos-svg" id="cosSvg" viewBox="-110 -88 220 176"></svg>
+    <div class="stack-v">
+      <div class="card" style="text-align:center"><div class="label">Cosine similarity</div><div class="big-num" id="cosVal"></div><div class="muted" id="cosAng"></div></div>
+      <div class="card"><div class="kv" id="cosKv"></div></div>
+      <div class="row" id="cosPresets"></div>
+    </div>
+  </div>
+  <aside class="notes"><span class="tag time">⏱ 4 min</span><p class="say"><b>🎤 Say</b> Cosine similarity asks one question: do two arrows point the same way? It ignores length, which suits text of different lengths.</p><ul><li>Try “Same direction, longer”: cosine stays 1.00 even though B is twice as long, while the distance changes. Cosine ignores length, which is why it suits text: a long paragraph and a short sentence about the same thing should still match.</li><li>Real embeddings have 1,536 dimensions, not 2, but the maths and the idea are identical.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="Do one by hand">
+  <div class="eyebrow">Deep dive · Worked example</div>
+  <h2>Calculate cosine similarity yourself</h2>
+  <p class="sub">cos(A, B) = <b>(A · B)</b> ÷ (<b>|A|</b> × <b>|B|</b>). Multiply matching numbers and add them up (the dot product), then divide by the two lengths. Edit any number.</p>
+  <div class="split wide-left">
+    <div class="card"><table class="calc" id="calc" style="width:100%;border-collapse:collapse"></table></div>
+    <div class="stack-v" id="calcRes"></div>
+  </div>
+  <aside class="notes"><span class="tag time">⏱ 3 min</span><p class="say"><b>🎤 Say</b> Here is the calculation by hand: multiply matching numbers, add them up, divide by the lengths. Change dog into a truck and watch the score drop.</p><ul><li>Dimensions: [animal, pet, vehicle]. Walk the “puppy vs dog” row: 0.9×0.8 + 0.8×0.9 + 0×0.1 = 1.44, lengths 1.20 and 1.21, so cos ≈ 0.99.</li><li>Ask someone to change “dog” into a truck (0, 0, 0.9) and watch the score collapse.</li><li>A vector database does exactly this, just with 1,536 numbers and millions of chunks, very fast.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="Three ways to measure">
+  <div class="eyebrow">Deep dive · Similarity metrics</div>
+  <h2>Cosine, dot product, or distance?</h2>
+  <p class="sub">Vector databases ask which <b>metric</b> to use. Click each one.</p>
+  <div id="metrics"></div>
+  <aside class="notes"><span class="tag time">⏱ 2 min</span><p class="say"><b>🎤 Say</b> Cosine, dot product or distance? Use what your embedding model recommends, usually cosine.</p><ul><li>Practical answer: use what your embedding model’s documentation recommends, usually cosine.</li><li>Most modern models output <b>normalised</b> vectors (length 1). Then cosine, dot product and distance all give the same ranking, and dot product is just the fastest to compute.</li></ul></aside>
+</section>
+
+<script src="../assets/course.js?v=6.0"></script>
+<script src="../assets/widgets.js?v=6.0"></script>
+<script>
+const { $, $$, cv } = W;
+const dot = (a, b) => a.reduce((s, x, i) => s + x * b[i], 0);
+const len = (a) => Math.sqrt(dot(a, a));
+const cosine = (a, b) => { const d = len(a) * len(b); return d ? dot(a, b) / d : 0; };
+const f2 = (x) => (Math.round(x * 100) / 100).toFixed(2);
+
+/* ---- words with hand-made features ---- */
+const DIMS = ["animal", "pet", "big", "vehicle"];
+const WORDS = { "🐶 puppy": [0.95, 0.95, 0.15, 0], "🐕 dog": [0.95, 0.9, 0.4, 0], "🐱 kitten": [0.95, 0.95, 0.05, 0], "🐈 cat": [0.95, 0.9, 0.2, 0],
+  "🦁 lion": [0.95, 0.05, 0.7, 0], "🐘 elephant": [0.95, 0, 1, 0], "🚲 bicycle": [0, 0.15, 0.2, 0.8], "🚗 car": [0, 0.05, 0.5, 1], "🚚 truck": [0, 0, 0.9, 1] };
+const WK = Object.keys(WORDS);
+$("#words").innerHTML = WK.map((w, i) => `<button class="btn" data-i="${i}">${w}</button>`).join("");
+function renderWords(si) {
+  const sel = WK[si];
+  $$("#words .btn").forEach((b) => b.classList.toggle("primary", +b.dataset.i === si));
+  $("#selW").textContent = sel;
+  $("#vecTbl").innerHTML = `<tr><th>Word</th>${DIMS.map((d) => `<th style="text-align:right">${d}</th>`).join("")}</tr>` +
+    WK.map((w) => `<tr class="${w === sel ? "sel" : ""}"><td>${w}</td>${WORDS[w].map((v) => `<td class="n">${v.toFixed(2)} <span class="mini" style="width:${v * 26}px"></span></td>`).join("")}</tr>`).join("");
+  const ranked = WK.filter((w) => w !== sel).map((w) => ({ w, s: cosine(WORDS[sel], WORDS[w]) })).sort((a, b) => b.s - a.s);
+  $("#nearW").innerHTML = ranked.map((r) => `<div><span class="sim" style="color:${r.s > 0.8 ? "var(--good)" : r.s > 0.4 ? "var(--warn)" : "var(--muted)"}">${f2(r.s)}</span>${r.w}</div>`).join("");
+}
+$("#words").onclick = (e) => { const b = e.target.closest("button"); if (b) renderWords(+b.dataset.i); };
+renderWords(0);
+
+/* ---- simulated real embeddings ---- */
+let seed = 7; const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647) * 2 - 1;
+const base = (n) => Array.from({ length: 48 }, rnd);
+const IT = base(), LEAVE = base();
+const mix = (b, noise) => b.map((x) => x + rnd() * noise);
+const SENTS = [
+  { t: "How do I reset my password?", v: mix(IT, 0.35) },
+  { t: "I forgot my login details", v: mix(IT, 0.55) },
+  { t: "What is the parental leave policy?", v: mix(LEAVE, 0.35) },
+  { t: "Wie setze ich mein Passwort zurück?", v: mix(IT, 0.5), note: "German" },
+];
+let pair = [0, 1];
+const col = (x) => `color-mix(in srgb, ${x > 0 ? "#ff9f43" : "#4f8cff"} ${Math.min(100, Math.abs(x) * 85)}%, var(--card2))`;
+function renderSents() {
+  $("#sents").innerHTML = SENTS.map((s, i) => `<div class="sent ${pair.includes(i) ? "on" : ""}" data-i="${i}"><b style="font-size:20px;color:var(--muted)">${i + 1}</b><div>
+    <div class="t">${s.t} ${s.note ? `<span class="tag" style="--c:var(--c-context)">${s.note}</span>` : ""}</div>
+    <div class="strip">${s.v.map((x) => `<i style="background:${col(x)}"></i>`).join("")}</div>
+    <div class="nums">[${s.v.slice(0, 5).map((x) => (x / 10).toFixed(3)).join(", ")}, … 1,531 more]</div></div></div>`).join("");
+  const c = cosine(SENTS[pair[0]].v, SENTS[pair[1]].v);
+  $("#pairCos").textContent = f2(c);
+  $("#pairCos").style.color = c > 0.7 ? "var(--good)" : c > 0.3 ? "var(--warn)" : "var(--bad)";
+  $("#pairNote").textContent = `Sentence ${pair[0] + 1} vs ${pair[1] + 1}: ` + (c > 0.7 ? "very similar meaning" : c > 0.3 ? "somewhat related" : "unrelated");
+}
+$("#sents").onclick = (e) => { const d = e.target.closest(".sent"); if (!d) return; const i = +d.dataset.i; if (pair.includes(i)) return; pair = [pair[1], i]; renderSents(); };
+renderSents();
+
+/* ---- meaning map ---- */
+const PTS = [
+  ["Annual leave: 24 days per year.", 14, 18, "context"], ["Request leave in the HR portal 2 weeks ahead.", 26, 28, "context"], ["Special leave: 5 days for your wedding.", 16, 33, "context"], ["Parental leave: 26 weeks paid.", 29, 16, "context"],
+  ["Employees may work from home up to 2 days per week.", 71, 19, "knowledge"], ["Remote days must be Tuesday or Thursday.", 81, 27, "knowledge"], ["Your home workspace must be safe and quiet.", 69, 31, "knowledge"], ["Home internet costs reimbursed up to €30/month.", 60, 43, "knowledge"],
+  ["Submit receipts within 30 days.", 17, 69, "action"], ["Taxis are reimbursed for late-night travel.", 29, 79, "action"], ["Meals on business trips: up to €40/day.", 14, 83, "action"], ["Use the Expenses app to scan receipts.", 31, 65, "action"],
+  ["Reset your password at id.acme.com.", 74, 69, "autonomy"], ["Report lost laptops to IT within 24 hours.", 83, 79, "autonomy"], ["Never share your password, even with IT.", 69, 83, "autonomy"], ["Install software only from the company portal.", 86, 64, "autonomy"],
+];
+const CLUSTERS = [["🌴 Leave", 21, 7, "context"], ["🏠 Remote work", 74, 7, "knowledge"], ["🧾 Expenses", 22, 96, "action"], ["💻 IT & security", 77, 96, "autonomy"]];
+const QS = [
+  { q: "Can I work from my sofa on Thursdays?", x: 76, y: 24 },
+  { q: "How do I claim back a taxi ride?", x: 25, y: 73 },
+  { q: "I forgot my login details", x: 73, y: 74 },
+  { q: "Can I take time off to get married?", x: 19, y: 29 },
+  { q: "Will the company pay for my home Wi-Fi?", x: 64, y: 39 },
+];
+const STOP = new Set("can i my on the a to do how get will for of in is it me".split(" "));
+const words = (s) => s.toLowerCase().replace(/[^a-z0-9 ]/g, " ").split(/\s+/).filter((w) => w && !STOP.has(w));
+$("#queries").innerHTML = QS.map((q, i) => `<button class="btn" data-i="${i}">${q.q}</button>`).join("");
+function renderMap(qi) {
+  const q = QS[qi];
+  $$("#queries .btn").forEach((b) => b.classList.toggle("primary", +b.dataset.i === qi));
+  const ranked = PTS.map((p, i) => ({ i, d: Math.hypot(p[1] - q.x, p[2] - q.y) })).sort((a, b) => a.d - b.d).slice(0, 3);
+  const X = (v) => v * 1.6;
+  $("#map").innerHTML = CLUSTERS.map(([l, x, y, c]) => `<text x="${X(x)}" y="${y}" font-size="4" font-weight="800" text-anchor="middle" fill="${cv(c)}">${l}</text>`).join("") +
+    ranked.map((r) => `<line x1="${X(q.x)}" y1="${q.y}" x2="${X(PTS[r.i][1])}" y2="${PTS[r.i][2]}" stroke="var(--good)" stroke-width="0.6" stroke-dasharray="1.5 1"/>`).join("") +
+    PTS.map((p, i) => `<circle class="pt" cx="${X(p[1])}" cy="${p[2]}" r="${ranked.some((r) => r.i === i) ? 2.4 : 1.6}" fill="${cv(p[3])}" stroke="${ranked.some((r) => r.i === i) ? "var(--good)" : "none"}" stroke-width="0.6"><title>${p[0]}</title></circle>`).join("") +
+    `<g><circle cx="${X(q.x)}" cy="${q.y}" r="2.8" fill="var(--warn)" stroke="var(--text)" stroke-width="0.5"><animate attributeName="r" values="2.2;3.4;2.2" dur="1.6s" repeatCount="indefinite"/></circle><title>${q.q}</title></g>`;
+  $("#semRes").innerHTML = ranked.map((r) => `<div><span class="sim">${(0.95 - r.d * 0.012).toFixed(2)}</span>${PTS[r.i][0]}</div>`).join("");
+  const qw = new Set(words(q.q));
+  const kw = PTS.filter((p) => words(p[0]).some((w) => qw.has(w)));
+  $("#kwRes").innerHTML = kw.length ? kw.slice(0, 3).map((p) => `<div>${p[0]} <span class="muted">(matched a word)</span></div>`).join("") : `<div style="color:var(--bad)">0 results: no exact words in common 😕</div>`;
+}
+$("#queries").onclick = (e) => { const b = e.target.closest("button"); if (b) renderMap(+b.dataset.i); };
+renderMap(0);
+
+/* ---- cosine playground ---- */
+const vA = [70, -20], vB = [40, -55];
+const svg = $("#cosSvg");
+function arrow(v, c, name) {
+  const [x, y] = v, a = Math.atan2(y, x), h = 7;
+  return `<line x1="0" y1="0" x2="${x}" y2="${y}" stroke="${c}" stroke-width="2.6"/>
+    <polygon points="${x},${y} ${x - h * Math.cos(a - 0.4)},${y - h * Math.sin(a - 0.4)} ${x - h * Math.cos(a + 0.4)},${y - h * Math.sin(a + 0.4)}" fill="${c}"/>
+    <circle class="handle" data-v="${name}" cx="${x}" cy="${y}" r="9" fill="${c}" fill-opacity=".25" stroke="${c}"/>
+    <text x="${x + 10 * Math.cos(a)}" y="${y + 10 * Math.sin(a) + 4}" fill="${c}" font-size="11" font-weight="800" text-anchor="middle">${name}</text>`;
+}
+function renderCos() {
+  // svg y grows downward; use (x, -y) as the maths vector
+  const A = [vA[0], -vA[1]], B = [vB[0], -vB[1]];
+  const c = cosine(A, B), ang = Math.acos(Math.max(-1, Math.min(1, c))) * 180 / Math.PI;
+  const a1 = Math.atan2(vA[1], vA[0]), a2 = Math.atan2(vB[1], vB[0]);
+  let d = a2 - a1; while (d > Math.PI) d -= 2 * Math.PI; while (d < -Math.PI) d += 2 * Math.PI;
+  const r = 24, large = 0, sweep = d > 0 ? 1 : 0;
+  const grid = [-100, -50, 50, 100].map((g) => `<line x1="${g}" y1="-88" x2="${g}" y2="88" stroke="var(--line)" stroke-width=".5"/><line x1="-110" y1="${g * 0.8}" x2="110" y2="${g * 0.8}" stroke="var(--line)" stroke-width=".5"/>`).join("");
+  svg.innerHTML = grid + `<line x1="-110" y1="0" x2="110" y2="0" stroke="var(--muted)" stroke-width=".6"/><line x1="0" y1="-88" x2="0" y2="88" stroke="var(--muted)" stroke-width=".6"/>
+    <path d="M ${r * Math.cos(a1)} ${r * Math.sin(a1)} A ${r} ${r} 0 ${large} ${sweep} ${r * Math.cos(a2)} ${r * Math.sin(a2)}" fill="none" stroke="var(--warn)" stroke-width="2"/>
+    <text x="${(r + 12) * Math.cos(a1 + d / 2)}" y="${(r + 12) * Math.sin(a1 + d / 2) + 4}" fill="var(--warn)" font-size="10" font-weight="800" text-anchor="middle">${Math.round(ang)}°</text>
+    <line x1="${vA[0]}" y1="${vA[1]}" x2="${vB[0]}" y2="${vB[1]}" stroke="var(--muted)" stroke-dasharray="3 3" stroke-width="1"/>` +
+    arrow(vA, "var(--c-model)", "A") + arrow(vB, "var(--c-knowledge)", "B");
+  $("#cosVal").textContent = f2(c);
+  $("#cosVal").style.color = c > 0.7 ? "var(--good)" : c > 0.2 ? "var(--warn)" : "var(--bad)";
+  $("#cosAng").textContent = `angle ${Math.round(ang)}° · ` + (c > 0.95 ? "same direction: same meaning" : c > 0.7 ? "similar" : c > 0.2 ? "loosely related" : c > -0.2 ? "unrelated (≈ 90°)" : "opposite");
+  const s = (v) => (v / 50).toFixed(2);
+  $("#cosKv").innerHTML = `<b>A</b><span class="mono">(${s(A[0])}, ${s(A[1])})</span><b>B</b><span class="mono">(${s(B[0])}, ${s(B[1])})</span>
+    <b>Length |A|, |B|</b><span>${(len(A) / 50).toFixed(2)}, ${(len(B) / 50).toFixed(2)}</span>
+    <b>Dot product</b><span>${(dot(A, B) / 2500).toFixed(2)} <span class="muted">(changes with length)</span></span>
+    <b>Distance</b><span>${(Math.hypot(A[0] - B[0], A[1] - B[1]) / 50).toFixed(2)} <span class="muted">(dashed line)</span></span>`;
+}
+let drag = null;
+const toSvg = (e) => { const p = svg.createSVGPoint(); p.x = e.clientX; p.y = e.clientY; return p.matrixTransform(svg.getScreenCTM().inverse()); };
+svg.addEventListener("pointerdown", (e) => { const h = e.target.closest(".handle"); if (h) { drag = h.dataset.v === "A" ? vA : vB; svg.setPointerCapture(e.pointerId); } });
+svg.addEventListener("pointermove", (e) => {
+  if (!drag) return;
+  const p = toSvg(e); let x = Math.max(-104, Math.min(104, p.x)), y = Math.max(-82, Math.min(82, p.y));
+  if (Math.hypot(x, y) < 12) return;
+  drag[0] = x; drag[1] = y; renderCos();
+});
+svg.addEventListener("pointerup", () => (drag = null));
+const PRE = [["Similar", [70, -20], [40, -55]], ["Same direction, longer", [40, -20], [80, -40]], ["Unrelated (90°)", [70, 0], [0, -70]], ["Opposite", [60, -30], [-60, 30]]];
+$("#cosPresets").innerHTML = PRE.map(([l], i) => `<button class="btn" data-i="${i}">${l}</button>`).join("");
+$("#cosPresets").onclick = (e) => { const b = e.target.closest("button"); if (!b) return; const [, a, bb] = PRE[+b.dataset.i]; vA[0] = a[0]; vA[1] = a[1]; vB[0] = bb[0]; vB[1] = bb[1]; renderCos(); };
+renderCos();
+
+/* ---- calculator ---- */
+const CD = ["animal", "pet", "vehicle"];
+const CV = { Q: { n: "🐶 puppy (question)", v: [0.9, 0.8, 0] }, D1: { n: "🐕 dog", v: [0.8, 0.9, 0.1] }, D2: { n: "🚚 truck", v: [0, 0.1, 0.9] } };
+function renderCalc(first) {
+  const rows = Object.entries(CV);
+  if (first) $("#calc").innerHTML = `<tr><th>Vector</th>${CD.map((d) => `<th>${d}</th>`).join("")}<th>Length |v|</th></tr>` +
+    rows.map(([k, r]) => `<tr><td><b>${r.n}</b></td>${r.v.map((x, j) => `<td><input type="number" step="0.1" min="-1" max="1" value="${x}" data-k="${k}" data-j="${j}"></td>`).join("")}<td class="mono" data-len="${k}"></td></tr>`).join("");
+  rows.forEach(([k, r]) => { $(`#calc [data-len="${k}"]`).innerHTML = `√(${r.v.map((x) => f2(x) + "²").join("+")}) = <b>${f2(len(r.v))}</b>`; });
+  const Q = CV.Q.v;
+  $("#calcRes").innerHTML = ["D1", "D2"].map((k) => {
+    const D = CV[k].v, d = dot(Q, D), c = cosine(Q, D);
+    const color = c > 0.7 ? "good" : c > 0.3 ? "warn" : "bad";
+    return `<div class="card" style="border-left:4px solid ${cv(color)}"><div class="label">puppy vs ${CV[k].n}</div>
+      <div class="calc mono" style="font-size:13.5px;line-height:1.9">
+      ① dot = ${Q.map((x, j) => `${f2(x)}×${f2(D[j])}`).join(" + ")} = <b>${f2(d)}</b><br>
+      ② lengths = ${f2(len(Q))} × ${f2(len(D))} = <b>${f2(len(Q) * len(D))}</b><br>
+      ③ cos = ${f2(d)} ÷ ${f2(len(Q) * len(D))} = <b style="font-size:20px;color:${cv(color)}">${f2(c)}</b></div></div>`;
+  }).join("") + `<div class="callout" style="--c:var(--c-knowledge);font-size:14px">The vector database ranks chunks by this number and returns the highest ones.</div>`;
+}
+$("#calc").addEventListener("input", (e) => { const t = e.target; if (t.dataset.k) { CV[t.dataset.k].v[+t.dataset.j] = parseFloat(t.value) || 0; renderCalc(false); } });
+renderCalc(true);
+
+/* ---- metrics ---- */
+W.clickInfo($("#metrics"), [
+  { icon: "📐", title: "Cosine similarity", sub: "angle only · −1 to 1 · higher = closer", c: "knowledge",
+    html: "<p>Compares <b>direction</b> and ignores length. A short question and a long paragraph about the same thing still score high.</p><p><b>Use when:</b> working with text embeddings. It’s the default almost everywhere.</p>" },
+  { icon: "✖️", title: "Dot product", sub: "direction × length · higher = closer", c: "model",
+    html: "<p>The raw sum of products, before dividing by lengths. Longer vectors get bigger scores.</p><p><b>Use when:</b> your model outputs <b>normalised</b> vectors (length 1). Then dot product <i>equals</i> cosine and is the fastest to compute.</p>" },
+  { icon: "📏", title: "Euclidean distance", sub: "straight-line gap · lower = closer", c: "action",
+    html: "<p>How far apart the arrow tips are. Note the direction: <b>smaller is better</b>.</p><p><b>Use when:</b> the model was trained for it, or for non-text data like images or sensor readings. On normalised vectors it ranks results the same as cosine.</p>" },
+], { cols: 3 });
+
+/* ---- thresholds ---- */
+const THR = [
+  ["Taxis are reimbursed for late-night travel after 22:00.", 0.89], ["Submit receipts in the Expenses app within 30 days.", 0.81], ["Night-shift staff may claim one taxi per shift.", 0.78],
+  ["Business-trip meals: up to €40 per day.", 0.62], ["Mileage for private cars: €0.30/km.", 0.57], ["Shift patterns are published every Friday.", 0.46],
+  ["Parking at HQ is free for employees.", 0.39], ["Annual leave: 24 days per year.", 0.21],
+];
+const GOOD = new Set([0, 1, 2]);
+function renderThr() {
+  const k = +$("#kSl").value, t = +$("#tSl").value / 100;
+  $("#kLbl").textContent = k; $("#tLbl").textContent = t.toFixed(2);
+  let kept = 0;
+  $("#thrRes").innerHTML = THR.map(([txt, s], i) => { const on = i < k && s >= t; if (on) kept++; return `<div class="${on ? "" : "out"}"><span class="sim">${s.toFixed(2)}</span>${GOOD.has(i) ? "⭐ " : ""}${txt}</div>`; }).join("");
+  const keptIdx = THR.map((_, i) => i).filter((i) => i < k && THR[i][1] >= t);
+  const missing = [...GOOD].filter((i) => !keptIdx.includes(i)).length, noise = keptIdx.filter((i) => !GOOD.has(i)).length;
+  const n = $("#thrNote");
+  if (!keptIdx.length) { n.style.setProperty("--c", "var(--bad)"); n.innerHTML = "❌ Nothing passes. The bot should say “I couldn’t find this”."; }
+  else if (missing) { n.style.setProperty("--c", "var(--warn)"); n.innerHTML = `🟡 Kept ${kept}, but missing ${missing} useful chunk${missing > 1 ? "s" : ""} (⭐). The answer may be incomplete.`; }
+  else if (noise) { n.style.setProperty("--c", "var(--warn)"); n.innerHTML = `🟡 All useful chunks kept, plus ${noise} irrelevant one${noise > 1 ? "s" : ""}: more cost and distraction.`; }
+  else { n.style.setProperty("--c", "var(--good)"); n.innerHTML = "✅ Exactly the three useful chunks. Clean context."; }
+}
+$("#kSl").oninput = $("#tSl").oninput = renderThr; renderThr();
+
+/* ---- choosing a model ---- */
+W.clickInfo($("#choose"), [
+  { icon: "🔢", title: "Dimensions", sub: "384 … 3,072", c: "model", html: "<p>More dimensions can capture finer meaning, but every vector costs more storage and search time. Many models let you shorten vectors with little loss.</p>" },
+  { icon: "📏", title: "Max input length", sub: "how much text per embedding", c: "context", html: "<p>Text beyond the limit is cut off silently. Keep chunks under it.</p>" },
+  { icon: "🌍", title: "Languages", sub: "multilingual or English-only", c: "knowledge", html: "<p>A multilingual model lets a question in Hindi find a policy written in English.</p>" },
+  { icon: "🏷️", title: "Domain", sub: "general, code, legal, medical", c: "action", html: "<p>Specialised models understand jargon better. Test with real questions from your users.</p>" },
+  { icon: "🔒", title: "Hosting and privacy", sub: "API or self-hosted", c: "trust", html: "<p>Every document passes through the embedding model. For sensitive data, check where it runs and what is retained.</p>" },
+  { icon: "🔁", title: "Lock-in", sub: "same model for docs and questions", c: "autonomy", html: "<p>Vectors from different models are not comparable. Switching models means <b>re-embedding every document</b>. Plan for it.</p>" },
+], { cols: 3, side: true });
+
+W.flips($("#limits"), [
+  { front: "🔢 Exact codes and IDs", back: "“Error E-4471” and “Error E-4417” embed almost the same. <b>Fix:</b> add keyword search (hybrid) for codes, SKUs, names." },
+  { front: "🚫 Negation", back: "“Pets are allowed” and “Pets are not allowed” land close together. <b>Fix:</b> re-rank, and let the model read the full chunk." },
+  { front: "🔣 Numbers and dates", back: "Embeddings are fuzzy on “before 2024” or “over €500”. <b>Fix:</b> store those as metadata and filter on them." },
+  { front: "🧪 Company jargon", back: "Internal project names mean nothing to a general model. <b>Fix:</b> a domain model, or add a glossary to chunks." },
+  { front: "❓ Question vs answer style", back: "Questions and documents are worded differently. <b>Fix:</b> query rewriting, or embed sample questions per chunk." },
+  { front: "🔁 Mixed models", back: "Old chunks embedded with model X, new questions with model Y: nonsense results. <b>Fix:</b> re-embed everything when you switch." },
+]);
+
+W.quiz($("#quiz"), [
+  { q: "What is an embedding?", o: ["A compressed copy of the text", "A list of numbers representing the text’s meaning", "A database index", "A summary written by the model"], a: 1, e: "A vector: hundreds of numbers where similar meanings get similar numbers." },
+  { q: "Which job do embeddings alone do badly?", o: ["Finding past claims like a new one", "Looking up policy POL-88812 exactly", "Routing emails to the right team", "Finding the FAQ that answers a question"], a: 1, e: "Exact codes and IDs need keyword search too. That is hybrid search, in Topic 11." },
+  { q: "Roughly what does it cost to embed a 20,000-page manual?", o: ["About a dollar", "About a thousand dollars", "It depends on the number of users", "Nothing: embeddings are free"], a: 0, e: "About 10 million tokens at around $0.10 per million. The running cost is the model answering questions." },
+  { q: "You switch to a new embedding model. What must you do?", o: ["Nothing", "Re-embed all documents with the new model", "Only embed new questions with it", "Lower the threshold"], a: 1, e: "Vectors from different models live on different maps and can’t be compared." },
+]);
+
+/* ---- v5: slide helper: → steps through states before leaving ---- */
+function stepSlide(title, max, go) {
+  let at = 0;
+  const set = (i) => { at = i; go(i); };
+  document.addEventListener("slide:enter", (e) => { if (e.detail.slide.dataset.title === title) set(e.detail.back ? max : 0); });
+  document.addEventListener("slide:advance", (e) => { if (e.detail.slide.dataset.title === title && at < max) { e.preventDefault(); set(at + 1); } });
+  return set;
+}
+
+/* ---- v5: where you'd use it ---- */
+(() => {
+  const U = [
+    { ic: "🔎", t: "Search policy wording", s: "customer words → clauses", what: "<b>Embedded:</b> every clause of the home policy wording", q: "Heavy rain came in under my door",
+      items: [["§4.2 Flood", 72, 26], ["§3.1 Escape of water", 62, 68], ["§7 Theft", 16, 24], ["§9 Garden and fences", 22, 80], ["§2 Fire and smoke", 40, 14], ["§8 Accidental damage", 38, 52]], qp: [82, 47], hit: [0, 1],
+      res: "Top match <b>§4.2 Flood</b>, then §3.1 Escape of water. The question shares no words with either." },
+    { ic: "📬", t: "Route customer emails", s: "email → the right team", what: "<b>Embedded:</b> twenty example emails for each team", q: "I was charged twice this month",
+      items: [["Claims team", 20, 28], ["Billing team", 72, 30], ["Renewals team", 66, 78], ["Complaints team", 26, 76], ["Cancellations", 46, 52]], qp: [84, 50], hit: [1],
+      res: "Sent to the <b>Billing team</b>. No rules to write: to improve it, add a few more examples." },
+    { ic: "🧾", t: "Find similar past claims", s: "new claim → past cases", what: "<b>Embedded:</b> descriptions of 50,000 settled claims", q: "Hail damaged my car roof",
+      items: [["Hail dents on bonnet, 2025", 64, 24], ["Hail cracked windscreen, 2024", 66, 72], ["Rear-ended at a signal", 18, 26], ["Engine fire on highway", 22, 78], ["Tree fell on parked car", 40, 50]], qp: [86, 48], hit: [0, 1],
+      res: "The adjuster sees the two closest past hail claims: how they were settled and what they cost." },
+    { ic: "🚩", t: "Spot duplicate claims", s: "same claim, filed twice?", what: "<b>Embedded:</b> every claim filed in the last 90 days", q: "My laptop was taken from my car in Pune",
+      items: [["Laptop stolen from car, Pune (14 Nov)", 60, 30], ["Bike stolen at station", 16, 22], ["Phone dropped in lake", 20, 80], ["Kitchen fire, Thane", 52, 82], ["Watch lost on holiday", 84, 80]], qp: [72, 52], hit: [0],
+      res: "Score <b>0.97</b> with a claim filed at another branch ten days ago. <b>Flag it for a person to review.</b>" },
+    { ic: "❓", t: "Answer FAQs", s: "question → approved answer", what: "<b>Embedded:</b> 200 approved FAQ answers", q: "Can my son drive my car?",
+      items: [["Adding a named driver", 66, 28], ["Changing your address", 18, 26], ["Making a claim online", 24, 78], ["No-claims bonus explained", 44, 54], ["Cancelling your policy", 74, 80]], qp: [86, 48], hit: [0],
+      res: "Matched <b>“Adding a named driver”</b>. Show the approved answer as it is: no text generated, nothing made up." },
+    { ic: "🛠️", t: "Search past IT tickets", s: "problem → known fix", what: "<b>Embedded:</b> 30,000 resolved IT support tickets", q: "Remote connection keeps dropping",
+      items: [["VPN disconnects every 10 minutes", 64, 26], ["Outlook won’t open", 16, 26], ["Printer offline, floor 3", 22, 78], ["Password expired", 42, 54], ["Wi-Fi slow in meeting room", 72, 80]], qp: [84, 50], hit: [0],
+      res: "The ticket with the fix comes first: <b>“VPN disconnects every 10 minutes”</b>, though the words differ." },
+  ];
+  const cards = $("#useCards"), map = $("#useMap"), svg = $("#useSvg");
+  cards.innerHTML = U.map((u, i) => `<div class="use-card" data-i="${i}"><div class="ic">${u.ic}</div><b>${u.t}</b><small>${u.s}</small></div>`).join("");
+  let timers = [];
+  const later = (fn, ms) => timers.push(setTimeout(fn, ms));
+  function show(i) {
+    timers.forEach(clearTimeout); timers = [];
+    const u = U[i];
+    W.$$(".use-card", cards).forEach((c) => c.classList.toggle("on", +c.dataset.i === i));
+    $("#useWhat").innerHTML = u.what;
+    W.$$(".use-dot,.use-q", map).forEach((d) => d.remove());
+    svg.innerHTML = u.hit.map((h) => `<line x1="${u.qp[0]}" y1="${u.qp[1]}" x2="${u.items[h][1]}" y2="${u.items[h][2]}"/>`).join("");
+    const res = $("#useRes"); res.classList.remove("in"); res.innerHTML = u.res;
+    const dots = u.items.map(([t, x, y], k) => { const d = document.createElement("div"); d.className = "use-dot"; d.textContent = t; d.style.left = x + "%"; d.style.top = y + "%"; map.appendChild(d); later(() => d.classList.add("in"), 80 + k * 110); return d; });
+    const q = document.createElement("div"); q.className = "use-q"; q.textContent = "❓ " + u.q; q.style.left = "50%"; q.style.top = "-20%"; map.appendChild(q);
+    later(() => { q.style.left = u.qp[0] - 8 + "%"; q.style.top = u.qp[1] + "%"; }, 750);
+    later(() => { W.$$("line", svg).forEach((l) => l.classList.add("in")); u.hit.forEach((h) => dots[h].classList.add("hit")); }, 1850);
+    later(() => res.classList.add("in"), 2300);
+  }
+  const set = stepSlide("Where you’d use it", U.length - 1, show);
+  W.$$(".use-card", cards).forEach((c) => (c.onclick = () => set(+c.dataset.i)));
+  show(0);
+})();
+
+/* ---- v5: what does it cost? ---- */
+(() => {
+  const fmt = (n) => n >= 1e6 ? (n / 1e6).toFixed(n >= 1e7 ? 0 : 1) + " million" : Math.round(n).toLocaleString("en-GB");
+  const money = (d) => d < 0.01 ? "under 1 cent" : d < 10 ? "$" + d.toFixed(2) : "$" + Math.round(d).toLocaleString("en-GB");
+  const MONTH = 30 * 1000 * (2500 * 3 + 400 * 15) / 1e6;   // 1,000 questions a day: ~2,500 tokens read, ~400 written
+  function upd() {
+    const pages = Math.round(Math.pow(10, +$("#cSl").value) / 100) * 100 || 100;
+    const tok = pages * 500, chunks = tok / 400, emb = tok / 1e6 * 0.10, mins = tok / 1e6, mb = chunks * 1024 * 4 / 1e6;
+    $("#cPages").textContent = pages.toLocaleString("en-GB") + " pages";
+    $("#cKv").innerHTML = `<b>Tokens</b><span>${fmt(tok)}</span><b>Chunks</b><span>${fmt(chunks)}</span>
+      <b>Embedding cost</b><span style="font-size:20px;font-weight:800;color:var(--good)">${money(emb)}</span>
+      <b>Time (batch)</b><span>${mins < 1 ? "under a minute" : mins < 60 ? Math.round(mins) + " minutes" : (mins / 60).toFixed(1) + " hours"}</span>
+      <b>Storage</b><span>${mb < 1000 ? Math.max(1, Math.round(mb)) + " MB" : (mb / 1000).toFixed(1) + " GB"} of vectors</span>`;
+    const max = Math.max(emb, MONTH);
+    $("#cBars").innerHTML = [["📍 Embed the whole library (once)", emb, "var(--good)"], ["💬 Answer 1,000 questions a day, for a month", MONTH, "var(--warn)"]]
+      .map(([l, v, c]) => `<div class="cbar"><div class="l"><span>${l}</span><b>${money(v)}</b></div><div class="t"><i style="width:${v / max * 100}%;background:${c}"></i></div></div>`).join("");
+  }
+  $("#cSl").oninput = upd; upd();
+})();
+
+/* ===== v3 story ===== */
+(() => {
+  const D = ["royal", "male", "female", "valuable", "transport", "animal", "food", "home"];
+  const ITEMS = [
+    ["👑 The King’s crown", "K", [0.95, 0.5, 0, 0.9, 0, 0, 0, 0.1]],
+    ["🪑 Throne of the King", "K", [0.9, 0.45, 0, 0.5, 0, 0, 0, 0.8]],
+    ["🐴 The King’s horse, Biscuit", "K", [0.6, 0.4, 0, 0.2, 0.6, 0.9, 0, 0]],
+    ["🚗 His Majesty’s vintage Rolls-Royce", "K", [0.85, 0.45, 0, 0.6, 0.95, 0, 0, 0]],
+    ["💎 Her Majesty’s diamond tiara", "Q", [0.95, 0, 0.5, 0.95, 0, 0, 0, 0]],
+    ["📿 The Queen’s pearl necklace", "Q", [0.9, 0, 0.55, 0.9, 0, 0, 0, 0]],
+    ["🐕 The royal corgis (×3)", "Q", [0.85, 0, 0.3, 0.15, 0, 0.9, 0, 0]],
+    ["📚 The Queen’s private library", "Q", [0.8, 0, 0.5, 0.4, 0, 0, 0, 0.7]],
+    ["🏰 Gold carriage of the Monarch", "B", [0.95, 0.2, 0.2, 0.7, 0.9, 0, 0, 0]],
+    ["🍤 King prawn curry recipe", "-", [0.05, 0, 0, 0, 0, 0.2, 0.95, 0]],
+    ["🍞 Palace kitchen toaster", "-", [0.15, 0, 0, 0.05, 0, 0, 0.5, 0.6]],
+    ["🚜 Groundskeeper’s lawnmower", "-", [0.1, 0, 0, 0.1, 0.4, 0, 0, 0.3]],
+  ];
+  const QS = [
+    { label: "“things belonging to the King”", kw: ["things", "belonging", "king"], v: [0.95, 0.35, 0.1, 0.5, 0.2, 0.1, 0, 0.2], want: [0, 1, 2, 3, 4, 5, 6, 7, 8], queen: true },
+    { label: "“royal jewellery”", kw: ["royal", "jewellery"], v: [0.9, 0.1, 0.15, 0.95, 0, 0, 0, 0], want: [0, 4, 5], queen: true, soft: [1, 3, 7, 8] },
+    { label: "“how does the monarch get around?”", kw: ["monarch", "get", "around"], v: [0.8, 0.2, 0.1, 0.3, 0.95, 0.3, 0, 0], want: [2, 3, 8], soft: [11] },
+  ];
+  const cos = (a, b) => { let d = 0, x = 0, y = 0; a.forEach((v, i) => { d += v * b[i]; x += v * v; y += b[i] * b[i]; }); return d / Math.sqrt(x * y); };
+  const words = (t) => t.toLowerCase().split(/[^a-z]+/).filter(Boolean);
+  let qi = 0, mode = 0;
+  W.tabs($("#rq"), QS.map((q) => ({ label: q.label })), { onChange: (i) => { qi = i; draw(); } });
+  W.tabs($("#rm"), [{ label: "🔤 Keyword" }, { label: "🧭 Meaning" }], { onChange: (i) => { mode = i; draw(); } });
+  $$("#rq .tab-body, #rm .tab-body").forEach((b) => b.remove());
+  function draw() {
+    const q = QS[qi];
+    const res = ITEMS.map(([t, owner, v], i) => {
+      const hitW = words(t).filter((w) => q.kw.includes(w));
+      const s = cos(q.v, v);
+      const found = mode === 0 ? hitW.length > 0 : s >= 0.65;
+      return { i, t, owner, s, hitW, found };
+    });
+    if (mode === 1) res.sort((a, b) => b.s - a.s);
+    $("#rRes").innerHTML = res.map((r) => {
+      const want = q.want.includes(r.i) || (q.soft || []).includes(r.i);
+      const cls = r.found ? (want ? "hit" : "junk") : "miss";
+      const sc = mode === 0 ? (r.hitW.length ? "matched “" + r.hitW.join(", ") + "”" : "no match") : r.s.toFixed(2);
+      return `<div class="r-item ${cls}"><span>${r.t}</span><span class="sc">${sc}</span></div>`;
+    }).join("");
+    const got = res.filter((r) => r.found && q.want.includes(r.i)).length, junk = res.filter((r) => r.found && !q.want.includes(r.i) && !(q.soft || []).includes(r.i)).length;
+    const qGot = res.filter((r) => r.found && r.owner === "Q" && q.want.includes(r.i)).length, qWant = q.want.filter((i) => ITEMS[i][1] === "Q").length;
+    let face, says, c;
+    if (!q.queen) { face = "🏰"; says = got === q.want.length ? "All the transport found." : "Some transport missed."; c = got === q.want.length ? "good" : "warn"; }
+    else if (qGot === qWant && !junk) { face = "👸✅"; says = "The Queen’s items are covered"; c = "good"; }
+    else if (qGot === 0) { face = "👸❌"; says = "The Queen’s items are missing"; c = "bad"; }
+    else { face = "👸⚠️"; says = "Some of the Queen’s items are missing"; c = "warn"; }
+    $("#rQueen").style.borderColor = W.cv(c);
+    $("#rQueen").innerHTML = `<div class="queen-face">${face}</div><div class="queen-says" style="color:${W.cv(c)}">${says}</div>
+      <div class="stat-line">✅ Right items found: <b>${got} of ${q.want.length}</b></div>
+      <div class="stat-line">❌ Wrong items included: <b>${junk}</b></div>
+      ${q.queen ? `<div class="stat-line">👸 Queen’s items found: <b>${qGot} of ${qWant}</b></div>` : ""}
+      <p class="muted" style="font-size:13.5px;margin:10px 0 0">${mode === 0 ? "Keyword search only sees letters. “Queen”, “Her Majesty” and “jewellery” are different words from “King” and “royal”, so they’re missed, while a curry with “King” in its name gets in." : "Meaning search compares directions in an 8-quality space (royal, male, female, valuable, transport, animal, food, home). Royal things point the same way, whatever words they use."}</p>`;
+  }
+  draw();
+})();
+W.BTS.royal = {
+  title: "Meaning search: two calls, before the chat model is involved",
+  sub: "Your code turns the question into a vector with an embedding model, then asks the vector database for the nearest stored vectors.",
+  parts: [
+    { label: "1 · Embed the question", c: "knowledge", json: `POST /v1/embeddings          // an embedding model, not the chat model
+{
+  "model": "your-embedding-model",
+  "input": "things belonging to the King"
+}
+→ { "embedding": [0.021, -0.113, 0.087, 0.004, ...] }   // 1,024 numbers in total`, note: "Anthropic doesn’t make an embedding model; teams pair Claude with one from a specialist provider (Voyage AI is the one Anthropic’s docs suggest), a cloud platform, or an open-source model." },
+    { label: "2 · Ask the vector database", c: "action", json: `POST /collections/insured_items/query
+{
+  "vector": [0.021, -0.113, 0.087, ...],
+  "top_k": 10,
+  "min_score": 0.65,
+  "filter": { "client": "Royal Household of Ruritania" }
+}
+→ { "matches": [
+     { "id": "item-001", "score": 0.94, "text": "The King's crown" },
+     { "id": "item-002", "score": 0.88, "text": "Throne of the King" },
+     { "id": "item-009", "score": 0.86, "text": "Gold carriage of the Monarch" },
+     { "id": "item-005", "score": 0.85, "text": "Her Majesty's diamond tiara" },   
+     ...
+  ] }` },
+  ],
+};
+(() => {
+  const D = ["royal", "male", "female", "grown-up"];
+  const V = { "🤴 king": [0.95, 0.9, 0.05, 0.9], "👸 queen": [0.93, 0.08, 0.88, 0.92], "👨 man": [0.05, 0.9, 0.05, 0.9], "👩 woman": [0.05, 0.05, 0.9, 0.9],
+    "🫅 prince": [0.9, 0.9, 0.05, 0.3], "👧 princess": [0.9, 0.08, 0.9, 0.28], "👦 boy": [0.05, 0.9, 0.05, 0.2], "👧🏽 girl": [0.05, 0.05, 0.9, 0.2], "🐕 corgi": [0.5, 0.3, 0.3, 0.6] };
+  const EQ = [["🤴 king", "👨 man", "👩 woman"], ["👸 queen", "👩 woman", "👨 man"], ["🫅 prince", "👦 boy", "👧🏽 girl"], ["🤴 king", "👨 man", "👦 boy"]];
+  const cos = (a, b) => { let d = 0, x = 0, y = 0; a.forEach((v, i) => { d += v * b[i]; x += v * v; y += b[i] * b[i]; }); return d / Math.sqrt(x * y); };
+  const f = (v) => v.map((x) => `<td class="n">${x.toFixed(2)}</td>`).join("");
+  W.tabs($("#arEq"), EQ.map(([a, b, c]) => ({ label: `${a.split(" ")[1]} − ${b.split(" ")[1]} + ${c.split(" ")[1]}` })), { onChange: (i) => {
+    const [a, b, c] = EQ[i], r = V[a].map((x, k) => Math.max(0, x - V[b][k] + V[c][k]));
+    $("#arTbl").innerHTML = `<tr><th></th>${D.map((d) => `<th>${d}</th>`).join("")}</tr><tr><td>${a}</td>${f(V[a])}</tr><tr><td>− ${b}</td>${f(V[b])}</tr><tr><td>+ ${c}</td>${f(V[c])}</tr><tr class="sel"><td>= result</td>${f(r)}</tr>`;
+    const near = Object.keys(V).filter((w) => ![a, b, c].includes(w)).map((w) => ({ w, s: cos(r, V[w]) })).sort((x, y) => y.s - x.s).slice(0, 4);
+    $("#arNear").innerHTML = near.map((n, k) => `<div class="${k ? "out" : ""}">${n.w}<span class="sim">${n.s.toFixed(2)}</span></div>`).join("") +
+      `<p class="muted" style="font-size:13.5px;margin:6px 0 0">${i === 3 ? "King − man + boy: a young royal male, the prince." : "Remove one direction, add another, and you land next to the word you’d expect."}</p>`;
+  } });
+  $("#arEq .tab-body")?.remove();
+})();
+</script>
+<script>
+/* ---- worked example: burst pipe ---- */
+(() => {
+  const CL = [
+    { t: "<b>Escape of water:</b> damage caused by water escaping from any fixed water or heating installation.", k: 0, m: 0.86 },
+    { t: "<b>Exclusion:</b> burst pipes when the home has been unoccupied for more than 30 days.", hits: "“burst”, “pipe”", k: 2, m: 0.74 },
+    { t: "<b>Flood:</b> damage from rising water from rivers, the sea or heavy rainfall.", hits: "“flooded”", k: 1, m: 0.58 },
+    { t: "<b>Accidental damage:</b> sudden damage to kitchen fittings and appliances.", hits: "“kitchen”", k: 1, m: 0.47 },
+    { t: "<b>Subsidence:</b> downward movement of the ground beneath the buildings.", k: 0, m: 0.12 },
+  ];
+  const NOTE = {
+    k: "❌ Keyword search ranks the exclusion, flood and kitchen clauses first. The clause that actually covers this claim shares no words with the customer’s sentence, so it falls to the bottom.",
+    m: "✅ By meaning, <b>escape of water</b> comes first, with the 30-day exclusion close behind. Both are exactly what a claims handler needs to read.",
+  };
+  function show(mode) {
+    const sorted = CL.map((c, i) => ({ ...c, i })).sort((a, b) => mode === "k" ? (b.k - a.k) || a.i - b.i : b.m - a.m);
+    $("#wsList").innerHTML = sorted.map((c, r) => {
+      const v = mode === "k" ? c.k / 2 : c.m;
+      const lab = mode === "k" ? c.k ? `shared: ${c.hits}` : "no shared words" : `similarity ${c.m.toFixed(2)}`;
+      return `<div class="ws-row${c.i === 0 ? " best" : ""}"><div class="rk">${r + 1}</div><div>${c.t}</div><div><div class="wsbar"><i style="width:${Math.round(v * 100)}%"></i></div><div class="sc">${lab}</div></div></div>`;
+    }).join("");
+    $("#wsNote").innerHTML = NOTE[mode];
+    $("#wsNote").style.setProperty("--c", mode === "k" ? "var(--bad)" : "var(--good)");
+    $("#wsKey").classList.toggle("primary", mode === "k"); $("#wsSem").classList.toggle("primary", mode === "m");
+  }
+  $("#wsKey").onclick = () => show("k"); $("#wsSem").onclick = () => show("m");
+  show("k");
+})();
+</script>
+<script src="../assets/deck.js?v=6.0"></script>
+</body>
+</html>

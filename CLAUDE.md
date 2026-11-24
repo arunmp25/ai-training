@@ -5,18 +5,20 @@ Interactive HTML training that teaches a whole team, technical and non-technical
 Repository: https://github.com/arunmp25/ai-training (branch `main`).
 
 ## Read these next
+- `v6/CLAUDE.md`: how version 6 is built (v5 plus the completion criteria popup).
 - `v5/CLAUDE.md`: how version 5 is built (same engine as v4).
 - `v4/CLAUDE.md`: how version 4 is built (deck engine, widget API, slide template, sequence diagrams, code walkthroughs, Behind the scenes JSON, speaker notes, EY theme) and the checklist for changing it. `v3/CLAUDE.md` describes v3, which v4 was copied from.
 - `docs/HISTORY.md`: what was built so far, in order, and every piece of feedback the user gave. Read it before proposing content or tone changes.
 
 ## Layout
 ```
-index.html            Version picker (links to v1–v5). Uses v2/assets for styling.
+index.html            Version picker (links to v1–v6). Uses v2/assets for styling.
 v1/                   ARCHIVED. Two delivery options (A layer by layer, B big picture first). Do not edit.
 v2/                   STABLE. One path, deep RAG and tools content. Do not edit.
 v3/                   PREVIOUS. Story version with sequence diagrams and JSON. Do not edit.
 v4/                   PREVIOUS. Copy of v3 in the EY theme, plus prompt structure and Python tool-call slides. Do not edit.
-v5/                   LATEST. Copy of v4 with a practical Session 2 (Topics 10–11 reworked, maths in optional deep dives). Actively worked on.
+v5/                   PREVIOUS. Copy of v4 with a practical Session 2 (Topics 10–11 reworked, maths in optional deep dives). Do not edit.
+v6/                   LATEST. Copy of v5 plus a “Before we start” slide and completion criteria popup. Actively worked on.
                       Same structure as v4 below; read v4 paths as v5.
   code/*.py           Runnable Python samples shown on the code walkthrough slides.
   index.html          Course page: sessions, topic cards, help.
@@ -29,13 +31,14 @@ v5/                   LATEST. Copy of v4 with a practical Session 2 (Topics 10�
   topics/*.html       One file per topic (17 in v3, 20 in v4).
 AI-Training-v3.zip    Standalone package of v3.
 AI-Training-v4.zip    Standalone package of v4.
-AI-Training-v5.zip    Standalone package of v5 (rebuild it after v5 changes, see below).
+AI-Training-v5.zip    Standalone package of v5.
+AI-Training-v6.zip    Standalone package of v6 (rebuild it after v6 changes, see below).
 .claude/launch.json   Preview server: `python3 -m http.server 8765` from the repo root.
 docs/HISTORY.md       Project history and user feedback.
 ```
 
 ## Ground rules
-- **Work in v5 only.** v1–v4 are kept as they are. When making a new version, copy the latest folder (as v5 was copied from v4), then plan with the user before building.
+- **Work in v6 only.** v1–v5 are kept as they are. When making a new version, copy the latest folder (as v6 was copied from v5), then plan with the user before building.
 - **Never lose content.** Every v2 slide still exists in v3, every v3 slide in v4, and every v4 slide in v5 (technical ones may move to an optional “Deep dive” at the end of a topic). Rework or re-skin slides, but do not drop them without the user's agreement.
 - **Tone (user feedback):** professional, not dramatic. Relatable or lightly funny references are welcome (the “[Your Name]” email, the King prawn curry in the royal search, the pirate claim). No characters, no dialogue scenes, no named cast.
 - **Structure words:** say “Session 1–3” and “Topic 1–20” (v4; v3 has Sessions 1–3 and Topics 1–17). Never “Day” or “Episode”.
@@ -65,11 +68,11 @@ File ids are the old v2 ids; the audience sees `n` from `course.js`. Always writ
 Sessions (v4): 1 = topics 1–8, 2 = topics 9–14, 3 = topics 15–20: the agentic loop, harnesses, customising and safety (15–18), then two topics marked optional, building agents in code and agent patterns (19–20). There is no separate optional group; optional topics carry `opt: 1` in `course.js`, which adds “· OPTIONAL” on the course page and the Topic 1 roadmap. File ids are not topic numbers: see the table above.
 
 ## Run and check
-- Start the preview server (`.claude/launch.json`, name `ai-training`) and open `http://localhost:8765/v5/index.html`. v5 also works from `file://`.
+- Start the preview server (`.claude/launch.json`, name `ai-training`) and open `http://localhost:8765/v6/index.html`. v6 also works from `file://`.
 - Test at **1280×720** (projector size). Slides should not need scrolling; a few long v2 slides still do (Topic 15 “The loop in action”, Topic 16 “The landscape” and “Which harness?”, Topic 17 “Which one?”).
-- Browsers cache aggressively. Asset links carry `?v=5.0` in v5 (inherited from v4; the folders differ, so there is no clash); bump the number in every v5 page when you change files in `v5/assets/`, or force reload with `fetch(url, {cache: "reload"})` while testing.
-- Before finishing, load every v5 topic and check: no script errors, every slide has a `.say` note, every `.seq` renders arrows, `data-bts` buttons have a matching `W.BTS` key.
+- Browsers cache aggressively. Asset links carry `?v=6.0` in v6; bump the number in every v6 page when you change files in `v6/assets/`, or force reload with `fetch(url, {cache: "reload"})` while testing.
+- Before finishing, load every v6 topic and check: no script errors, every slide has a `.say` note, every `.seq` renders arrows, `data-bts` buttons have a matching `W.BTS` key.
 
 ## Packaging and git
-- Rebuild the zip after v5 changes: copy `v5/` to a staging folder named `AI-Training-v5` (excluding `.DS_Store`) and zip that folder to `AI-Training-v5.zip` at the repo root (`AI-Training-v4.zip` stays as the v4 package). v5 has no links outside its own folder, so it works unzipped from `file://`.
+- Rebuild the zip after v6 changes: copy `v6/` to a staging folder named `AI-Training-v6` (excluding `.DS_Store`) and zip that folder to `AI-Training-v6.zip` at the repo root (older zips stay as they are). v6 has no links outside its own folder, so it works unzipped from `file://`.
 - Commit author email is the GitHub no-reply address set in the local repo config; do not put the user's private email in commits.

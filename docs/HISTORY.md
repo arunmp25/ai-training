@@ -147,3 +147,9 @@ The user asked for relatable or funny references only, no Day labels (sessions o
 - HarborShield, Mrs Patel’s son, the King’s horse Biscuit and a sign-off name in a Topic 2 makeover remain in examples; the user was told and can ask for removal.
 - `W.scene`, `W.CAST`, `W.castCards` and their styles are unused leftovers from the character version.
 - Product names in Topic 15 (the harness landscape) change quickly; re-check before presenting.
+
+## Version 6: completion criteria popup (24 Nov 2026)
+- Feedback: show attendance criteria at the start as a popup that opens on click and can be closed: attend 90% of the training, score more than 80% in an MCQ evaluation, ask questions in the chat. Also a concern about font colour and blurring when the course was shown.
+- v6 copied from v5. New Topic 1 slide 1 “Before we start” and a “Completion criteria” button on the course page open the popup (`v6/assets/criteria.js`).
+- Text made crisper (font smoothing `auto`, code line numbers brighter). The user asked for speed, so the fuller contrast pass (faint unrevealed states, 11–12px labels) is deferred; see `v6/CLAUDE.md`.
+
