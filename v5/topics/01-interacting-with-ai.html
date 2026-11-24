@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Topic 2 · Talking to AI</title>
+<link rel="stylesheet" href="../assets/style.css?v=5.0">
+<link rel="stylesheet" href="../assets/widgets.css?v=5.0">
+<link rel="stylesheet" href="../assets/story.css?v=5.0">
+<style>
+  .chatbox { display: flex; flex-direction: column; gap: 10px; }
+  .verdict { font-size: 14px; margin-top: 10px; }
+  #vague .bubble { font-size: 14px; padding: 10px 14px; }
+  .where .ci-card { min-height: 120px; }
+</style>
+</head>
+<body class="deck" data-id="01">
+
+<section class="slide title-slide" data-title="Welcome">
+  <div class="big-emoji">💬</div>
+  <div class="eyebrow">Session 1 · Topic 2</div>
+  <h1>Talking to AI</h1>
+  <p class="sub">Before any jargon: what is it actually like to work with AI, and how do you get good results from it?</p>
+  <div class="row"><button class="btn primary" data-goto="2">Let’s start →</button></div>
+  <aside class="notes"><span class="tag time">⏱ 1 min</span><p class="say"><b>🎤 Say</b> No maths and no code. This topic is about what it is actually like to work with AI, and the habits that separate good results from frustrating ones.</p>
+    <ul><li>Warm, simple opening: “No maths, no code. By the end of the course you’ll understand every buzzword you hear in AI meetings.”</li>
+    <li>Quick poll: “Who used an AI assistant this week? For what?” Use their answers as examples throughout.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="A familiar first attempt">
+  <div class="eyebrow">Example</div>
+  <h2>A familiar first attempt</h2>
+  
+  <div class="stack-v" style="max-width:900px"><div class="bubble user">Write an email to customers about the renewal.</div><div class="bubble ai"><b>Subject: An Important Update!</b><br>Dear Valued Customer, in today’s fast-paced world, insurance is more important than ever… <i>(412 more words)</i> …Warm regards, <b>[Your Name]</b>, <b>[Your Company]</b></div></div><div class="callout" style="--c:var(--accent);margin-top:16px;max-width:900px">Which customers? Which renewal? Who is <b>[Your Name]</b>? The model filled every gap with a confident guess. This topic is about closing those gaps.</div><div class="row" style="margin-top:14px"><button class="btn bts-btn" data-bts="firstchat">🎬 Behind the scenes</button></div>
+  <aside class="notes"><span class="tag time">⏱ 2 min</span><p class="say"><b>🎤 Say</b> This is what most first attempts look like: a polite, generic email with a placeholder where your name should go. The AI did its best with what it was given, and it was given almost nothing.</p><ul><li>Ask: “What would a person need to know to write this properly?” Collect answers: which customers, which product, what changed, tone, length. That list is the rest of the topic.</li><li>Open Behind the scenes to show how little the model was actually given.</li></ul></aside>
+</section>
+
+
+<section class="slide" data-title="Your new colleague">
+  <div class="eyebrow">The mindset</div>
+  <h2>Think of AI as a brilliant new colleague who started today</h2>
+  <p class="sub">Click each trait to see what it means for how you work with it.</p>
+  <div id="traits"></div>
+  <aside class="notes"><span class="tag time">⏱ 2 min</span><p class="say"><b>🎤 Say</b> The most useful way to think about AI is as a brilliant colleague who started today. Very capable, but knows nothing about you, your company or your customers, and will guess rather than ask.</p>
+    <ul><li>This framing does most of the work for the whole course. Every “trick” is just treating it like a smart new hire.</li>
+    <li>Emphasise “knows nothing about you” and “will guess rather than ask”. These two explain most bad AI results.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="Where you meet AI">
+  <div class="eyebrow">Where you meet it</div>
+  <h2>Four ways AI shows up at work</h2>
+  <p class="sub">Same kind of engine underneath, packaged differently. Click each one.</p>
+  <div id="where" class="where"></div>
+  <aside class="notes"><span class="tag time">⏱ 1 min</span><p class="say"><b>🎤 Say</b> You meet AI in four main places: chat assistants, features inside tools you already use, coding assistants and autonomous agents. Underneath it is the same kind of engine. What changes is the packaging around it.</p>
+    <ul><li>Point out that it’s the same kind of model in all four. The packaging (what we’ll later call the <b>harness</b>) is what differs.</li>
+    <li>Ask which ones people already use.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="Vague vs specific">
+  <div class="eyebrow">Try it</div>
+  <h2>Same request, three ways</h2>
+  <p class="sub">You need to tell your team that Thursday’s project review has moved. Switch between the prompts and compare what comes back.</p>
+  <div id="vague"></div>
+  <aside class="notes"><span class="tag time">⏱ 2 min</span><p class="say"><b>🎤 Say</b> Same request, three versions. The AI did not get smarter between them. We gave it what a colleague would need to do the job well.</p>
+    <ul><li>Read the vague version first and ask: “Would you send this?” (No: wrong length, invented details, placeholders.)</li>
+    <li>Key point: the AI didn’t get smarter between versions. <b>You gave it what it needed.</b></li>
+    <li>Topic 7 breaks a good prompt into its parts. This is just a taster.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="It’s a conversation">
+  <div class="eyebrow">Iterate</div>
+  <h2>Don’t aim for perfect in one go. Have a conversation.</h2>
+  <p class="sub">Step through a real refinement. Each short follow-up builds on everything said before.</p>
+  <div class="split wide-right">
+    <div class="stack-v">
+      <div id="convCtrl"></div>
+      <div class="callout" style="--c:var(--c-context)">💡 Small, specific follow-ups beat starting over. The AI sees the whole conversation so far (we’ll see <i>how</i> in Topic 5).</div>
+    </div>
+    <div id="convLog" class="chatbox" style="max-height:440px"></div>
+  </div>
+  <aside class="notes"><span class="tag time">⏱ 1 min</span><p class="say"><b>🎤 Say</b> Do not aim for the perfect prompt first time. Treat it as a conversation: ask, look, then refine with a short follow-up.</p>
+    <ul><li>Stress that this is normal and expected. Experts iterate too.</li>
+    <li>Plant a seed: “How does it remember turn 1 at turn 4? Hold that thought for Topic 5.”</li></ul></aside>
+</section>
+
+<section class="slide seq-slide" data-title="Sequence: What actually happens when you press Ent">
+  <div class="eyebrow">Sequence diagram</div>
+  <h2>What actually happens when you press Enter</h2>
+  <p class="sub">A chat app is ordinary software wrapped around one API call.</p>
+  <div id="seqEnter"></div>
+  <aside class="notes"><span class="tag time">⏱ 3 min</span><p class="say"><b>🎤 Say</b> Here is what really happens when you press Enter. Step through it with me: the chat app adds instructions and history, sends one request, and streams the answer back. Only one of these boxes is the model.</p><ul><li>Step through with → or the clicker. Each step shows the real message on the right.</li><li>Point out who is smart and who is plumbing: only one box is the model.</li><li>Steps 2 and 8 are why chats feel like they have memory.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="The parts of a request">
+  <div class="eyebrow">Prompt structure</div>
+  <h2>Every request has the same parts</h2>
+  <p class="sub">Settings, a system prompt, optional tools and the messages so far. Click a part to see who writes it.</p>
+  <div class="anat"><div class="anat-req" id="anatReq"></div><div class="stack-v"><div class="card anat-detail" id="anatDetail"></div><div class="row"><button class="btn bts-btn" data-bts="anatomy">🎬 Behind the scenes: the request, annotated</button></div></div></div>
+  <aside class="notes"><span class="tag time">⏱ 3 min</span><p class="say"><b>🎤 Say</b> Every request to a model has the same parts. Settings say which model and how long the reply can be. The system prompt is written by whoever built the app. Then come the messages, alternating user and assistant, and optionally a list of tools.</p><ul><li>Click the system prompt first: most people have never seen one, but every chat app sends one.</li><li>Point at the assistant turn: the model wrote it earlier, and the app sends it back. That is how a chat “remembers” (Topic 5).</li><li>Tools are shown greyed in as optional; Topic 12 is all about them. Topic 7 goes deeper into the system prompt.</li></ul></aside>
+</section>
+
+<section class="slide seq-slide" data-title="Python: the same request in code">
+  <div class="eyebrow">Code walkthrough · Python</div>
+  <h2>The same request, written in Python</h2>
+  <p class="sub">One call sends every part you just saw. Press → to see the JSON each part becomes. <a href="../code/first_call.py" download>⬇ first_call.py</a></p>
+  <div id="cwFirst"></div>
+  <aside class="notes"><span class="tag time">⏱ 3 min</span><p class="say"><b>🎤 Say</b> Here is the same request as a short Python program, using Anthropic's official SDK. Each block of code turns into one part of the JSON request. Nothing magic happens: it is one HTTPS call.</p><ul><li>Step through with → or the clicker. Each step highlights lines on the left and shows the JSON on the right.</li><li>For non-developers: you do not need to read Python. Watch the right-hand side, which is the same request as the previous slide.</li><li>The file is in the course folder (<code>code/first_call.py</code>) and runs with an API key.</li></ul></aside>
+</section>
+
+
+<section class="slide" data-title="Good at / careful with">
+  <div class="eyebrow">Know its strengths</div>
+  <h2>Great at it, or be careful?</h2>
+  <p class="sub">For each task, decide whether a plain AI chat (no extra tools or company data) is great at it, or whether you should be careful.</p>
+  <div id="goodbad"></div>
+  <aside class="notes"><span class="tag time">⏱ 2 min</span><p class="say"><b>🎤 Say</b> For each task, vote: is a plain AI chat great at this, or should we be careful? The careful ones are exactly what the rest of the course fixes.</p>
+    <ul><li>Do it as a room vote for each card.</li>
+    <li>The “careful” items are exactly what later topics fix: live data → <b>tools</b> (Topic 12), company knowledge → <b>RAG</b> (Topic 9), precise maths → <b>tools</b>, sources → <b>grounding</b>.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="Five habits">
+  <div class="eyebrow">Habits</div>
+  <h2>Six habits of people who get great results</h2>
+  <p class="sub">Click each card to flip it.</p>
+  <div id="habits"></div>
+  <aside class="notes"><span class="tag time">⏱ 1 min</span><p class="say"><b>🎤 Say</b> Six habits get most of the value: give context, be specific, show an example, iterate, check the output, and keep sensitive data out. Verifying is the one people skip.</p>
+    <ul><li>These six habits are the practical takeaway for people who don’t go any deeper.</li>
+    <li>“Verify” is the one people skip. AI is fluent, and fluent isn’t the same as correct.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="The jargon map">
+  <div class="eyebrow">The map for this course</div>
+  <h2>All the AI jargon fits into six layers</h2>
+  <p class="sub">An AI system is like a car: the model is only the engine. Click a layer to see what it does and which buzzwords live there. Every later topic fills in one layer.</p>
+  <div id="map"></div>
+  <div class="row" style="margin-top:14px"><a class="btn" href="00-decoding-ai-jargon.html">📖 Open the full jargon dictionary</a></div>
+  <aside class="notes"><span class="tag time">⏱ 2 min</span><p class="say"><b>🎤 Say</b> All the jargon fits into six layers. For the rest of the course, whenever you hear a new word, ask which layer it belongs to.</p>
+    <ul><li>This is the only jargon slide. Don’t explain every word, just show that each word has a home.</li>
+    <li>Say: “For the rest of the course, whenever you hear a new word, ask <i>which layer is that?</i>”</li></ul></aside>
+</section>
+
+<section class="slide" data-title="Takeaways">
+  <div class="eyebrow">Takeaways</div>
+  <h2>What to remember</h2>
+  <div class="cols-3" style="margin:10px 0 24px">
+    <div class="card"><div class="big-emoji" style="font-size:40px">🧑‍💼</div><p>Treat AI like a <b>brilliant new colleague</b>: smart, fast, and knowing nothing about you yet.</p></div>
+    <div class="card"><div class="big-emoji" style="font-size:40px">🎯</div><p><b>Be specific</b>: audience, purpose, format, facts. Then <b>iterate</b> in short follow-ups.</p></div>
+    <div class="card"><div class="big-emoji" style="font-size:40px">🔍</div><p><b>Verify</b>. It’s fluent, not always right. Live data and company facts need extra layers.</p></div>
+  </div>
+  <div class="callout">Next: <b>what actually happens when you press Enter?</b></div>
+  <div class="row" style="margin-top:18px"><a class="btn primary" data-nexttopic>Next →</a></div>
+  <aside class="notes"><span class="tag time">⏱ 30 sec</span><p class="say"><b>🎤 Say</b> Three things to take away. Next question: why is it a good guesser but bad with facts it has never seen? That comes down to how it generates text.</p><ul><li>Bridge: “Why is it a good guesser but bad at facts it hasn’t seen? Let’s look at how it generates text.”</li></ul></aside>
+</section>
+
+<script src="../assets/course.js?v=5.0"></script>
+<script src="../assets/widgets.js?v=5.0"></script>
+<script>
+const { $, cv } = W;
+
+W.clickInfo($("#traits"), [
+  { icon: "📚", title: "Has read a huge amount", c: "model", html: "<p>It has learned from a vast amount of text: books, websites, code, manuals.</p><p><b>So:</b> it’s great at explaining, drafting, summarising and brainstorming on almost any topic.</p>" },
+  { icon: "⚡", title: "Instant and tireless", c: "knowledge", html: "<p>It writes a page in seconds and never gets bored of revisions.</p><p><b>So:</b> ask for 5 options instead of 1. Ask for a rewrite. Iterating costs you nothing.</p>" },
+  { icon: "🆕", title: "Started today", c: "context", html: "<p>It knows nothing about <b>you</b>, your team, your customers or this project.</p><p><b>So:</b> give it the context a new hire would need: who it’s for, why, what good looks like.</p>" },
+  { icon: "🫥", title: "Remembers nothing", c: "context", html: "<p>Each new chat starts from a blank page (unless a memory feature feeds old facts back in).</p><p><b>So:</b> restate key facts, or use features like projects, memory or instruction files.</p>" },
+  { icon: "😊", title: "Eager to please", c: "action", html: "<p>It will almost always produce <i>something</i> rather than say “I don’t know” or ask a question.</p><p><b>So:</b> tell it “ask me if anything is unclear” and “say if you’re not sure”.</p>" },
+  { icon: "🎭", title: "Sometimes confidently wrong", c: "trust", html: "<p>It can state made-up facts, numbers or sources in a perfectly confident tone. This is called <b>hallucination</b>.</p><p><b>So:</b> verify anything that matters. Give it sources to work from.</p>" },
+], { cols: 3, side: true });
+
+W.clickInfo($("#where"), [
+  { icon: "💬", title: "Chat assistants", sub: "Claude, ChatGPT, Gemini…", c: "context", html: "<p>A chat window where you type and it replies. The most flexible way to use AI.</p><p><b>Great for:</b> drafting, summarising, explaining, brainstorming, analysing documents you upload.</p>" },
+  { icon: "🧩", title: "AI inside your tools", sub: "Office, email, docs, CRM…", c: "knowledge", html: "<p>AI built into apps you already use, like drafting a reply in your email client or summarising a meeting.</p><p><b>Great for:</b> quick help without leaving your work. It can often see the document or thread you have open.</p>" },
+  { icon: "🤖", title: "Agents", sub: "Claude Code, Cursor, Copilot…", c: "autonomy", html: "<p>AI that doesn’t just talk but <b>acts</b>: reads files, runs commands, edits code, uses your systems, working step by step towards a goal.</p><p><b>Great for:</b> multi-step tasks. This is where the course ends up (Topics 15–18).</p>" },
+  { icon: "🔌", title: "Built into products", sub: "via an API", c: "action", html: "<p>Developers call the model from their own software: a support bot, a document classifier, a search feature.</p><p><b>Great for:</b> automating one task at scale, invisibly to the end user.</p>" },
+], { cols: 4, side: false });
+
+const reply = (txt, verdict, c) => `<div class="chatbox">${txt}</div><div class="verdict callout" style="--c:${cv(c)}">${verdict}</div>`;
+W.tabs($("#vague"), [
+  { label: "😐 Vague", html: `<div class="split">
+      <div><div class="label">Prompt</div><div class="bubble user" style="max-width:100%">Write an email about the meeting.</div></div>
+      <div><div class="label">AI reply</div>${reply(`<div class="bubble ai" style="max-width:100%">Subject: Upcoming Meeting<br><br>Dear Team,<br><br>I hope this email finds you well. I wanted to reach out regarding our upcoming meeting. It is important that we all come together to discuss key priorities and align on next steps. Please make sure to prepare any relevant materials in advance.<br><br>Please let me know if you have any questions.<br><br>Best regards,<br>[Your Name]</div>`, "❌ Generic, wordy, no date, no reason, placeholder name. It had to <b>guess</b> everything.", "bad")}</div></div>` },
+  { label: "🙂 Better", html: `<div class="split">
+      <div><div class="label">Prompt</div><div class="bubble user" style="max-width:100%">Write a short email to my team saying Thursday’s project review is moving to Friday at 2pm.</div></div>
+      <div><div class="label">AI reply</div>${reply(`<div class="bubble ai" style="max-width:100%">Subject: Project review moved to Friday 2pm<br><br>Hi team,<br><br>Quick update: Thursday’s project review is moving to <b>Friday at 2pm</b>. Same room and agenda. Please update your calendars.<br><br>Thanks,<br>[Your Name]</div>`, "🟡 Much better: right facts, right length. Still missing the reason and your name, and the tone is a guess.", "warn")}</div></div>` },
+  { label: "🤩 Great", html: `<div class="split">
+      <div><div class="label">Prompt</div><div class="bubble user" style="max-width:100%">Write a short, friendly email to my 6-person design team. Thursday’s project review moves to <b>Friday 2pm</b> because the client asked for an extra day to send feedback. Mention that the agenda is unchanged and they don’t need to do anything else. Under 80 words. Sign it “Maya”.</div></div>
+      <div><div class="label">AI reply</div>${reply(`<div class="bubble ai" style="max-width:100%">Subject: Review moved to Friday 2pm 🗓️<br><br>Hi all,<br><br>Heads-up: our project review is moving from Thursday to <b>Friday at 2pm</b>. The client asked for an extra day to send their feedback, so we’ll have it all in hand.<br><br>The agenda is unchanged and there’s nothing else you need to do. Just update your calendars.<br><br>Thanks!<br>Maya</div>`, "✅ Ready to send. Audience, reason, tone, length, name: <b>nothing left to guess.</b>", "good")}</div></div>` },
+]);
+
+W.stepper({
+  ctrl: $("#convCtrl"), log: $("#convLog"), interval: 2600,
+  steps: [
+    { raw: 1, html: `<div class="bubble user">Give me 5 ideas for our team offsite.</div>` },
+    { raw: 1, html: `<div class="bubble ai">1. Escape room 2. Cooking class 3. Hiking day 4. Volunteering 5. Strategy workshop at a hotel</div>` },
+    { raw: 1, html: `<div class="bubble user">We’re 12 people, budget is tight and two people use wheelchairs.</div>` },
+    { raw: 1, html: `<div class="bubble ai">Updated: 1. Accessible cooking class 2. Volunteering at a food bank (step-free) 3. Picnic and games in an accessible park 4. Museum tour with a guide 5. Board-game café afternoon</div>` },
+    { raw: 1, html: `<div class="bubble user">Love #2 and #5. Make a half-day plan combining them, as a table.</div>` },
+    { raw: 1, html: `<div class="bubble ai"><table class="cmp"><tr><th>Time</th><th>Activity</th></tr><tr><td>10:00</td><td>Food bank volunteering</td></tr><tr><td>12:30</td><td>Lunch nearby</td></tr><tr><td>14:00</td><td>Board-game café, team challenges</td></tr><tr><td>16:00</td><td>Wrap-up and photos</td></tr></table></div>` },
+  ],
+});
+
+W.classify($("#goodbad"), [
+  { text: "📝 Summarise a 20-page report you paste in", a: 0, why: "Summarising text it can see is a core strength." },
+  { text: "📈 Tell you today’s share price", a: 1, why: "A plain model has no live data. It needs a <b>tool</b> (like web search) for that. Topic 12." },
+  { text: "💡 Brainstorm 20 names for a new product", a: 0, why: "Generating lots of options fast is a sweet spot." },
+  { text: "🏢 Explain your company’s travel policy", a: 1, why: "It has never seen your internal documents. You need to give them to it, which is what <b>RAG</b> does (Topic 9)." },
+  { text: "✍️ Turn rough bullet points into a polished email", a: 0, why: "Rewriting and changing tone are great uses." },
+  { text: "🔢 Multiply 48,213 × 9,177 exactly", a: 1, why: "It predicts text and doesn’t truly calculate. It can slip on exact arithmetic unless it uses a calculator or code <b>tool</b>." },
+  { text: "📚 Give academic references for a claim", a: 1, why: "Classic hallucination risk: it may invent realistic-looking sources. Always check them." },
+  { text: "🧑‍🏫 Explain a concept like you’re 12 years old", a: 0, why: "Explaining at any level is a real strength." },
+], [{ label: "👍 Great at it", c: "good" }, { label: "⚠️ Be careful", c: "warn" }], { cols: 2 });
+
+W.flips($("#habits"), [
+  { front: "🎯 Be specific", back: "Say <b>who</b> it’s for, <b>why</b>, and <b>what good looks like</b>. Vague in, generic out." },
+  { front: "🧳 Give context", back: "Paste the email thread, the data, the background. It only knows what you show it." },
+  { front: "🖼️ Show an example", back: "“Write it like this one” beats a paragraph describing the style you want." },
+  { front: "📐 Ask for a format", back: "Table, bullets, 100 words, JSON, three options… say it up front." },
+  { front: "🔁 Iterate", back: "Treat the first answer as a draft. Short follow-ups: “shorter”, “more formal”, “add a table”." },
+  { front: "🔍 Verify", back: "Check facts, numbers, names and sources before you use them. <b>Fluent ≠ correct.</b>", c: "trust" },
+]);
+
+W.layerMap($("#map"));
+
+/* ===== v3 story ===== */
+W.BTS.firstchat = {
+  title: "What the chat app actually sends to the model",
+  sub: "Every chat app is a nice screen on top of an API call like this one.",
+  parts: [
+    { label: "Request → model", c: "accent", json: `POST /v1/messages
+{
+  "model": "claude-sonnet-5-5",
+  "max_tokens": 1024,
+  "messages": [
+    { "role": "user",
+      "content": "Write an email to customers about the renewal." }
+  ]
+}`, note: "That is everything the model knows. No customer list, no product, no company name, no idea who you are. Every missing detail becomes a guess." },
+    { label: "Response ← model", c: "good", json: `{
+  "role": "assistant",
+  "content": [
+    { "type": "text",
+      "text": "Subject: An Important Update!\\nDear Valued Customer, in today's fast-paced world…" }
+  ],
+  "stop_reason": "end_turn",
+  "usage": { "input_tokens": 14, "output_tokens": 498 }   // 14 words in, 498 out 😬
+}` },
+  ],
+};
+</script>
+<script>W.seq(document.getElementById("seqEnter"), {"actors": [{"id": "user", "name": "You", "icon": "🙋", "c": "accent"}, {"id": "app", "name": "Chat app", "icon": "💬", "c": "autonomy"}, {"id": "model", "name": "Model API", "icon": "🧠", "c": "model"}], "steps": [{"from": "user", "to": "app", "label": "Type a question, press Enter", "note": "Nothing intelligent has happened yet. The chat window is a normal web or desktop app."}, {"from": "app", "to": "app", "label": "Add system prompt + history", "note": "The app quietly wraps your words with its own instructions and the earlier messages in this chat.", "code": "{\n  \"system\": \"You are a helpful assistant for HarborShield staff.\",\n  \"messages\": [\n    // ...earlier turns of this chat...\n    { \"role\": \"user\", \"content\": \"Summarise our motor claims process in 5 bullets\" }\n  ]\n}"}, {"from": "app", "to": "model", "label": "POST /v1/messages", "note": "One HTTPS request. Everything the model will know is inside this request.", "code": "POST https://api.anthropic.com/v1/messages\n{\n  \"model\": \"claude-sonnet-5-5\",\n  \"max_tokens\": 1024,\n  \"stream\": true,\n  \"system\": \"You are a helpful assistant...\",\n  \"messages\": [ ... ]\n}"}, {"from": "model", "to": "model", "label": "Predict a token, repeat", "note": "The model generates one token at a time, each one based on everything before it (next topic)."}, {"from": "model", "to": "app", "label": "Stream tokens", "note": "Tokens are sent back as they are generated, as server-sent events.", "code": "event: content_block_delta\ndata: { \"delta\": { \"type\": \"text_delta\", \"text\": \"1. Report\" } }\n\nevent: content_block_delta\ndata: { \"delta\": { \"type\": \"text_delta\", \"text\": \" the claim\" } }", "ret": true}, {"from": "app", "to": "user", "label": "Show words as they arrive", "note": "The typing effect is real: you are watching the generation happen.", "ret": true}, {"from": "model", "to": "app", "label": "message_stop + usage", "note": "The final event says why it stopped and how many tokens were used. This is what you are billed for.", "code": "event: message_delta\ndata: { \"delta\": { \"stop_reason\": \"end_turn\" },\n        \"usage\": { \"input_tokens\": 412, \"output_tokens\": 138 } }\n\nevent: message_stop", "ret": true}, {"from": "app", "to": "app", "label": "Save reply to the chat history", "note": "The model remembers nothing. The app stores the conversation and sends it again next turn."}], "frames": []});</script>
+<script>
+/* ===== v4 additions ===== */
+(() => {
+  const parts = [{"k": "settings", "c": "model", "tag": "Settings", "code": "\"model\": \"claude-sonnet-5-5\",\n\"max_tokens\": 1024,\n\"temperature\": 0.3,", "who": "Written by the developer", "t": "Settings", "html": "<p>Not part of the prompt, but they change the result.</p><ul><li><b>model</b>: which model answers.</li><li><b>max_tokens</b>: the longest reply allowed. The reply stops there even mid-sentence.</li><li><b>temperature</b>: how adventurous the word choice is (Topic 3).</li></ul>"}, {"k": "system", "c": "context", "tag": "System prompt", "code": "\"system\": \"You are HarborShield's customer email\n  assistant. Plain British English, under 120\n  words. Never invent policy details…\",", "who": "Written by the developer · usually hidden from the user", "t": "System prompt", "html": "<p>The standing brief: who the assistant is, the rules, the tone and the format. It applies to <b>every</b> turn of the conversation.</p><p>Every chat app sends one, even when you never see it. Topic 7 shows how to write a good one.</p>"}, {"k": "tools", "c": "action", "tag": "Tools · optional", "code": "\"tools\": [ { \"name\": \"get_motor_quote\",\n             \"description\": \"…\", \"input_schema\": {…} } ],", "who": "Written by the developer", "t": "Tool definitions", "html": "<p>A menu of actions the model may <b>ask</b> your app to run, such as fetching a live quote. Each has a name, a description and the inputs it needs.</p><p>Optional. Leave it out and the model can only write text. Topics 12 and 13 cover tools.</p>"}, {"k": "open", "brace": "\"messages\": ["}, {"k": "user1", "c": "accent", "tag": "User prompt", "code": "  { \"role\": \"user\",\n    \"content\": \"Write a renewal reminder for MTR-55120.\" },", "who": "Typed by the person", "t": "User prompt", "html": "<p>What the person actually asked. The messages always start with a user turn.</p><p>This is the only part most people think of as “the prompt”, yet it is often the smallest part of the request.</p>"}, {"k": "asst", "c": "knowledge", "tag": "Assistant turn", "code": "  { \"role\": \"assistant\",\n    \"content\": \"Happy to. When does it renew…?\" },", "who": "Written by the model earlier · re-sent by the app", "t": "Assistant turn", "html": "<p>The model’s earlier reply. The model has no memory, so the app stores each reply and sends it back with the next request.</p><p>Turns alternate: user, assistant, user. Topic 5 shows how this history fills the context window.</p>"}, {"k": "user2", "c": "accent", "tag": "Latest message", "code": "  { \"role\": \"user\",\n    \"content\": \"Renews 1 December at ₹18,400…\" }", "who": "Typed by the person", "t": "The latest user message", "html": "<p>The newest turn, the one the model is answering now. The request always ends on a user turn (or on tool results, which travel in a user turn too).</p>"}, {"k": "close", "brace": "]"}, {"k": "resp", "c": "good", "tag": "Response", "code": "← { \"role\": \"assistant\", \"content\": [ { \"type\": \"text\", … } ],\n    \"stop_reason\": \"end_turn\", \"usage\": {…} }", "who": "Sent back by the model", "t": "The response", "html": "<p>The reply comes back as one more <b>assistant</b> message, plus why it stopped (<code>end_turn</code>, <code>max_tokens</code> or <code>tool_use</code>) and how many tokens were used, which is what you pay for.</p><p>The app adds it to the history, ready for the next turn.</p>"}];
+  const req = document.getElementById("anatReq"), det = document.getElementById("anatDetail");
+  req.innerHTML = parts.map((p, i) => p.brace ? `<div class="anat-brace">${W.hl(p.brace)}</div>`
+    : `<div class="anat-part" data-i="${i}" style="--c:${W.cv(p.c)}${p.k === "resp" ? ";margin-top:8px" : ""}"><span class="ap-tag">${p.tag}</span>${W.hl(p.code)}</div>`).join("");
+  const pick = (i) => {
+    const p = parts[i];
+    W.$$(".anat-part", req).forEach((el) => el.classList.toggle("sel", +el.dataset.i === i));
+    det.style.setProperty("--c", W.cv(p.c));
+    det.innerHTML = `<div class="who">${p.who}</div><h3>${p.t}</h3>${p.html}`;
+  };
+  W.$$(".anat-part", req).forEach((el) => el.addEventListener("click", () => pick(+el.dataset.i)));
+  pick(1);
+})();
+
+W.BTS.anatomy = {
+  title: "The parts of a request, annotated",
+  sub: "The same request as the slide, in full. Comments show who writes each part.",
+  parts: [
+    { label: "Request → POST /v1/messages", c: "accent", json: `{
+  "model": "claude-sonnet-5-5",          // settings: the developer chooses
+  "max_tokens": 1024,                     // longest reply allowed
+  "temperature": 0.3,                     // lower = more predictable wording
+  "system": "You are HarborShield's customer email assistant. ...",   // the developer's standing brief
+  "tools": [],                            // optional: actions the model may ask for (Topic 12)
+  "messages": [                           // the conversation so far, oldest first
+    { "role": "user", "content": "Write a renewal reminder for motor policy MTR-55120." },
+    { "role": "assistant", "content": "Happy to. When does it renew, and what is the new premium?" },   // re-sent by the app
+    { "role": "user", "content": "Renews 1 December at ₹18,400. Sign it 'HarborShield Renewals'." }     // the turn being answered
+  ]
+}` },
+    { label: "Response ←", c: "good", json: "{\n  \"id\": \"msg_01XFDUDYJgAACzvnptvVoYEL\",\n  \"type\": \"message\",\n  \"role\": \"assistant\",\n  \"model\": \"claude-sonnet-5-5\",\n  \"content\": [\n    { \"type\": \"text\",\n      \"text\": \"Subject: Your motor policy renews on 1 December\\n\\nDear customer,\\n\\nYour HarborShield motor policy MTR-55120 renews on 1 December. Your new annual premium is ₹18,400...\" }\n  ],\n  \"stop_reason\": \"end_turn\",\n  \"usage\": { \"input_tokens\": 96, \"output_tokens\": 88 }\n}", note: "The reply is one more assistant message. The app appends it to messages before the next turn." },
+  ],
+};
+
+W.codeWalk(document.getElementById("cwFirst"), { file: "code/first_call.py", code: "\"\"\"Topic 2: one request to the model, with every part of the prompt.\nRun:  pip install anthropic\n      export ANTHROPIC_API_KEY=...\n      python first_call.py\n\"\"\"\nimport anthropic\n\nclient = anthropic.Anthropic()  # reads ANTHROPIC_API_KEY\n\nresponse = client.messages.create(\n    # Settings: which model, how long, how creative\n    model=\"claude-sonnet-5-5\",\n    max_tokens=1024,\n    temperature=0.3,\n    # System prompt: written by the app developer, not the user\n    system=(\n        \"You are HarborShield's customer email assistant. \"\n        \"Write in plain British English, under 120 words. \"\n        \"Never invent policy details: ask if something is missing.\"\n    ),\n    # Messages: the conversation so far, oldest first\n    messages=[\n        {\"role\": \"user\",\n         \"content\": \"Write a renewal reminder for motor policy MTR-55120.\"},\n        {\"role\": \"assistant\",\n         \"content\": \"Happy to. When does it renew, and what is the new premium?\"},\n        {\"role\": \"user\",\n         \"content\": \"Renews 1 December at ₹18,400. Sign it 'HarborShield Renewals'.\"},\n    ],\n)\n\n# The reply is a list of content blocks; here there is one text block\nprint(response.content[0].text)\nprint(\"stop_reason:\", response.stop_reason)\nprint(\"tokens in/out:\", response.usage.input_tokens, response.usage.output_tokens)\n", steps: [{"lines": [6, 8], "c": "accent", "t": "Create a client", "note": "The SDK reads your API key from the environment and handles HTTPS, retries and errors for you.", "label": "Every call goes here", "json": "POST https://api.anthropic.com/v1/messages\nx-api-key: $ANTHROPIC_API_KEY\nanthropic-version: 2023-06-01\ncontent-type: application/json"}, {"lines": [10, 14], "c": "model", "t": "Settings", "note": "Which model, the longest reply allowed, and how adventurous the wording can be.", "label": "Becomes", "json": "{\n  \"model\": \"claude-sonnet-5-5\",\n  \"max_tokens\": 1024,\n  \"temperature\": 0.3,\n  …\n}"}, {"lines": [15, 20], "c": "context", "t": "System prompt", "note": "Python joins the three strings into one. The person using the app never types this.", "label": "Becomes", "json": "\"system\": \"You are HarborShield's customer email assistant. Write in plain British English, under 120 words. Never invent policy details: ask if something is missing.\""}, {"lines": [21, 29], "c": "accent", "t": "Messages: the conversation so far", "note": "Oldest first, alternating user and assistant. The assistant turn is the model’s earlier question, sent back because the model remembers nothing.", "label": "Becomes", "json": "\"messages\": [\n  { \"role\": \"user\", \"content\": \"Write a renewal reminder for motor policy MTR-55120.\" },\n  { \"role\": \"assistant\", \"content\": \"Happy to. When does it renew, and what is the new premium?\" },\n  { \"role\": \"user\", \"content\": \"Renews 1 December at ₹18,400. Sign it 'HarborShield Renewals'.\" }\n]"}, {"lines": [10, 30], "c": "accent", "t": "The whole request that is sent", "note": "One HTTPS request. This is everything the model will know.", "label": "Request → POST /v1/messages", "json": "{\n  \"model\": \"claude-sonnet-5-5\",\n  \"max_tokens\": 1024,\n  \"temperature\": 0.3,\n  \"system\": \"You are HarborShield's customer email assistant. Write in plain British English, under 120 words. Never invent policy details: ask if something is missing.\",\n  \"messages\": [\n    { \"role\": \"user\",\n      \"content\": \"Write a renewal reminder for motor policy MTR-55120.\" },\n    { \"role\": \"assistant\",\n      \"content\": \"Happy to. When does it renew, and what is the new premium?\" },\n    { \"role\": \"user\",\n      \"content\": \"Renews 1 December at ₹18,400. Sign it 'HarborShield Renewals'.\" }\n  ]\n}"}, {"lines": [32, 33], "c": "good", "t": "Read the reply", "note": "The reply is a list of content blocks. Here there is one text block. With tools there can be several (Topic 12).", "label": "Response ←", "json": "{\n  \"id\": \"msg_01XFDUDYJgAACzvnptvVoYEL\",\n  \"type\": \"message\",\n  \"role\": \"assistant\",\n  \"model\": \"claude-sonnet-5-5\",\n  \"content\": [\n    { \"type\": \"text\",\n      \"text\": \"Subject: Your motor policy renews on 1 December\\n\\nDear customer,\\n\\nYour HarborShield motor policy MTR-55120 renews on 1 December. Your new annual premium is ₹18,400...\" }\n  ],\n  \"stop_reason\": \"end_turn\",\n  \"usage\": { \"input_tokens\": 96, \"output_tokens\": 88 }\n}"}, {"lines": [34, 35], "c": "good", "t": "Why it stopped, and what it cost", "note": "<code>end_turn</code> means the model finished. <code>max_tokens</code> would mean it was cut off. Tokens in and out are what you are billed for.", "label": "From the response", "json": "\"stop_reason\": \"end_turn\",\n\"usage\": { \"input_tokens\": 96, \"output_tokens\": 88 }"}] });
+</script>
+<script src="../assets/deck.js?v=5.0"></script>
+</body>
+</html>

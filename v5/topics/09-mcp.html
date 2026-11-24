@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Topic 14 · MCP: the universal connector</title>
+<link rel="stylesheet" href="../assets/style.css?v=5.0">
+<link rel="stylesheet" href="../assets/widgets.css?v=5.0">
+<link rel="stylesheet" href="../assets/story.css?v=5.0">
+<style>
+  #nm { width: 100%; height: 340px; background: var(--card); border: 1px solid var(--line); border-radius: 6px; }
+  .count { font-size: 44px; font-weight: 800; }
+  .board { display: grid; grid-template-columns: 1fr 260px 1fr; gap: 18px; align-items: center; }
+  .plug { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 6px; background: var(--card); border: 1px solid var(--line); margin-bottom: 8px; transition: all .2s; }
+  .plug.on { border-color: var(--c-action); background: color-mix(in srgb, var(--c-action) 12%, var(--card)); }
+  .plug .e { font-size: 22px; }
+  .plug .grow small { display: block; color: var(--muted); font-size: 12px; }
+  .hub { text-align: center; padding: 26px 16px; border-radius: 20px; border: 3px solid var(--c-autonomy); background: color-mix(in srgb, var(--c-autonomy) 12%, var(--card)); }
+  .hub .e { font-size: 50px; }
+  .req { padding: 9px 12px; border-radius: 6px; background: var(--card); border: 1px solid var(--line); margin-bottom: 8px; font-size: 14px; transition: all .2s; }
+  .req.ok { border-color: var(--good); }
+  .req.no { opacity: .6; }
+
+  table.cmp-tight td, table.cmp-tight th { padding: 7px 10px; font-size: 14px; }
+  .mcpflow { display: flex; flex-direction: column; gap: 4px; }
+  .mcpflow span { --c: var(--accent); display: block; padding: 7px 12px; border-radius: 6px; border: 1px solid color-mix(in srgb, var(--c) 50%, var(--line)); border-left: 5px solid var(--c); background: color-mix(in srgb, var(--c) 10%, var(--card)); font-weight: 700; font-size: 14.5px; }
+  .mcpflow span small { display: block; font-weight: 500; color: var(--muted); font-size: 12px; font-family: ui-monospace, Menlo, monospace; }
+  .mcpflow i { display: block; font-style: normal; color: var(--muted); padding-left: 22px; height: 14px; line-height: 14px; font-size: 13px; }
+  .mcpflow { gap: 2px; }
+</style>
+</head>
+<body class="deck" data-id="09">
+
+<section class="slide title-slide" data-title="Welcome">
+  <div class="big-emoji">🔌</div>
+  <div class="eyebrow">Session 2 · Topic 14</div>
+  <h1>MCP: USB-C for AI</h1>
+  <p class="sub">The <b>Model Context Protocol</b> is an open standard for plugging AI apps into tools and data. Build a connector once, and any MCP-compatible AI app can use it. Remember the drawer of old phone chargers? This is the USB-C moment.</p>
+  <aside class="notes"><span class="tag time">⏱ 30 sec</span><p class="say"><b>🎤 Say</b> MCP is like USB-C for AI: one standard plug between AI apps and tools or data. Build the connector once and any compatible app can use it.</p><ul><li>Introduced by Anthropic in late 2024 as an open standard, and now supported across many AI apps and vendors.</li><li>Analogy: before USB, every device had its own plug.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="The N×M problem">
+  <div class="eyebrow">The problem it solves</div>
+  <h2>Without a standard, every app needs a custom link to every system</h2>
+  <p class="sub">Move the sliders. Compare the number of integrations to build and maintain.</p>
+  <div class="split wide-left" style="align-items:center">
+    <svg id="nm" viewBox="0 0 600 340"></svg>
+    <div class="stack-v">
+      <div id="nmMode"></div>
+      <div><div class="label">AI apps: <span id="nLbl"></span></div><input type="range" id="nApps" min="1" max="6" value="4"></div>
+      <div><div class="label">Company systems: <span id="mLbl"></span></div><input type="range" id="mSys" min="1" max="6" value="5"></div>
+      <div class="card" style="text-align:center"><div class="label">Integrations to build</div><div class="count" id="nmCount">—</div><div class="muted" id="nmNote" style="font-size:14px"></div></div>
+    </div>
+  </div>
+  <aside class="notes"><span class="tag time">⏱ 3 min</span><p class="say"><b>🎤 Say</b> Without a standard, every app needs a custom link to every system. Move the sliders and watch the number of integrations grow.</p><ul><li>4 apps × 5 systems = 20 custom integrations. With MCP it’s 4 + 5 = 9, and adding a new AI app costs nothing extra.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="How it fits together">
+  <div style="position:absolute;right:clamp(24px,5vw,72px);top:40px"><button class="btn bts-btn" data-bts="mcp">🎬 Behind the scenes</button></div>
+  <div class="eyebrow">Architecture</div>
+  <h2>Host, client, server: who’s who</h2>
+  <p class="sub">Click each part. Then look at what a server can offer.</p>
+  <div id="arch"></div>
+  <div class="label" style="margin-top:16px">What an MCP server can offer</div>
+  <div id="prims"></div>
+  <aside class="notes"><span class="tag time">⏱ 3 min</span><p class="say"><b>🎤 Say</b> Three roles: the host is the AI app, the server is the connector, and the client is the plumbing inside the app. Most people only need host and server.</p><ul><li>For most people only two words matter: the <b>AI app</b> (host) and the <b>MCP server</b> (the connector). The client is plumbing inside the app.</li><li>Tools are by far the most used of the three.</li></ul></aside>
+</section>
+
+<section class="slide seq-slide" data-title="Sequence: An MCP session, start to finish">
+  <div class="eyebrow">Sequence diagram</div>
+  <h2>An MCP session, start to finish</h2>
+  <p class="sub">The host connects to the rating-engine MCP server, learns its tools, then uses one.</p>
+  <div id="seqMcp"></div>
+  <aside class="notes"><span class="tag time">⏱ 3 min</span><p class="say"><b>🎤 Say</b> Here is a full MCP session. At start-up the app connects and asks the server which tools it has. Then, when a user asks, the model requests a tool and the app forwards it to the server. The model never knows MCP is involved.</p><ul><li>Step through with → or the clicker. Each step shows the real message on the right.</li><li>Steps 1 to 4 happen once per session. Steps 5 to 12 repeat for every tool call.</li><li>Compare with the tool-call diagram in Topic 12: the only new part is the JSON-RPC hop to the server.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="Tool call vs MCP">
+  <div class="eyebrow">Compare</div>
+  <h2>A regular tool call vs an MCP tool</h2>
+  <p class="sub">To the model they look exactly the same. What changes is where the tool lives and how your app finds and runs it.</p>
+  <div id="toolVsMcp"></div>
+  <aside class="notes"><span class="tag time">⏱ 3 min</span><p class="say"><b>🎤 Say</b> A common question: is an MCP tool different from the tool calls we saw in Topic 12? For the model, no. It still gets a tool list, replies with tool_use and receives a tool_result. MCP changes the plumbing on our side: the tool is described and run by a separate server, and the app discovers it instead of hard-coding it.</p><ul><li>Start on “Side by side”, then switch to “On the wire” and point out that steps 2 and 4 are identical in both columns.</li><li>The prefix <code>mcp__rating__</code> is how Claude Code names MCP tools, so tools from different servers never clash.</li><li>Rule of thumb: one app and a few tools you own, a regular tool call is fine. Many apps, or tools supplied by a vendor, use MCP.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="API vs MCP">
+  <div class="eyebrow">Compare</div>
+  <h2>API vs MCP: MCP does not replace your APIs, it wraps them</h2>
+  <p class="sub">An API is for programs your developers write in advance. MCP is for AI apps that decide at run time which tool to call.</p>
+  <div id="apiVsMcp"></div>
+  <aside class="notes"><span class="tag time">⏱ 3 min</span><p class="say"><b>🎤 Say</b> MCP is not a replacement for APIs. Your rating engine keeps its API. An MCP server is a thin adapter in front of it that describes the useful actions in a way an AI app can discover and call.</p><ul><li>“Side by side”: the key rows are “who calls it” and “contract”. Every API is different; every MCP server speaks the same protocol.</li><li>“MCP wraps your API”: about ten lines of Python using the official MCP SDK. The docstring becomes the tool description the model reads.</li><li>“Why not just REST?”: a fair question from developers. It works for one app; it stops scaling with many apps, many systems and many endpoints.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="Plug it in">
+  <div class="eyebrow">Try it</div>
+  <h2>Plug in servers and watch what the AI can do</h2>
+  <p class="sub">Switch MCP servers on and off. The requests on the right become possible, or not.</p>
+  <div class="board">
+    <div id="plugs"></div>
+    <div class="hub"><div class="e">🤖</div><b>Your AI app</b><div class="muted" style="font-size:13px" id="hubCount"></div></div>
+    <div id="reqs"></div>
+  </div>
+  <aside class="notes"><span class="tag time">⏱ 3 min</span><p class="say"><b>🎤 Say</b> Plug servers in and out and watch what becomes possible. The AI app itself never changes.</p><ul><li>The AI app itself never changes. You add capabilities by plugging in servers.</li><li>Some requests need two servers at once (Jira + Slack). Agents combine tools.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="Local vs remote">
+  <div class="eyebrow">In practice</div>
+  <h2>Local and remote servers</h2>
+  <div class="split">
+    <div class="card"><h3>💻 Local server</h3><p>Runs on your own machine, started by the AI app. Good for files, local databases and developer tools.</p>
+      <pre class="code">{
+  "mcpServers": {
+    "docs": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-filesystem", "./docs"]
+    }
+  }
+}</pre><p class="muted" style="font-size:13px">Example config file (e.g. <code>.mcp.json</code> in a project for Claude Code)</p></div>
+    <div class="card"><h3>☁️ Remote server</h3><p>Hosted at a URL, usually with a login (OAuth). Good for SaaS tools like ticketing, CRM, docs and chat. Often offered as “connectors” in AI apps.</p>
+      <pre class="code">{
+  "mcpServers": {
+    "tickets": {
+      "type": "http",
+      "url": "https://mcp.example.com/tickets"
+    }
+  }
+}</pre><p class="muted" style="font-size:13px">Illustrative URL. Use the one your vendor provides.</p></div>
+  </div>
+  <aside class="notes"><span class="tag time">⏱ 2 min</span><p class="say"><b>🎤 Say</b> Servers can run on your own machine or remotely. Most users see remote servers as a Connect button.</p><ul><li>Non-technical users usually see remote servers as a “Connect” button in their AI app.</li><li>Developers add servers in config files like this.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="Security">
+  <div class="eyebrow">Be careful</div>
+  <h2>An MCP server is code you are trusting</h2>
+  <p class="sub">Flip each card.</p>
+  <div id="sec"></div>
+  <aside class="notes"><span class="tag time">⏱ 2 min</span><p class="say"><b>🎤 Say</b> An MCP server is code you are trusting. A malicious one can hide instructions in its tool descriptions.</p><ul><li>“Tool poisoning” is real: a malicious server can hide instructions inside its tool descriptions, which the model reads (Topic 18).</li></ul></aside>
+</section>
+
+<section class="slide" data-title="Quick check">
+  <div class="eyebrow">Quick check</div>
+  <h2>Did it click?</h2>
+  <div id="quiz"></div>
+  <aside class="notes"><span class="tag time">⏱ 1 min</span><p class="say"><b>🎤 Say</b> Quick check.</p></aside>
+</section>
+
+<section class="slide" data-title="Takeaways">
+  <div class="eyebrow">Takeaways</div>
+  <h2>What to remember</h2>
+  <div class="cols-3" style="margin:10px 0 24px">
+    <div class="card"><b>🔌 One standard plug</b><p>Build a connector (MCP server) once; every MCP-compatible AI app can use it.</p></div>
+    <div class="card"><b>🧩 Host · client · server</b><p>The AI app hosts, the server exposes tools, resources and prompts from a system.</p></div>
+    <div class="card"><b>🔐 Trust carefully</b><p>Only use servers you trust, with the least access they need.</p></div>
+  </div>
+  <div class="row"><a class="btn primary" data-nexttopic>Next →</a></div>
+  <aside class="notes"><span class="tag time">⏱ 30 sec</span><p class="say"><b>🎤 Say</b> AI can now know things and do things. What if it decides for itself what to do next? That is an agent.</p><ul><li>Bridge: “It can know things (RAG) and do things (tools/MCP). What if it decides by itself what to do next? That’s an agent.”</li><li>End of Session 2. Session 3 opens with the agentic loop.</li></ul></aside>
+</section>
+
+<script src="../assets/course.js?v=5.0"></script>
+<script src="../assets/widgets.js?v=5.0"></script>
+<script>
+const { $, $$ } = W;
+
+/* ---- N×M ---- */
+const APPS = ["💬 Chat app", "🧑‍💻 IDE", "🤖 Agent", "📱 Mobile bot", "🧭 Search", "📊 BI tool"];
+const SYS = ["🐙 GitHub", "💬 Slack", "🎫 Jira", "🗄️ Database", "📁 Drive", "📇 CRM"];
+let mcp = false;
+function renderNM() {
+  const n = +$("#nApps").value, m = +$("#mSys").value;
+  $("#nLbl").textContent = n; $("#mLbl").textContent = m;
+  const ay = (i) => 30 + (i + 0.5) * (280 / n), sy = (j) => 30 + (j + 0.5) * (280 / m);
+  let s = "";
+  if (!mcp) { for (let i = 0; i < n; i++) for (let j = 0; j < m; j++) s += `<line x1="150" y1="${ay(i)}" x2="450" y2="${sy(j)}" stroke="var(--bad)" stroke-opacity=".55" stroke-width="2"/>`; }
+  else {
+    for (let i = 0; i < n; i++) s += `<line x1="150" y1="${ay(i)}" x2="300" y2="170" stroke="var(--good)" stroke-width="2.5"/>`;
+    for (let j = 0; j < m; j++) s += `<line x1="300" y1="170" x2="450" y2="${sy(j)}" stroke="var(--good)" stroke-width="2.5"/>`;
+    s += `<rect x="255" y="145" width="90" height="50" rx="12" fill="var(--card2)" stroke="var(--c-autonomy)" stroke-width="3"/><text x="300" y="176" text-anchor="middle" font-weight="800" fill="var(--text)" font-size="16">MCP</text>`;
+  }
+  for (let i = 0; i < n; i++) s += `<text x="140" y="${ay(i) + 5}" text-anchor="end" fill="var(--text)" font-size="15" font-weight="600">${APPS[i]}</text>`;
+  for (let j = 0; j < m; j++) s += `<text x="460" y="${sy(j) + 5}" fill="var(--text)" font-size="15" font-weight="600">${SYS[j]}</text>`;
+  $("#nm").innerHTML = s;
+  const c = mcp ? n + m : n * m;
+  $("#nmCount").textContent = c;
+  $("#nmCount").style.color = mcp ? "var(--good)" : "var(--bad)";
+  $("#nmNote").innerHTML = mcp ? `${n} apps + ${m} servers. Add a new app and it can use all ${m} systems for free.` : `${n} × ${m} custom integrations, each one built and maintained separately.`;
+}
+W.tabs($("#nmMode"), [{ label: "😵 Without MCP" }, { label: "🔌 With MCP" }], { onChange: (i) => { mcp = i === 1; renderNM(); } });
+$("#nApps").oninput = renderNM; $("#mSys").oninput = renderNM;
+
+W.clickInfo($("#arch"), [
+  { icon: "🖥️", title: "Host", sub: "the AI app you use", c: "autonomy", html: "<p>The application the user works in: Claude Desktop, Claude Code, an IDE, your company’s own assistant. It contains the model connection and manages servers.</p>" },
+  { icon: "🔗", title: "Client", sub: "plumbing inside the host", c: "context", html: "<p>A small component inside the host that keeps a connection to <b>one</b> server. One client per server. You rarely need to think about it.</p>" },
+  { icon: "🔌", title: "MCP server", sub: "the connector", c: "action", html: "<p>A program that wraps a system (GitHub, a database, your ticketing tool) and exposes it in the standard MCP format. Built once by the vendor, the community, or your team.</p>" },
+  { icon: "🏢", title: "The system", sub: "GitHub, DB, Drive…", c: "knowledge", html: "<p>The actual system with the data or actions. The server talks to it using its normal API.</p>" },
+], { layout: "flow" });
+
+W.clickInfo($("#prims"), [
+  { icon: "🔧", title: "Tools", sub: "actions the AI can call", c: "action", html: "<p>Functions like <code>create_issue</code>, <code>search_messages</code>, <code>run_query</code>. Exactly the tools from Topic 12, packaged in a standard way. <b>By far the most used.</b></p>" },
+  { icon: "📄", title: "Resources", sub: "data the app can read", c: "knowledge", html: "<p>Read-only content such as files, records or schemas that the app can attach as context.</p>" },
+  { icon: "📋", title: "Prompts", sub: "ready-made templates", c: "context", html: "<p>Pre-written prompt templates the server offers, like “summarise this pull request”. Users often see them as slash commands.</p>" },
+], { cols: 3, side: true });
+
+/* ---- plug board ---- */
+const SERVERS = [
+  { k: "gh", e: "🐙", n: "GitHub", d: "repos, issues, pull requests" },
+  { k: "slack", e: "💬", n: "Slack", d: "channels, messages" },
+  { k: "drive", e: "📁", n: "Google Drive", d: "docs, sheets" },
+  { k: "db", e: "🗄️", n: "Postgres DB", d: "read-only SQL" },
+  { k: "jira", e: "🎫", n: "Jira", d: "tickets, sprints" },
+];
+const REQS = [
+  { t: "“Summarise open PRs in the payments repo”", need: ["gh"] },
+  { t: "“What did the team decide in #launch yesterday?”", need: ["slack"] },
+  { t: "“How many orders did we get last week?”", need: ["db"] },
+  { t: "“Find the Q3 board deck and list the risks”", need: ["drive"] },
+  { t: "“Create a ticket for this bug and post it in #eng”", need: ["jira", "slack"] },
+];
+const on = new Set(["gh"]);
+function renderBoard() {
+  $("#plugs").innerHTML = SERVERS.map((s) => `<div class="plug ${on.has(s.k) ? "on" : ""}"><span class="e">${s.e}</span><span class="grow"><b>${s.n}</b><small>${s.d}</small></span><span class="sw" data-k="${s.k}"></span></div>`).join("");
+  $$("#plugs .sw").forEach((el) => W.switch(el, on.has(el.dataset.k), (v) => { v ? on.add(el.dataset.k) : on.delete(el.dataset.k); renderBoard(); }));
+  $("#hubCount").textContent = `${on.size} server${on.size === 1 ? "" : "s"} connected`;
+  $("#reqs").innerHTML = '<div class="label">Can it do this?</div>' + REQS.map((r) => { const ok = r.need.every((k) => on.has(k)); return `<div class="req ${ok ? "ok" : "no"}">${ok ? "✅" : "❌"} ${r.t}${ok ? "" : `<div class="muted" style="font-size:12px">needs: ${r.need.map((k) => SERVERS.find((s) => s.k === k).n).join(" + ")}</div>`}</div>`; }).join("");
+}
+renderBoard();
+
+W.flips($("#sec"), [
+  { front: "🏷️ Only trusted servers", back: "Install servers from the vendor or sources you trust. A server runs code and sees your data." },
+  { front: "🔑 Least privilege", back: "Give the server a token that can only do what’s needed, e.g. read-only database access." },
+  { front: "☠️ Tool poisoning", back: "A malicious server can hide instructions in its tool descriptions, and the model reads them. <b>Review</b> what you install." },
+  { front: "📤 Data leaving", back: "Tools that send things out (email, web requests) can leak data if the agent is tricked. Watch those closely." },
+  { front: "✋ Approve writes", back: "Let reads run freely, but require approval for creating, sending or deleting." },
+  { front: "📜 Log everything", back: "Keep a record of which tools were called with which inputs, for debugging and audit." },
+]);
+
+W.quiz($("#quiz"), [
+  { q: "What problem does MCP mainly solve?", o: ["Models being too slow", "Every AI app needing custom integrations with every system", "Hallucinations", "Token costs"], a: 1, e: "N×M custom integrations become N+M standard ones." },
+  { q: "In MCP, what is the “server”?", o: ["The cloud machine running the model", "A connector that exposes a system’s tools and data", "The chat window", "A vector database"], a: 1, e: "An MCP server wraps a system (GitHub, a DB…) in the standard format." },
+  { q: "How does an MCP tool look to the model, compared with a regular tool?", o: ["Completely different: it speaks JSON-RPC", "The same: a tool definition, a tool_use, a tool_result", "The model connects to the server itself", "MCP tools cannot return errors"], a: 1, e: "Only the app talks JSON-RPC to the server. The model sees an ordinary tool." },
+  { q: "Your rating engine already has a REST API. What does an MCP server do?", o: ["Replaces the API", "Wraps it, so any AI app can discover and call it", "Makes the API faster", "Moves the rating engine into the model"], a: 1, e: "MCP is a thin adapter in front of the existing API." },
+  { q: "You add a Jira MCP server to your AI app. What changes?", o: ["The model is retrained", "The app can now call Jira tools", "Nothing until you upgrade the model", "Jira starts using AI"], a: 1, e: "Capabilities are added by plugging in servers. The model and app stay the same." },
+]);
+
+/* ===== v3 story ===== */
+W.BTS.mcp = {
+  title: "MCP on the wire: Claude talks to the rating server",
+  sub: "MCP messages are JSON-RPC. The app (the MCP client) asks the server what it offers, then calls tools when the model asks for them.",
+  parts: [
+    { label: "Plugging it in (config, simplified)", c: "muted", json: `// e.g. .mcp.json in your repo, or Claude Desktop's settings
+{
+  "mcpServers": {
+    "harborshield-rating": {
+      "type": "http",
+      "url": "https://mcp.harborshield.internal/rating"
+    }
+  }
+}` },
+    { label: "1 · Client → server: what can you do?", c: "accent", json: `{ "jsonrpc": "2.0", "id": 1, "method": "tools/list" }` },
+    { label: "Server → client", c: "action", json: `{ "jsonrpc": "2.0", "id": 1, "result": { "tools": [
+  { "name": "get_motor_quote",
+    "description": "Live annual motor premium from HarborShield's rating engine...",
+    "inputSchema": { "type": "object", "properties": { "policy_id": { "type": "string" }, ... } } },
+  { "name": "get_claim_status", "description": "...", "inputSchema": { ... } }
+] } }`, note: "The app turns these into the same tool definitions you saw in Topic 13, and puts them on the model’s desk." },
+    { label: "2 · Later, the model asks for a quote → client calls the server", c: "accent", json: `{ "jsonrpc": "2.0", "id": 7, "method": "tools/call",
+  "params": { "name": "get_motor_quote",
+              "arguments": { "policy_id": "MTR-55120", "add_driver": { "age": 18, "licence_years": 0 } } } }` },
+    { label: "Server → client", c: "action", json: `{ "jsonrpc": "2.0", "id": 7, "result": {
+  "content": [{ "type": "text", "text": "{\\"current_annual\\":18400,\\"new_annual\\":44750,\\"currency\\":\\"INR\\"}" }],
+  "isError": false
+} }`, note: "Same rating engine, same answer, whether the request came from Claude, Copilot, the CRM bot or the customer app." },
+  ],
+};
+</script>
+<script>W.seq(document.getElementById("seqMcp"), {"actors": [{"id": "host", "name": "Host + MCP client", "icon": "🖥️", "c": "autonomy"}, {"id": "srv", "name": "MCP server", "icon": "🔌", "c": "context"}, {"id": "api", "name": "Rating engine", "icon": "🧮", "c": "action"}, {"id": "model", "name": "Model", "icon": "🧠", "c": "model"}], "steps": [{"sep": "At start-up"}, {"from": "host", "to": "srv", "label": "initialize", "note": "Client and server agree on a protocol version and say what each supports.", "code": "{ \"jsonrpc\": \"2.0\", \"id\": 1, \"method\": \"initialize\",\n  \"params\": { \"protocolVersion\": \"2025-06-18\",\n    \"clientInfo\": { \"name\": \"claims-assistant\", \"version\": \"1.4\" }, \"capabilities\": {} } }"}, {"from": "srv", "to": "host", "label": "capabilities: tools", "code": "{ \"jsonrpc\": \"2.0\", \"id\": 1, \"result\": {\n  \"serverInfo\": { \"name\": \"rating-engine-mcp\" },\n  \"capabilities\": { \"tools\": {} } } }", "ret": true}, {"from": "host", "to": "srv", "label": "tools/list", "code": "{ \"jsonrpc\": \"2.0\", \"id\": 2, \"method\": \"tools/list\" }"}, {"from": "srv", "to": "host", "label": "get_motor_quote, get_home_quote", "code": "{ \"jsonrpc\": \"2.0\", \"id\": 2, \"result\": { \"tools\": [\n  { \"name\": \"get_motor_quote\", \"description\": \"Live motor premium...\", \"inputSchema\": { ... } },\n  { \"name\": \"get_home_quote\",  \"description\": \"Live home premium...\",  \"inputSchema\": { ... } } ] } }", "ret": true}, {"sep": "When a user asks"}, {"from": "host", "to": "model", "label": "Question + tools (from MCP)", "note": "The host converts the MCP tools into the model’s normal tools format. The model does not know MCP exists."}, {"from": "model", "to": "host", "label": "tool_use: get_motor_quote", "ret": true}, {"from": "host", "to": "srv", "label": "tools/call", "code": "{ \"jsonrpc\": \"2.0\", \"id\": 7, \"method\": \"tools/call\",\n  \"params\": { \"name\": \"get_motor_quote\",\n    \"arguments\": { \"policy_id\": \"MTR-55120\", \"add_driver\": { \"age\": 18 } } } }"}, {"from": "srv", "to": "api", "label": "POST /rating/v3/quote", "note": "The server is a thin adapter. It calls the real system with its own credentials."}, {"from": "api", "to": "srv", "label": "{ new_annual: 44750 }", "ret": true}, {"from": "srv", "to": "host", "label": "result.content", "code": "{ \"jsonrpc\": \"2.0\", \"id\": 7, \"result\": {\n  \"content\": [{ \"type\": \"text\", \"text\": \"{\\\"new_annual\\\":44750,\\\"currency\\\":\\\"INR\\\"}\" }],\n  \"isError\": false } }", "ret": true}, {"from": "host", "to": "model", "label": "tool_result"}, {"from": "model", "to": "host", "label": "Final answer", "ret": true}], "frames": []});</script>
+<script>
+/* ===== v4 additions: tool call vs MCP, API vs MCP ===== */
+(() => {
+  const row = (cells) => `<tr>${cells.map((c, i) => i ? `<td>${c}</td>` : `<td><b>${c}</b></td>`).join("")}</tr>`;
+  const table = (heads, rows) => `<table class="cmp cmp-tight"><tr>${heads.map((h) => `<th>${h}</th>`).join("")}</tr>${rows.map(row).join("")}</table>`;
+  const col = (label, c, body) => `<div><div class="code-lab" style="color:${W.cv(c)}">${label}</div><pre class="code" style="font-size:12px;line-height:1.45;white-space:pre">${body}</pre></div>`;
+
+  W.tabs(W.$("#toolVsMcp"), [
+    { label: "📋 Side by side", html: table(["", "🔧 Regular tool call (Topic 12)", "🔌 MCP tool"], [
+      ["Where the tool is described", "In your app’s own code: the <code>tools</code> list", "In the MCP server. The app fetches it with <code>tools/list</code>"],
+      ["Where the code runs", "A function inside your app", "Inside the MCP server, on your machine or remote"],
+      ["How the app learns the tools", "Hard-coded. A change means redeploying the app", "Discovered when the app connects. Server updates appear on their own"],
+      ["How the app runs it", "Calls its own function", "Sends <code>tools/call</code> (JSON-RPC) to the server"],
+      ["Who can reuse it", "That one app", "Any MCP host: Claude Code, GitHub Copilot, Cursor, your own app"],
+      ["What the model sees", "<code>tools</code> → <code>tool_use</code> → <code>tool_result</code>", "<b>Exactly the same</b>"],
+      ["Best when", "One app and a few tools you own", "Many apps, or a vendor supplies the tools"],
+    ]) },
+    { label: "🔍 On the wire", html: `<div class="split">${col("🔧 Regular tool call", "action", W.hl(`// 1. Your app sends its own tool list
+"tools": [{ "name": "get_motor_quote",
+            "description": "Live annual premium...",
+            "input_schema": { ... } }]
+
+// 2. The model replies with tool_use
+{ "type": "tool_use", "id": "toolu_01",
+  "name": "get_motor_quote",
+  "input": { "policy_id": "MTR-55120" } }
+
+// 3. Your app runs its own function
+//    result = get_motor_quote(**input)
+
+// 4. Your app sends the tool_result
+{ "type": "tool_result", "tool_use_id": "toolu_01",
+  "content": "{\\"new_annual\\": 44750}" }`))}${col("🔌 MCP tool", "autonomy", W.hl(`// 0. At start-up the app asks the MCP server
+{ "jsonrpc": "2.0", "id": 2, "method": "tools/list" }
+
+// 1. The app passes the same list to the model
+"tools": [{ "name": "mcp__rating__get_motor_quote", ... }]
+
+// 2. The model replies with tool_use (same shape)
+{ "type": "tool_use", "id": "toolu_01",
+  "name": "mcp__rating__get_motor_quote", "input": { ... } }
+
+// 3. The app forwards it to the server
+{ "jsonrpc": "2.0", "id": 3, "method": "tools/call",
+  "params": { "name": "get_motor_quote",
+              "arguments": { "policy_id": "MTR-55120" } } }
+
+// 4. The server answers; the app sends the same tool_result
+{ "type": "tool_result", "tool_use_id": "toolu_01", ... }`))}</div>
+      <div class="callout" style="--c:var(--c-autonomy);margin-top:10px">Steps 2 and 4 are identical. The model never knows whether a tool is local code or an MCP server.</div>` },
+  ]);
+
+  W.tabs(W.$("#apiVsMcp"), [
+    { label: "📋 Side by side", html: table(["", "🌐 API (REST, GraphQL, gRPC)", "🔌 MCP"], [
+      ["What it is", "An interface a service offers to other programs", "A standard protocol for offering tools and data to AI apps"],
+      ["Who calls it", "Your code, written in advance for that one API", "An AI app, at run time, because the model asked for a tool"],
+      ["How you learn what it does", "Read the docs or an SDK, then write code", "<code>tools/list</code> returns every tool with a description the model can read"],
+      ["Contract", "Different for every API: paths, auth, paging, errors", "The same for every server: JSON-RPC 2.0, <code>initialize</code>, <code>tools/list</code>, <code>tools/call</code>"],
+      ["Transport and auth", "Whatever the API chose: HTTPS, API keys, OAuth", "stdio for local servers; HTTP with OAuth for remote ones"],
+      ["Integration effort", "N apps × M APIs, each a custom client", "Wrap each API once; every MCP host can use it"],
+    ]) },
+    { label: "🧩 MCP wraps your API", html: `<div class="split" style="grid-template-columns:1fr 1.15fr;align-items:start">
+      <div class="stack-v" style="gap:8px">
+        <div class="mcpflow"><span style="--c:var(--c-model)">🧠 Model<small>tool_use: get_motor_quote</small></span><i>↓</i><span style="--c:var(--c-autonomy)">🤖 AI app (host)<small>tools/call, JSON-RPC</small></span><i>↓</i><span style="--c:var(--c-action)">🔌 Rating MCP server<small>the thin adapter</small></span><i>↓</i><span style="--c:var(--c-knowledge)">🧮 Rating engine API<small>POST /v3/motor/quote</small></span></div>
+        <div class="callout" style="--c:var(--c-action)">The rating engine API does not change. The MCP server translates <code>tools/call get_motor_quote</code> into the API call your systems already understand.</div>
+      </div>
+      <div class="stack-v" style="gap:10px">${col("🐍 rating_server.py · a complete MCP server", "action", W.py(`from mcp.server.fastmcp import FastMCP
+import httpx
+
+mcp = FastMCP("rating")
+
+@mcp.tool()
+def get_motor_quote(policy_id: str, driver_age: int | None = None) -> dict:
+    """Live annual motor premium from HarborShield's
+    rating engine. Read-only: it does not change the policy."""
+    drivers = [{"age": driver_age}] if driver_age else []
+    r = httpx.post("https://rating.harborshield.internal/v3/motor/quote",
+                   json={"policy": policy_id, "drivers_add": drivers})
+    return r.json()
+
+if __name__ == "__main__":
+    mcp.run()   # stdio by default; any MCP host can now use it`))}
+        <div class="callout" style="--c:var(--good)"><b>Call the API directly</b> when your own code knows exactly what to call: an app back end, a batch job. <b>Use MCP</b> when an AI agent should choose.</div></div></div>` },
+    { label: "🤔 Why not just REST?", html: `<p style="margin:0 0 10px">You <i>can</i> describe each REST endpoint as a tool. It works for one app; it stops scaling with many apps, many systems and many endpoints.</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div class="card"><b>🧵 Glue code everywhere</b><p class="muted" style="margin:4px 0 0;font-size:14px">With raw REST, every AI app writes its own schemas, HTTP calls, auth and error handling. With MCP, one server, written once.</p></div>
+        <div class="card"><b>📌 Hard-coded tool lists</b><p class="muted" style="margin:4px 0 0;font-size:14px">With raw REST, every API change means redeploying every app. With MCP, the app asks <code>tools/list</code> when it connects.</p></div>
+        <div class="card"><b>🌊 Endpoints aren’t model-friendly</b><p class="muted" style="margin:4px 0 0;font-size:14px">Hundreds of fine-grained endpoints and raw IDs flood the context and confuse tool choice. A good MCP server offers a few task-level tools with clear descriptions.</p></div>
+        <div class="card"><b>🔐 Security and control</b><p class="muted" style="margin:4px 0 0;font-size:14px">With raw REST, your app holds every key. With MCP, auth sits with each server and the host allows, asks or denies each tool.</p></div>
+      </div>
+      <div class="callout" style="--c:var(--good);margin-top:10px">Plain function calling over REST is fine when you have <b>one app and a handful of endpoints</b> and you own both sides.</div>` },
+  ]);
+})();
+</script>
+<script src="../assets/deck.js?v=5.0"></script>
+</body>
+</html>

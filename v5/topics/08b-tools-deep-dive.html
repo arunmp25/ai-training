@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Topic 13 · Tools deep dive</title>
+<link rel="stylesheet" href="../assets/style.css?v=5.0">
+<link rel="stylesheet" href="../assets/widgets.css?v=5.0">
+<link rel="stylesheet" href="../assets/story.css?v=5.0">
+<style>
+  .def { font-family: ui-monospace, Menlo, monospace; font-size: 13px; line-height: 1.45; background: var(--card2); border: 1px solid var(--line); border-radius: 6px; padding: 14px 16px; white-space: pre; overflow-x: auto; }
+  .def .part { --c: var(--accent); border-radius: 5px; padding: 1px 2px; cursor: pointer; transition: background .2s; outline: 1px dashed color-mix(in srgb, var(--c) 50%, transparent); }
+  .def .part:hover { background: color-mix(in srgb, var(--c) 18%, transparent); }
+  .def .part.on { background: color-mix(in srgb, var(--c) 30%, transparent); outline: 2px solid var(--c); }
+  .msgs { display: grid; gap: 8px; max-height: 56vh; overflow-y: auto; }
+  .msg { --c: var(--accent); border: 1px solid var(--line); border-left: 4px solid var(--c); border-radius: 6px; background: var(--card); padding: 8px 12px; font-size: 13px; animation: slideIn .35s ease; }
+  .msg .role { font-size: 11px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: var(--c); }
+  .msg pre { margin: 4px 0 0; font: 12.5px/1.5 ui-monospace, Menlo, monospace; white-space: pre-wrap; }
+  .msg.new { box-shadow: 0 0 0 2px var(--c); }
+  .gantt { display: grid; gap: 8px; }
+  .g-row { display: grid; grid-template-columns: 170px 1fr; gap: 10px; align-items: center; font-size: 13.5px; }
+  .g-track { position: relative; height: 26px; background: var(--card2); border-radius: 6px; }
+  .g-bar { position: absolute; top: 3px; height: 20px; border-radius: 5px; font-size: 11.5px; font-weight: 700; color: var(--on-fill); display: flex; align-items: center; padding: 0 6px; white-space: nowrap; overflow: hidden; transition: left .5s, width .5s; }
+  .tc-out { min-height: 200px; }
+  .slider-out { font-size: 34px; font-weight: 800; font-variant-numeric: tabular-nums; }
+  .meter { height: 14px; border-radius: 99px; background: var(--card2); overflow: hidden; }
+  #fix .cl-item { padding: 8px 12px; } #fix .cl-text { font-size: 14px; margin-bottom: 6px; } #fix .cl-btns button { padding: 4px 9px; font-size: 12px; }
+  .meter i { display: block; height: 100%; transition: width .4s, background .4s; }
+</style>
+</head>
+<body class="deck" data-id="08b">
+
+<section class="slide title-slide" data-title="Welcome">
+  <div class="big-emoji">🛠️</div>
+  <div class="eyebrow">Session 2 · Topic 13</div>
+  <h1>How tool use really works</h1>
+  <p class="sub">What a tool definition looks like, the exact messages that go back and forth, parallel calls, tool choice, errors, and how to design tools a model can use well.</p>
+  <aside class="notes"><span class="tag time">⏱ 30 sec</span><p class="say"><b>🎤 Say</b> Now we look at how tool use really works: the definitions, the exact messages, parallel calls, errors and good design. You do not need to code, but you will recognise this in logs and vendor docs.</p><ul><li>Still no coding required. The JSON is shown so people can <i>recognise</i> it when they see it in logs or vendor docs.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="Anatomy of a tool definition">
+  <div class="eyebrow">The contract</div>
+  <h2>Anatomy of a tool definition</h2>
+  <p class="sub">Every tool is described with a <b>name</b>, a <b>description</b> and an <b>input schema</b> (JSON Schema). Click each highlighted part.</p>
+  <div class="split wide-left">
+    <div class="def" id="def"></div>
+    <div class="card ci-detail" id="defInfo" style="min-height:220px"></div>
+  </div>
+  <aside class="notes"><span class="tag time">⏱ 3 min</span><p class="say"><b>🎤 Say</b> Every tool has a name, a description and an input schema. All of it goes into every request, so it costs tokens and is read like a prompt.</p><ul><li>Everything here goes into the context on every request, so it costs tokens and it’s read like a prompt.</li><li>Enums and “required” are guard rails: the model can’t invent a status like “sorta shipped”.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="The message exchange">
+  <div class="eyebrow">Under the hood</div>
+  <h2>The exact messages, step by step</h2>
+  <p class="sub">The model is <b>stateless</b>: every request re-sends the whole conversation. Watch the message list grow. Question: <b>“Is claim 4512 delayed? If so, email the customer.”</b></p>
+  <div class="split wide-right">
+    <div class="stack-v"><div id="mxCtrl"></div><div id="mxLog" style="max-height:44vh"></div></div>
+    <div><div class="label">The conversation sent to the model (messages)</div><div class="msgs" id="msgs"></div></div>
+  </div>
+  <aside class="notes"><span class="tag time">⏱ 4 min</span><p class="say"><b>🎤 Say</b> Here are the exact messages. The model stops with tool_use, the app runs the tool and sends back the result with the same id, and the whole conversation is re-sent each time.</p><ul><li>Key details: the model ends its turn with <code>stop_reason: "tool_use"</code>, meaning “I’m waiting for a result”. Each call has an <b>id</b>, and the result must quote the same id.</li><li>Two round trips here: look up the claim, then send the email. That’s already a small agent loop (Topic 15).</li><li>Field names differ slightly between vendors; the shape is the same everywhere.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="Parallel vs sequential">
+  <div class="eyebrow">Many tools at once</div>
+  <h2>Parallel or one after another?</h2>
+  <p class="sub">If calls don’t depend on each other, the model can ask for several in <b>one turn</b>. If one needs another’s result, they must run in sequence. Pick a request.</p>
+  <div id="parTabs"></div>
+  <aside class="notes"><span class="tag time">⏱ 2 min</span><p class="say"><b>🎤 Say</b> Independent calls can be requested together in one turn. If one call needs another’s result, they have to run one after another.</p><ul><li>Parallel calls save round trips, which means less waiting and fewer tokens re-sent.</li><li>The harness decides whether to actually run them in parallel. Writes are often run one at a time on purpose.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="Tool choice">
+  <div class="eyebrow">Steering</div>
+  <h2>Tool choice: who decides whether a tool is used?</h2>
+  <p class="sub">Your app can tell the model how to use tools on each request. Request: <b>“Hi! What can you help me with?”</b> with the tool <code>get_claim_status</code> available.</p>
+  <div id="choiceTabs"></div>
+  <aside class="notes"><span class="tag time">⏱ 2 min</span><p class="say"><b>🎤 Say</b> Tool choice controls whether the model may, must or must not use tools on a request. Auto is right most of the time.</p><ul><li><b>auto</b> is the default and right most of the time.</li><li>Forcing a specific tool is a neat trick for <b>structured output</b>: force <code>record_invoice</code> and you always get JSON in that shape (two slides on).</li></ul></aside>
+</section>
+
+<section class="slide" data-title="When tools fail">
+  <div class="eyebrow">Errors</div>
+  <h2>When a tool fails, the error message is a prompt</h2>
+  <p class="sub">The customer typed their claim number as “45-12”. The tool call fails. Compare what the model can do with each error message.</p>
+  <div id="errTabs"></div>
+  <aside class="notes"><span class="tag time">⏱ 2 min</span><p class="say"><b>🎤 Say</b> When a tool fails, the error message is a prompt. A clear error lets the model fix its own input or ask the user.</p><ul><li>Return errors <i>to the model</i> (marked as an error) instead of crashing. A clear message lets it fix its own input or ask the user.</li><li>Also: set timeouts, cap retries, and never put secrets or stack traces in error text.</li></ul></aside>
+</section>
+
+<section class="slide seq-slide" data-title="Sequence: Parallel calls, and one that fails">
+  <div class="eyebrow">Sequence diagram</div>
+  <h2>Parallel calls, and one that fails</h2>
+  <p class="sub">“What’s the status of claims CLM-301 and CLM-302?” Both lookups are requested in one turn; one of them errors.</p>
+  <div id="seqFail"></div>
+  <aside class="notes"><span class="tag time">⏱ 3 min</span><p class="say"><b>🎤 Say</b> This diagram shows two parallel calls where one fails. The error goes back as a result, the model retries, and every request gets a matching answer.</p><ul><li>Step through with → or the clicker. Each step shows the real message on the right.</li><li>Every tool_use id must get a matching tool_result, even the failed one.</li><li>Good error text tells the model what to do next: retry, ask the user, or give up.</li></ul></aside>
+</section>
+
+<section class="slide seq-slide" data-title="Python: the tool loop">
+  <div class="eyebrow">Code walkthrough · Python</div>
+  <h2>The tool loop in Python: parallel calls, an error, a retry</h2>
+  <p class="sub">The pattern every agent is built on. Press → to see the JSON of each round trip. <a href="../code/tool_loop.py" download>⬇ tool_loop.py</a></p>
+  <div id="cwLoop"></div>
+  <aside class="notes"><span class="tag time">⏱ 4 min</span><p class="say"><b>🎤 Say</b> This is the tool loop: call the model, run whatever tools it asks for, send the results back, and repeat until it stops asking. Notice how an error is sent back as a result rather than crashing the program.</p><ul><li>Point at the hard limit of 10 turns: every real agent needs a stop condition.</li><li>Step 6: one tool_result per tool_use, all in one user message. Missing one is a common bug and the API rejects it.</li><li>Step 7: the model retried because the error text said it was safe. Good error messages are part of tool design.</li><li>The file is in <code>code/tool_loop.py</code>. Topic 15 builds on this loop.</li></ul></aside>
+</section>
+
+<section class="slide seq-slide" data-title="Sequence: The Python loop, request by request">
+  <div class="eyebrow">Sequence diagram</div>
+  <h2>The Python loop, request by request</h2>
+  <p class="sub">Three turns of the loop, three requests to the model. Each request is longer than the last.</p>
+  <div id="seqPyLoop"></div>
+  <aside class="notes"><span class="tag time">⏱ 3 min</span><p class="say"><b>🎤 Say</b> The same loop as a sequence diagram. Three turns, three requests, and each request carries the whole history so far. The frames show each turn of the loop.</p><ul><li>Step through with → or the clicker. Each step shows the real message on the right.</li><li>Ask: “What would happen without the 10-turn limit if the claims system stayed down?” (It could retry for ever.)</li></ul></aside>
+</section>
+
+
+<section class="slide" data-title="Structured output">
+  <div class="eyebrow">A handy trick</div>
+  <h2>Tools as a form to fill in: structured output</h2>
+  <p class="sub">Need clean data, not prose? Define a tool whose schema is the shape you want and ask the model to call it. Your app just reads the input. Toggle the schema fields.</p>
+  <div class="split">
+    <div class="stack-v">
+      <div class="card" style="font-size:14px;line-height:1.5"><div class="label">Input: an email</div>“Hi, please find attached invoice INV-2209 from Northwind Traders for €4,180.50, due 30 Nov 2026. PO number 7781. Thanks, Sam”</div>
+      <div class="pill-row" id="soFields"></div>
+    </div>
+    <div class="stack-v"><div class="label">Model’s tool call: record_invoice(…)</div><pre class="code" id="soOut"></pre></div>
+  </div>
+  <aside class="notes"><span class="tag time">⏱ 2 min</span><p class="say"><b>🎤 Say</b> Need clean data instead of prose? Define a tool whose schema is the shape you want. The model fills it in like a form.</p><ul><li>Great for extraction: invoices, CVs, support tickets, meeting notes into tasks.</li><li>Many APIs also offer a dedicated “structured output” or “JSON schema” mode that does the same thing.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="Where tools run">
+  <div class="eyebrow">Three kinds</div>
+  <h2>Who runs the tool?</h2>
+  <p class="sub">Click each kind.</p>
+  <div id="kinds"></div>
+  <aside class="notes"><span class="tag time">⏱ 2 min</span><p class="say"><b>🎤 Say</b> Tools can run in your app, on the provider’s side, or on a server you connect to. To the model they all look the same.</p><ul><li>From the model’s point of view they all look the same: a name, a description, a schema. The difference is who executes and who is responsible.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="Designing good tools">
+  <div class="eyebrow">Tool design</div>
+  <h2>Designing tools a model can use well</h2>
+  <p class="sub">Tools are a user interface for the model. Flip each card.</p>
+  <div id="design"></div>
+  <aside class="notes"><span class="tag time">⏱ 3 min</span><p class="say"><b>🎤 Say</b> Tools are a user interface for the model. Design them around tasks, not around every API endpoint.</p><ul><li>The biggest anti-pattern: wrapping every API endpoint as a tool. Design around <b>tasks</b> the model needs to do, not around your API.</li><li>Return what helps the next step: names and IDs, not 5 MB of raw JSON.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="How many tools?">
+  <div class="eyebrow">Too much of a good thing</div>
+  <h2>How many tools is too many?</h2>
+  <p class="sub">Every tool definition sits in the context on every request. Drag the slider.</p>
+  <div class="split wide-left">
+    <div class="stack-v">
+      <div><div class="label">Tools connected</div><input type="range" id="nTools" min="3" max="150" value="10"></div>
+      <div class="row" style="gap:30px"><div><div class="label">Tools</div><div class="slider-out" id="ntOut"></div></div><div><div class="label">Tokens of definitions</div><div class="slider-out" id="tokOut"></div></div></div>
+      <div><div class="label">Share of a 200K context window used before anyone types</div><div class="meter"><i id="ctxM"></i></div></div>
+      <div><div class="label">Chance of picking the right tool (illustrative)</div><div class="meter"><i id="accM"></i></div></div>
+      <div class="callout" id="ntNote" style="font-size:14.5px"></div>
+    </div>
+    <div class="stack-v"><div class="label">What teams do about it</div><div id="fixes"></div></div>
+  </div>
+  <aside class="notes"><span class="tag time">⏱ 2 min</span><p class="say"><b>🎤 Say</b> Every tool definition sits on the desk on every request. Too many tools cost tokens and make the right choice harder.</p><ul><li>Rough figure: 200–800 tokens per tool definition. Plugging in five MCP servers can easily add 100+ tools.</li><li>The accuracy curve is illustrative, not a benchmark, but the trend is real: more similar-looking tools, more confusion.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="Fix the tool">
+  <div class="eyebrow">Your turn</div>
+  <h2>What’s wrong with this tool?</h2>
+  <p class="sub">For each definition, pick the main problem.</p>
+  <div id="fix"></div>
+  <aside class="notes"><span class="tag time">⏱ 3 min</span><p class="say"><b>🎤 Say</b> What is wrong with each of these tool definitions?</p></aside>
+</section>
+
+<section class="slide" data-title="Quick check">
+  <div class="eyebrow">Quick check</div>
+  <h2>Did it click?</h2>
+  <div id="quiz"></div>
+  <aside class="notes"><span class="tag time">⏱ 1 min</span><p class="say"><b>🎤 Say</b> Quick check.</p></aside>
+</section>
+
+<section class="slide" data-title="The next question">
+  <div class="eyebrow">The question that leads to MCP</div>
+  <h2>Four apps need the same rating engine. Four integrations?</h2>
+  
+  <div class="cols-4" style="max-width:960px"><div class="card">🧠 <b>Claude</b><p class="muted">for underwriters</p></div><div class="card">💻 <b>GitHub Copilot</b><p class="muted">for developers</p></div><div class="card">📇 <b>CRM bot</b><p class="muted">for sales</p></div><div class="card">📱 <b>Customer app</b><p class="muted">for policyholders</p></div></div><div class="callout" style="--c:var(--accent);margin-top:16px;max-width:900px">Every new AI app means another custom integration, unless there’s a standard plug. Think of the drawer of old phone chargers before USB-C. That standard is <b>MCP</b>.</div>
+  <aside class="notes"><span class="tag time">⏱ 2 min</span><p class="say"><b>🎤 Say</b> Four apps all need the same rating engine. Do we build four separate integrations? This is the problem the next topic solves.</p><ul><li>Leave it hanging. Topic 14 answers it with MCP.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="Takeaways">
+  <div class="eyebrow">Takeaways</div>
+  <h2>What to remember</h2>
+  <div class="cols-3" style="margin:10px 0 24px">
+    <div class="card"><b>📜 Name + description + schema</b><p>That’s all the model knows about a tool. Write it like a prompt; use enums and required fields as guard rails.</p></div>
+    <div class="card"><b>🔁 Request → result, by id</b><p>The model stops with a tool_use; your app runs it and returns a tool_result with the same id. Repeat until done.</p></div>
+    <div class="card"><b>🧰 Few, task-shaped tools</b><p>Clear errors, concise results, and only the tools the task needs.</p></div>
+  </div>
+  <div class="row"><a class="btn primary" data-nexttopic>Next →</a></div>
+  <aside class="notes"><span class="tag time">⏱ 30 sec</span><p class="say"><b>🎤 Say</b> Tools give AI hands. Wiring every tool into every app separately is a mess, and that is the problem MCP solves.</p><ul><li>Bridge: “Every company wiring tools into every AI app separately is a mess. That’s the problem MCP solves.”</li></ul></aside>
+</section>
+
+<script src="../assets/course.js?v=5.0"></script>
+<script src="../assets/widgets.js?v=5.0"></script>
+<script>
+const { $, $$, cv } = W;
+
+/* ---- anatomy ---- */
+const PARTS = {
+  name: { c: "model", t: "name", h: "<p>A short, unique, descriptive identifier in <code>snake_case</code>. The model writes it back to call the tool.</p><p>✅ <code>get_claim_status</code> &nbsp; ❌ <code>tool1</code>, <code>doStuff</code></p><p>With many tools, a prefix helps: <code>shop_get_order</code>, <code>crm_find_customer</code>.</p>" },
+  desc: { c: "context", t: "description", h: "<p>The most important part. Say <b>what it does, when to use it, when not to, and what it returns</b>. The model chooses tools almost entirely from this text.</p><p>Write it for a new colleague: 3–4 clear sentences beat one vague line.</p>" },
+  schema: { c: "knowledge", t: "input_schema", h: "<p>A <b>JSON Schema</b> describing the inputs: their names, types and rules. The model’s request must fit it, and your app should validate it again.</p>" },
+  prop: { c: "action", t: "a property", h: "<p>Each input has a <b>type</b> (string, number, boolean, array, object) and its own <b>description</b>, with format hints and an example.</p><p>“4-digit claim number, e.g. 4512” is far better than just “id”.</p>" },
+  enumv: { c: "autonomy", t: "enum", h: "<p>A fixed list of allowed values. The model can’t make up a value outside it. Use enums whenever the options are known.</p>" },
+  req: { c: "trust", t: "required", h: "<p>Which inputs must always be given. Leave genuinely optional ones out of this list, and say what the default is in their description.</p>" },
+};
+const p = (k, txt) => `<span class="part" data-k="${k}" style="--c:${cv(PARTS[k].c)}">${txt}</span>`;
+$("#def").innerHTML = `{
+  "name": ${p("name", '"get_claim_status"')},
+  "description": ${p("desc", `"Look up the live status of ONE insurance
+    claim. Use when the user asks how a claim is
+    progressing or when it will be paid. Not for new
+    claims. Returns status, handler and payout date."`)},
+  ${p("schema", '"input_schema"')}: {
+    "type": "object",
+    "properties": {
+      ${p("prop", `"claim_id": {
+        "type": "string",
+        "description": "4-digit claim number, e.g. 4512"
+      }`)},
+      "detail": {
+        "type": "string",
+        ${p("enumv", '"enum": ["summary", "full_tracking"]')},
+        "description": "How much detail. Default: summary"
+      }
+    },
+    ${p("req", '"required": ["claim_id"]')}
+  }
+}`;
+function showPart(k) {
+  $$("#def .part").forEach((x) => x.classList.toggle("on", x.dataset.k === k));
+  const P = PARTS[k];
+  $("#defInfo").style.setProperty("--c", cv(P.c));
+  $("#defInfo").innerHTML = `<h3><code>${P.t}</code></h3>${P.h}`;
+}
+$("#def").onclick = (e) => { const x = e.target.closest(".part"); if (x) showPart(x.dataset.k); };
+showPart("desc");
+
+/* ---- message exchange ---- */
+const M = [
+  { r: "user", c: "accent", b: `"Is claim 4512 delayed? If so, email the customer."` },
+  { r: "assistant", c: "model", b: `text: "Let me check that claim."
+tool_use { id: "call_01", name: "get_claim_status",
+           input: { "claim_id": "4512" } }
+stop_reason: "tool_use"` },
+  { r: "user · tool_result", c: "action", b: `tool_result { tool_use_id: "call_01",
+  content: { "status": "delayed", "handler": "Priya (Claims)",
+             "payout_date": "2026-11-18", "email": "dana@example.com" } }` },
+  { r: "assistant", c: "model", b: `tool_use { id: "call_02", name: "send_email",
+  input: { "to": "dana@example.com",
+           "subject": "Update on your claim 4512",
+           "body": "Sorry, your claim is delayed… new payout date 18 Nov." } }
+stop_reason: "tool_use"` },
+  { r: "user · tool_result", c: "action", b: `tool_result { tool_use_id: "call_02",
+  content: { "sent": true, "message_id": "m-77" } }` },
+  { r: "assistant", c: "good", b: `text: "Yes: claim 4512 is delayed (new payout date 18 Nov). I've emailed
+       dana@example.com to let them know."
+stop_reason: "end_turn"` },
+];
+let shown = 0;
+const renderMsgs = () => {
+  $("#msgs").innerHTML = `<div class="msg" style="--c:var(--muted)"><div class="role">system + tools (sent every time)</div><pre>tools: [get_claim_status, send_email, …]</pre></div>` +
+    M.slice(0, shown).map((m, i) => `<div class="msg ${i === shown - 1 ? "new" : ""}" style="--c:${cv(m.c)}"><div class="role">${m.r}</div><pre>${m.b.replace(/</g, "&lt;")}</pre></div>`).join("");
+  $("#msgs").scrollTop = $("#msgs").scrollHeight;
+};
+const setShown = (n) => () => { shown = n; renderMsgs(); };
+W.stepper({
+  ctrl: $("#mxCtrl"), log: $("#mxLog"), interval: 3200, onReset: setShown(0),
+  steps: [
+    { who: "App → model (request 1)", c: "autonomy", html: "Sends the tool definitions + the user’s message.", onEnter: setShown(1) },
+    { who: "Model → app", c: "model", html: "Replies with a <b>tool_use</b> block and stops. It hasn’t looked anything up; it’s asking.", onEnter: setShown(2) },
+    { who: "App runs the tool", c: "action", html: "Validates the input, calls the claims system, then appends a <b>tool_result</b> with the same id.", onEnter: setShown(3) },
+    { who: "App → model (request 2)", c: "autonomy", html: "Sends the <b>whole</b> conversation again. The model sees “delayed” and asks for the next tool.", onEnter: setShown(4) },
+    { who: "App: approval check", c: "trust", html: "<code>send_email</code> is irreversible, so the harness can ask a human to approve first. Approved → runs it → appends the result.", onEnter: setShown(5) },
+    { who: "Model → user (request 3)", c: "good", html: "With both results in context, it writes the final answer and ends its turn with <code>end_turn</code>.", onEnter: setShown(6) },
+  ],
+});
+
+/* ---- parallel vs sequential ---- */
+const bar = (l, w, c, txt) => `<div class="g-bar" style="left:${l}%;width:${w}%;background:${cv(c)}">${txt}</div>`;
+const gantt = (rows) => `<div class="gantt">${rows.map(([lbl, bars]) => `<div class="g-row"><span>${lbl}</span><div class="g-track">${bars}</div></div>`).join("")}</div>`;
+W.tabs($("#parTabs"), [
+  { label: "🌦️ “Weather in Pune, Delhi and Mumbai?”", html: `<div class="split"><div class="stack-v">
+      <div class="callout" style="--c:var(--good)">✅ <b>Independent</b>: three tool_use blocks in <b>one</b> model turn.</div>
+      <pre class="code">tool_use { id: "a", name: "get_weather", input: { city: "Pune" } }
+tool_use { id: "b", name: "get_weather", input: { city: "Delhi" } }
+tool_use { id: "c", name: "get_weather", input: { city: "Mumbai" } }</pre>
+      <p class="muted">All three results go back together, in one message.</p></div>
+      <div>${gantt([["🧠 Model", bar(0, 18, "model", "plan") + bar(78, 22, "model", "answer")], ["☁️ Pune", bar(20, 50, "action", "get_weather")], ["☁️ Delhi", bar(20, 56, "action", "get_weather")], ["☁️ Mumbai", bar(20, 44, "action", "get_weather")]])}
+      <p class="muted" style="margin-top:10px">2 model calls in total, tools overlap in time.</p></div></div>` },
+  { label: "🔗 “Find Dana’s last claim and its status”", html: `<div class="split"><div class="stack-v">
+      <div class="callout" style="--c:var(--warn)">🔗 <b>Dependent</b>: the second call needs an ID from the first.</div>
+      <pre class="code">turn 1 → find_customer({ name: "Dana Lee" })
+          ← { customer_id: "C-88", last_order: "4512" }
+turn 2 → get_claim_status({ claim_id: "4512" })
+          ← { status: "approved, payment pending" }</pre>
+      <p class="muted">The model can’t guess “4512” before it sees the first result.</p></div>
+      <div>${gantt([["🧠 Model", bar(0, 14, "model", "plan") + bar(38, 14, "model", "next") + bar(80, 20, "model", "answer")], ["👤 find_customer", bar(15, 22, "action", "lookup")], ["📦 get_claim_status", bar(53, 26, "action", "lookup")]])}
+      <p class="muted" style="margin-top:10px">3 model calls, strictly one after another.</p></div></div>` },
+]);
+
+/* ---- tool choice ---- */
+const choice = (mode, code, out, note, c) => `<div class="split"><div class="stack-v"><pre class="code">tool_choice: ${code}</pre><p>${mode}</p></div>
+  <div class="stack-v"><div class="bubble user" style="max-width:100%">Hi! What can you help me with?</div><div class="bubble ai" style="max-width:100%;border-color:${cv(c)}">${out}</div><div class="callout" style="--c:${cv(c)};font-size:14.5px">${note}</div></div></div>`;
+W.tabs($("#choiceTabs"), [
+  { label: "🤖 auto", html: choice("The model decides whether to call a tool. <b>The default.</b>", `{ type: "auto" }`, "Hi! I can check where your claims are, when they’ll be paid, and answer questions about payout. What’s your claim number?", "✅ Just a greeting, so no tool needed. Sensible.", "good") },
+  { label: "☝️ any", html: choice("The model <b>must</b> call some tool, but picks which.", `{ type: "any" }`, "<code>get_claim_status({ claim_id: \"???\" })</code>", "❌ Forced to call a tool with nothing to look up, so it invents an input. Use only when a tool call is always appropriate.", "bad") },
+  { label: "🎯 specific tool", html: choice("The model <b>must</b> call this exact tool.", `{ type: "tool", name: "get_claim_status" }`, "<code>get_claim_status({ claim_id: \"\" })</code>", "🟡 Wrong for chat, but perfect for pipelines: e.g. always call <code>record_invoice</code> to extract data.", "warn") },
+  { label: "🚫 none", html: choice("Tools are visible but may <b>not</b> be called.", `{ type: "none" }`, "Hi! I can help with questions about your claims and payouts.", "✅ Useful for a “just summarise” step where you don’t want side effects.", "good") },
+]);
+
+/* ---- errors ---- */
+const errView = (res, model, note, c) => `<div class="split"><div class="stack-v"><div class="label">Tool result returned to the model</div><pre class="code">${res}</pre></div>
+  <div class="stack-v"><div class="label">What the model does next</div><div class="bubble ai" style="max-width:100%;border-color:${cv(c)}">${model}</div><div class="callout" style="--c:${cv(c)};font-size:14.5px">${note}</div></div></div>`;
+W.tabs($("#errTabs"), [
+  { label: "😵 Unhelpful error", html: errView(`tool_result {\n  tool_use_id: "call_01",\n  is_error: true,\n  content: "Error 500"\n}`, "Sorry, something went wrong on our side. Please try again later.", "❌ It can’t tell whether to retry, fix the input, or give up, so it gives up. The customer leaves frustrated.", "bad") },
+  { label: "✨ Helpful error", html: errView(`tool_result {\n  tool_use_id: "call_01",\n  is_error: true,\n  content: "claim_id must be exactly 4 digits.\n   Received '45-12'. Did you mean '4512'?"\n}`, "<code>get_claim_status({ claim_id: \"4512\" })</code> → in transit, arriving Thursday. 📦", "✅ The error explains what was wrong and how to fix it, so the model corrects itself.", "good") },
+  { label: "💥 Crash", html: errView(`(no tool_result at all:\n the app threw an exception\n and the conversation ended)`, "—", "❌ Never let a tool error crash the loop. Catch it and return it as a tool_result with <code>is_error: true</code>.", "bad") },
+]);
+
+/* ---- structured output ---- */
+const SO = [["vendor", '"Northwind Traders"'], ["invoice_number", '"INV-2209"'], ["amount", "4180.50"], ["currency", '"EUR"'], ["due_date", '"2026-11-30"'], ["po_number", '"7781"'], ["approver", "null"]];
+const soOn = new Set([0, 1, 2, 3, 4]);
+function renderSO() {
+  $("#soFields").innerHTML = SO.map(([k], i) => `<button class="btn ${soOn.has(i) ? "primary" : ""}" data-i="${i}">${soOn.has(i) ? "✓ " : "+ "}${k}</button>`).join("");
+  const keys = SO.filter((_, i) => soOn.has(i));
+  $("#soOut").innerHTML = `{\n${keys.map(([k, v]) => `  "${k}": ${v}${k === "approver" ? '  <span class="muted">// not in the email: null, not invented</span>' : ""}`).join(",\n")}\n}`;
+}
+$("#soFields").onclick = (e) => { const b = e.target.closest("button"); if (!b) return; const i = +b.dataset.i; soOn.has(i) ? soOn.delete(i) : soOn.add(i); renderSO(); };
+renderSO();
+
+/* ---- kinds ---- */
+W.clickInfo($("#kinds"), [
+  { icon: "🖥️", title: "Your tools (client tools)", sub: "you write and run them", c: "action", html: "<p>Functions in your own app: look up a claim, create a ticket, query your database. <b>Your code executes them</b>, so you control permissions, logging and approvals.</p>" },
+  { icon: "☁️", title: "Provider tools (server tools)", sub: "the AI vendor runs them", c: "model", html: "<p>Built-in tools the model provider runs for you, such as <b>web search</b>, <b>web fetch</b> or <b>code execution</b> in a sandbox. You just switch them on; results come back already inside the response.</p><p>Less work, less control: check data handling for your use case.</p>" },
+  { icon: "🔌", title: "MCP tools", sub: "plugged in from an MCP server", c: "autonomy", html: "<p>Tools offered by an <b>MCP server</b> (GitHub, Slack, your CRM…). The harness discovers them and passes them to the model like any other tool. Write once, use in any MCP-compatible app. Next topic.</p>" },
+], { cols: 3 });
+
+/* ---- design ---- */
+W.flips($("#design"), [
+  { front: "🎯 Task-shaped, not API-shaped", back: "One <code>schedule_meeting</code> beats <code>list_users</code> + <code>get_calendar</code> + <code>find_slot</code> + <code>create_event</code>. Fewer steps, fewer mistakes." },
+  { front: "📝 Say when NOT to use it", back: "“Not for refunds; use <code>issue_refund</code>.” Disambiguation between similar tools prevents most wrong picks." },
+  { front: "✂️ Return concise results", back: "Return the 5 fields that matter, not a 5 MB JSON dump. Big results eat the context window. Offer a <code>detail</code> option or pagination." },
+  { front: "🆔 Return useful IDs and names", back: "Include IDs the next call needs, plus human-readable names so the model can talk about them." },
+  { front: "🧯 Helpful errors", back: "Say what was wrong and how to fix it. The model will usually correct itself." },
+  { front: "🔁 Safe to retry", back: "Make writes idempotent (e.g. a request ID), so a retry doesn’t send two emails or issue two refunds." },
+], 3);
+
+/* ---- how many tools ---- */
+function renderNT() {
+  const n = +$("#nTools").value, tok = n * 450, pct = tok / 200000 * 100, acc = Math.max(55, 98 - Math.max(0, n - 12) * 0.32);
+  $("#ntOut").textContent = n; $("#tokOut").textContent = tok.toLocaleString();
+  $("#ctxM").style.width = Math.min(100, pct) + "%"; $("#ctxM").style.background = pct > 20 ? "var(--bad)" : pct > 8 ? "var(--warn)" : "var(--good)";
+  $("#accM").style.width = acc + "%"; $("#accM").style.background = acc < 75 ? "var(--bad)" : acc < 90 ? "var(--warn)" : "var(--good)";
+  const nn = $("#ntNote");
+  if (n <= 15) { nn.style.setProperty("--c", "var(--good)"); nn.innerHTML = `✅ ~${pct.toFixed(1)}% of the window. Easy for the model to choose.`; }
+  else if (n <= 50) { nn.style.setProperty("--c", "var(--warn)"); nn.innerHTML = `🟡 ${pct.toFixed(0)}% of the window spent on tool menus, and similar tools start to get confused.`; }
+  else { nn.style.setProperty("--c", "var(--bad)"); nn.innerHTML = `❌ ${pct.toFixed(0)}% of the window gone before any work, plus slower, costlier, more wrong picks.`; }
+}
+$("#nTools").oninput = renderNT; renderNT();
+W.clickInfo($("#fixes"), [
+  { icon: "🔎", title: "Tool search", c: "knowledge", html: "<p>Load only a search tool at first; the model looks up the tools it needs and they get loaded on demand.</p>" },
+  { icon: "🧩", title: "Subagents", c: "autonomy", html: "<p>Give each specialised subagent only its own small toolset (Topic 17).</p>" },
+  { icon: "✂️", title: "Prune and merge", c: "action", html: "<p>Remove unused tools; merge near-duplicates into one task-shaped tool.</p>" },
+], { cols: 3 });
+
+/* ---- fix the tool ---- */
+W.classify($("#fix"), [
+  { text: `<code>{ name: "search", description: "Searches." }</code>`, a: 0, why: "Search what? When? Returns what? The model has to guess." },
+  { text: `<code>update_ticket</code> with input <code>priority: string</code> described as “the priority”`, a: 1, why: "Use an <code>enum</code>: [\"low\", \"normal\", \"high\", \"urgent\"]. Otherwise you’ll get “kinda urgent”." },
+  { text: `<code>get_customer</code> returns the full CRM record: 340 fields, 60 KB`, a: 2, why: "Return the handful of fields that matter; offer more on request." },
+  { text: `<code>delete_all_records</code> available to a public support chatbot`, a: 3, why: "No support bot needs it. Don’t give the tool at all, or require human approval." },
+  { text: `<code>api_v2_post_users_id_prefs</code>, <code>api_v2_get_users_id_prefs</code>, … (40 endpoint tools)`, a: 4, why: "Wrap tasks, not endpoints: e.g. one <code>update_notification_settings</code>." },
+], [{ label: "📝 Vague description", c: "context" }, { label: "🔒 Needs an enum", c: "autonomy" }, { label: "🐘 Returns too much", c: "action" }, { label: "⚠️ Too dangerous", c: "bad" }, { label: "🧩 API-shaped", c: "model" }], { cols: 2 });
+
+W.quiz($("#quiz"), [
+  { q: "What does the model return when it wants a tool?", o: ["The tool’s result", "A tool_use block with a name, an id and inputs, then it stops", "An HTTP request it sends itself", "Nothing until the user approves"], a: 1, e: "It asks; your app runs the tool and replies with a tool_result carrying the same id." },
+  { q: "Why does the conversation get re-sent on every request?", o: ["For security", "The model is stateless: it only knows what’s in the current request", "To save tokens", "It isn’t re-sent"], a: 1, e: "Everything the model needs, including earlier tool results, must be in the context each time." },
+  { q: "“Compare the weather in three cities.” Best behaviour?", o: ["Three sequential turns", "Three tool calls in parallel in one turn", "Guess the weather", "One call with all three cities in the name"], a: 1, e: "The calls are independent, so they can be requested together." },
+  { q: "A tool fails because of bad input. Best tool_result?", o: ["“Error 500”", "Crash the app", "A clear is_error message saying what was wrong and how to fix it", "Return an empty success"], a: 2, e: "Helpful errors let the model correct itself." },
+  { q: "You want guaranteed JSON with fields vendor, amount, due_date. Simplest approach?", o: ["Ask nicely in the prompt", "Define a record_invoice tool with that schema and force tool_choice to it", "Fine-tune a model", "Use a higher temperature"], a: 1, e: "Forcing a specific tool gives you structured output in your schema." },
+]);
+
+/* ===== v3 story ===== */
+</script>
+<script>W.seq(document.getElementById("seqFail"), {"actors": [{"id": "app", "name": "Your app", "icon": "🖥️", "c": "autonomy"}, {"id": "model", "name": "Model", "icon": "🧠", "c": "model"}, {"id": "api", "name": "Claims API", "icon": "📂", "c": "action"}], "steps": [{"from": "app", "to": "model", "label": "Question + tools"}, {"from": "model", "to": "app", "label": "2 × tool_use in one reply", "note": "The calls are independent, so the model asks for both at once.", "code": "\"content\": [\n  { \"type\": \"tool_use\", \"id\": \"toolu_A\", \"name\": \"get_claim_status\", \"input\": { \"claim_id\": \"CLM-301\" } },\n  { \"type\": \"tool_use\", \"id\": \"toolu_B\", \"name\": \"get_claim_status\", \"input\": { \"claim_id\": \"CLM-302\" } }\n]", "ret": true}, {"from": "app", "to": "api", "label": "GET /claims/CLM-301", "note": "Your app can run both calls in parallel."}, {"from": "app", "to": "api", "label": "GET /claims/CLM-302"}, {"from": "api", "to": "app", "label": "200: “Approved”", "ret": true}, {"from": "api", "to": "app", "label": "503: service unavailable", "ret": true}, {"from": "app", "to": "model", "label": "2 × tool_result (one is_error)", "note": "Return the error to the model as a result, in words it can act on. Do not crash the conversation.", "code": "\"content\": [\n  { \"type\": \"tool_result\", \"tool_use_id\": \"toolu_A\", \"content\": \"Status: Approved, paid 2 Nov\" },\n  { \"type\": \"tool_result\", \"tool_use_id\": \"toolu_B\", \"is_error\": true,\n    \"content\": \"Claims system busy. Safe to retry in a few seconds.\" }\n]"}, {"from": "model", "to": "app", "label": "tool_use: retry CLM-302", "note": "Because the error said retrying was safe, the model tries again.", "ret": true}, {"from": "app", "to": "api", "label": "GET /claims/CLM-302"}, {"from": "api", "to": "app", "label": "200: “Awaiting assessor”", "ret": true}, {"from": "app", "to": "model", "label": "tool_result"}, {"from": "model", "to": "app", "label": "Answer covering both claims", "ret": true}], "frames": [{"from": 7, "to": 10, "label": "retry", "c": "warn"}]});</script>
+<script>
+/* ===== v4 additions ===== */
+W.codeWalk(document.getElementById("cwLoop"), { file: "code/tool_loop.py", code: "\"\"\"Topic 13: the tool loop. Parallel calls, an error, and a retry.\nRun:  pip install anthropic\n      export ANTHROPIC_API_KEY=...\n      python tool_loop.py\n\"\"\"\nimport json\nimport anthropic\n\nclient = anthropic.Anthropic()\nMODEL = \"claude-sonnet-5-5\"\n\nTOOLS = [{\n    \"name\": \"get_claim_status\",\n    \"description\": \"Current status of one insurance claim. Read-only. \"\n                   \"If it fails with 'busy', it is safe to retry.\",\n    \"input_schema\": {\"type\": \"object\",\n                     \"properties\": {\"claim_id\": {\"type\": \"string\"}},\n                     \"required\": [\"claim_id\"]},\n}]\n\nattempts = {}\ndef get_claim_status(claim_id):\n    # Demo stub: CLM-302 is busy the first time it is asked for.\n    attempts[claim_id] = attempts.get(claim_id, 0) + 1\n    if claim_id == \"CLM-302\" and attempts[claim_id] == 1:\n        raise RuntimeError(\"Claims system busy (503). Safe to retry in a few seconds.\")\n    status = {\"CLM-301\": \"Approved, paid 2 Nov\",\n              \"CLM-302\": \"Awaiting assessor\"}.get(claim_id, \"Not found\")\n    return {\"claim_id\": claim_id, \"status\": status}\n\nHANDLERS = {\"get_claim_status\": get_claim_status}\n\ndef run_tool(name, args):\n    \"\"\"Run one tool. Errors go back to the model as text, never as a crash.\"\"\"\n    try:\n        return json.dumps(HANDLERS[name](**args)), False\n    except Exception as err:\n        return str(err), True\n\nmessages = [{\"role\": \"user\", \"content\": \"Where are my claims CLM-301 and CLM-302?\"}]\n\nfor turn in range(10):  # a hard stop, so a confused loop cannot run forever\n    response = client.messages.create(\n        model=MODEL, max_tokens=800, tools=TOOLS, messages=messages)\n    messages.append({\"role\": \"assistant\", \"content\": response.content})\n    if response.stop_reason != \"tool_use\":\n        break  # end_turn: the model has its answer\n\n    # One reply can hold several tool_use blocks. Answer every one of them.\n    results = []\n    for block in response.content:\n        if block.type == \"tool_use\":\n            output, failed = run_tool(block.name, block.input)\n            results.append({\"type\": \"tool_result\", \"tool_use_id\": block.id,\n                            \"content\": output, \"is_error\": failed})\n    messages.append({\"role\": \"user\", \"content\": results})\n\nprint(response.content[-1].text)\n", steps: [{"lines": [12, 19], "c": "action", "t": "Describe the tool, including how it fails", "note": "The description tells the model that a “busy” error is safe to retry. That one sentence decides what the model does when things go wrong.", "label": "Sent as tools[0]", "json": "{\n  \"name\": \"get_claim_status\",\n  \"description\": \"Current status of one insurance claim. Read-only. If it fails with 'busy', it is safe to retry.\",\n  \"input_schema\": { \"type\": \"object\",\n                    \"properties\": { \"claim_id\": { \"type\": \"string\" } },\n                    \"required\": [\"claim_id\"] }\n}"}, {"lines": [21, 29], "c": "autonomy", "t": "A stub that fails once", "note": "To show error handling, the demo pretends the claims system is busy the first time CLM-302 is asked for."}, {"lines": [33, 38], "c": "autonomy", "t": "Errors become text, not crashes", "note": "Whatever happens, the model gets a <code>tool_result</code>. A failure is sent with <code>is_error: true</code> and a message it can act on.", "label": "Two possible results", "json": "{ \"type\": \"tool_result\", \"tool_use_id\": \"toolu_A\", \"is_error\": false,\n  \"content\": \"{\\\"claim_id\\\": \\\"CLM-301\\\", \\\"status\\\": \\\"Approved, paid 2 Nov\\\"}\" }\n\n{ \"type\": \"tool_result\", \"tool_use_id\": \"toolu_B\", \"is_error\": true,\n  \"content\": \"Claims system busy (503). Safe to retry in a few seconds.\" }"}, {"lines": [40, 44], "c": "accent", "t": "Turn 1: send the question", "note": "The loop has a hard limit of 10 turns so a confused model cannot loop forever.", "label": "Request 1 → POST /v1/messages", "json": "{\n  \"model\": \"claude-sonnet-5-5\",\n  \"max_tokens\": 800,\n  \"tools\": [ { \"name\": \"get_claim_status\", ... } ],\n  \"messages\": [\n    { \"role\": \"user\", \"content\": \"Where are my claims CLM-301 and CLM-302?\" }\n  ]\n}"}, {"lines": [45, 47], "c": "model", "t": "Two tool calls in one reply", "note": "The calls are independent, so the model asks for both at once. <code>stop_reason</code> is <code>tool_use</code>, so the loop carries on.", "label": "Response 1 ←", "json": "{\n  \"role\": \"assistant\",\n  \"content\": [\n    { \"type\": \"tool_use\", \"id\": \"toolu_A\", \"name\": \"get_claim_status\", \"input\": { \"claim_id\": \"CLM-301\" } },\n    { \"type\": \"tool_use\", \"id\": \"toolu_B\", \"name\": \"get_claim_status\", \"input\": { \"claim_id\": \"CLM-302\" } }\n  ],\n  \"stop_reason\": \"tool_use\"     // two independent calls in one reply\n}"}, {"lines": [49, 56], "c": "autonomy", "t": "Answer every tool_use", "note": "One <code>tool_result</code> per <code>tool_use</code>, all in a single user message. This loop runs them one after another; a thread pool would run them truly in parallel.", "label": "Appended to messages", "json": "{ \"role\": \"user\", \"content\": [\n  { \"type\": \"tool_result\", \"tool_use_id\": \"toolu_A\", \"is_error\": false,\n    \"content\": \"{\\\"claim_id\\\": \\\"CLM-301\\\", \\\"status\\\": \\\"Approved, paid 2 Nov\\\"}\" },\n  { \"type\": \"tool_result\", \"tool_use_id\": \"toolu_B\", \"is_error\": true,\n    \"content\": \"Claims system busy (503). Safe to retry in a few seconds.\" }\n] }"}, {"lines": [42, 47], "c": "model", "t": "Turn 2: the model reads the error and retries", "note": "Because the error said retrying is safe, the model asks for CLM-302 again.", "label": "Response 2 ←", "json": "{\n  \"role\": \"assistant\",\n  \"content\": [\n    { \"type\": \"text\", \"text\": \"CLM-301 is approved. The claims system was busy for CLM-302, so I'll try again.\" },\n    { \"type\": \"tool_use\", \"id\": \"toolu_C\", \"name\": \"get_claim_status\", \"input\": { \"claim_id\": \"CLM-302\" } }\n  ],\n  \"stop_reason\": \"tool_use\"\n}"}, {"lines": [49, 56], "c": "accent", "t": "Turn 3: the retry succeeds", "note": "The history now holds five messages. Every turn re-sends all of them, which is why long tool loops get expensive.", "label": "Request 3 → POST /v1/messages", "json": "\"messages\": [\n  { \"role\": \"user\", \"content\": \"Where are my claims CLM-301 and CLM-302?\" },\n  { \"role\": \"assistant\", \"content\": [ ...toolu_A, toolu_B... ] },\n  { \"role\": \"user\", \"content\": [ ...two tool_results... ] },\n  { \"role\": \"assistant\", \"content\": [ ...text + toolu_C... ] },\n  { \"role\": \"user\", \"content\": [\n    { \"type\": \"tool_result\", \"tool_use_id\": \"toolu_C\", \"is_error\": false,\n      \"content\": \"{\\\"claim_id\\\": \\\"CLM-302\\\", \\\"status\\\": \\\"Awaiting assessor\\\"}\" }\n  ] }\n]                                   // 5 messages: the history keeps growing"}, {"lines": [46, 58], "c": "good", "t": "end_turn: leave the loop and print", "note": "No more tool calls, so <code>stop_reason</code> is <code>end_turn</code>, the loop breaks and the answer is printed. This loop is the core of every agent (Topic 15).", "label": "Response 3 ←", "json": "{\n  \"role\": \"assistant\",\n  \"content\": [ { \"type\": \"text\",\n    \"text\": \"CLM-301 is approved and was paid on 2 November. CLM-302 is waiting for an assessor...\" } ],\n  \"stop_reason\": \"end_turn\"\n}"}] });
+W.seq(document.getElementById("seqPyLoop"), {"actors": [{"id": "py", "name": "tool_loop.py", "icon": "🐍", "c": "accent"}, {"id": "api", "name": "Claude API", "icon": "🧠", "c": "model"}, {"id": "fn", "name": "run_tool()", "icon": "⚙️", "c": "autonomy"}, {"id": "cl", "name": "Claims API", "icon": "📂", "c": "action"}], "steps": [{"from": "py", "to": "api", "label": "Request 1: question + tools", "note": "Lines 43–44, first time round the loop.", "code": "{\n  \"model\": \"claude-sonnet-5-5\",\n  \"max_tokens\": 800,\n  \"tools\": [ { \"name\": \"get_claim_status\", ... } ],\n  \"messages\": [\n    { \"role\": \"user\", \"content\": \"Where are my claims CLM-301 and CLM-302?\" }\n  ]\n}"}, {"from": "api", "to": "py", "label": "2 × tool_use", "ret": true, "code": "{\n  \"role\": \"assistant\",\n  \"content\": [\n    { \"type\": \"tool_use\", \"id\": \"toolu_A\", \"name\": \"get_claim_status\", \"input\": { \"claim_id\": \"CLM-301\" } },\n    { \"type\": \"tool_use\", \"id\": \"toolu_B\", \"name\": \"get_claim_status\", \"input\": { \"claim_id\": \"CLM-302\" } }\n  ],\n  \"stop_reason\": \"tool_use\"     // two independent calls in one reply\n}"}, {"from": "py", "to": "fn", "label": "run_tool(CLM-301)", "note": "Lines 51–53: once for each tool_use block."}, {"from": "fn", "to": "cl", "label": "GET /claims/CLM-301"}, {"from": "cl", "to": "fn", "label": "200: Approved", "ret": true}, {"from": "py", "to": "fn", "label": "run_tool(CLM-302)"}, {"from": "fn", "to": "cl", "label": "GET /claims/CLM-302"}, {"from": "cl", "to": "fn", "label": "503: busy", "ret": true, "note": "The exception is caught in run_tool (lines 37–38) and turned into text."}, {"from": "fn", "to": "py", "label": "2 results, one is_error", "ret": true, "code": "{ \"role\": \"user\", \"content\": [\n  { \"type\": \"tool_result\", \"tool_use_id\": \"toolu_A\", \"is_error\": false,\n    \"content\": \"{\\\"claim_id\\\": \\\"CLM-301\\\", \\\"status\\\": \\\"Approved, paid 2 Nov\\\"}\" },\n  { \"type\": \"tool_result\", \"tool_use_id\": \"toolu_B\", \"is_error\": true,\n    \"content\": \"Claims system busy (503). Safe to retry in a few seconds.\" }\n] }"}, {"from": "py", "to": "api", "label": "Request 2: 3 messages", "note": "Line 56 appended the results; the loop goes round again.", "code": "\"messages\": [\n  { \"role\": \"user\", \"content\": \"Where are my claims CLM-301 and CLM-302?\" },\n  { \"role\": \"assistant\", \"content\": [ ...toolu_A and toolu_B... ] },\n  { \"role\": \"user\", \"content\": [\n    { \"type\": \"tool_result\", \"tool_use_id\": \"toolu_A\", \"is_error\": false,\n      \"content\": \"{\\\"claim_id\\\": \\\"CLM-301\\\", \\\"status\\\": \\\"Approved, paid 2 Nov\\\"}\" },\n    { \"type\": \"tool_result\", \"tool_use_id\": \"toolu_B\", \"is_error\": true,\n      \"content\": \"Claims system busy (503). Safe to retry in a few seconds.\" }\n  ] }\n]"}, {"from": "api", "to": "py", "label": "tool_use: retry CLM-302", "ret": true, "code": "{\n  \"role\": \"assistant\",\n  \"content\": [\n    { \"type\": \"text\", \"text\": \"CLM-301 is approved. The claims system was busy for CLM-302, so I'll try again.\" },\n    { \"type\": \"tool_use\", \"id\": \"toolu_C\", \"name\": \"get_claim_status\", \"input\": { \"claim_id\": \"CLM-302\" } }\n  ],\n  \"stop_reason\": \"tool_use\"\n}"}, {"from": "py", "to": "fn", "label": "run_tool(CLM-302)"}, {"from": "fn", "to": "cl", "label": "GET /claims/CLM-302"}, {"from": "cl", "to": "fn", "label": "200: Awaiting assessor", "ret": true}, {"from": "fn", "to": "py", "label": "tool_result", "ret": true}, {"from": "py", "to": "api", "label": "Request 3: 5 messages", "code": "\"messages\": [\n  { \"role\": \"user\", \"content\": \"Where are my claims CLM-301 and CLM-302?\" },\n  { \"role\": \"assistant\", \"content\": [ ...toolu_A, toolu_B... ] },\n  { \"role\": \"user\", \"content\": [ ...two tool_results... ] },\n  { \"role\": \"assistant\", \"content\": [ ...text + toolu_C... ] },\n  { \"role\": \"user\", \"content\": [\n    { \"type\": \"tool_result\", \"tool_use_id\": \"toolu_C\", \"is_error\": false,\n      \"content\": \"{\\\"claim_id\\\": \\\"CLM-302\\\", \\\"status\\\": \\\"Awaiting assessor\\\"}\" }\n  ] }\n]                                   // 5 messages: the history keeps growing"}, {"from": "api", "to": "py", "label": "end_turn: the answer", "ret": true, "code": "{\n  \"role\": \"assistant\",\n  \"content\": [ { \"type\": \"text\",\n    \"text\": \"CLM-301 is approved and was paid on 2 November. CLM-302 is waiting for an assessor...\" } ],\n  \"stop_reason\": \"end_turn\"\n}"}, {"from": "py", "to": "py", "label": "break, print(answer)", "note": "Lines 46–47 and 58."}], "frames": [{"from": 0, "to": 8, "label": "loop turn 1", "c": "warn"}, {"from": 9, "to": 14, "label": "turn 2", "c": "warn"}, {"from": 15, "to": 17, "label": "turn 3 · end_turn", "c": "good"}]});
+</script>
+<script src="../assets/deck.js?v=5.0"></script>
+</body>
+</html>
