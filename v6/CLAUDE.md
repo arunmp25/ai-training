@@ -6,8 +6,8 @@ v6 is a copy of v5 (24 Nov 2026). Everything below about v5 and v4 applies; read
 - **Completion criteria popup** (`assets/criteria.js`, self-contained CSS). Any element with `data-criteria` opens it; ✕, Got it, Esc, Enter or a click outside closes it. While open it swallows keys so → does not move the slides. Loaded on the course page (yellow “Completion criteria” button) and in Topic 1. Edit the four criteria (attendance, evaluation, questions, feedback after each session) in the `CRIT` array.
 - **Topic 1 slide 1 “Before we start”** opens the popup. Every later Topic 1 slide moved up by one: the dictionary is `#10` and the self-check `#3` (course page and Topic 18 links updated).
 - Crisper text: `-webkit-font-smoothing: auto` (was `antialiased`, which thins light text on dark), code line numbers at `.85` opacity.
-- Not yet done: a contrast pass. An audit found faint “not yet revealed” states at 15–40% opacity (Topic 11 “Build or buy?”, “Start simple”, Topic 10 “The royal search”, “Scores and thresholds”, Topic 1 roadmap) and 11–12px labels and JSON/Python code.
-
+- **Contrast pass (asset version 6.1).** Unrevealed or dimmed states have a floor of about 50% opacity (were 15–40%); sequence diagram upcoming steps 32%, past steps 75%. Dark layer colours slightly brighter (`--c-model` #4FB3F2, `--c-context` #B8A0EC, `--c-autonomy` #FF7BAC, `--bad` #FF6B6B); light green, teal, orange and warn slightly darker. Tags 13px, code panes 12–12.5px, no text under 12px in topic pages. Topic 4 step pills use `--muted` text when inactive. Text below 4.5:1 dropped from 1,083 to 523 elements, and what is left is mostly the deliberately dimmed “pending” states.
+- Keep new faded states at 0.5 opacity or more, and text at 12px or more.
 ---
 
 # Version 5

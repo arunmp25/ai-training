@@ -4,9 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Topic 4 · Transformers and attention</title>
-<link rel="stylesheet" href="../assets/style.css?v=6.0">
-<link rel="stylesheet" href="../assets/widgets.css?v=6.0">
-<link rel="stylesheet" href="../assets/story.css?v=6.0">
+<link rel="stylesheet" href="../assets/style.css?v=6.1">
+<link rel="stylesheet" href="../assets/widgets.css?v=6.1">
+<link rel="stylesheet" href="../assets/story.css?v=6.1">
 <style>
   .noise-strip { display: flex; gap: 3px; flex-wrap: wrap; padding: 12px; border-radius: 6px; background: var(--card2); min-height: 60px; }
   .blk { width: 22px; height: 30px; border-radius: 5px; background: var(--line); transition: all .3s; }
@@ -18,6 +18,7 @@
   .tf-cap { font-size: 20px; text-align: center; margin-top: 18px; min-height: 30px; }
   .tf-cap.small { font-size: 17px; }
   .tf-pill { display: inline-block; padding: 6px 14px; border-radius: 999px; font-weight: 800; font-size: 14px; letter-spacing: .04em; border: 2px solid var(--c, var(--line)); color: var(--c, var(--muted)); transition: all .3s; }
+  .tf-pill[style*="--c: var(--line)"] { color: var(--muted); }
   @keyframes tfPop { 0% { transform: scale(.3); opacity: 0; } 70% { transform: scale(1.15); } 100% { transform: scale(1); opacity: 1; } }
   @keyframes tfShake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }
   @keyframes tfGlow { 0%, 100% { box-shadow: 0 0 0 0 transparent; } 50% { box-shadow: 0 0 0 6px color-mix(in srgb, var(--c-model) 45%, transparent); } }
@@ -37,7 +38,7 @@
 
   /* slide 2: assembly line */
   .line2 { position: relative; display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
-  .st2 { --c: var(--accent); text-align: center; padding: 12px 10px; border-radius: 8px; border: 2px solid var(--line); background: var(--card); opacity: .45; transition: all .35s; }
+  .st2 { --c: var(--accent); text-align: center; padding: 12px 10px; border-radius: 8px; border: 2px solid var(--line); background: var(--card); opacity: .6; transition: all .35s; }
   .st2 .ic { font-size: 34px; line-height: 1.1; }
   .st2 b { display: block; font-size: 17px; margin-top: 4px; }
   .st2 small { color: var(--muted); font-size: 13px; }
@@ -332,8 +333,8 @@ as the last bullet, quoting the line you used.</span></pre>
   <aside class="notes"><span class="tag time">⏱ 30 sec</span><p class="say"><b>🎤 Say</b> The model looks at everything it is given. Next question: how much can it be given? That is the context window.</p><ul><li>Bridge: “So the model looks at everything it’s given. How much can it be given? That’s the context window.”</li></ul></aside>
 </section>
 
-<script src="../assets/course.js?v=6.0"></script>
-<script src="../assets/widgets.js?v=6.0"></script>
+<script src="../assets/course.js?v=6.1"></script>
+<script src="../assets/widgets.js?v=6.1"></script>
 <script>
 const { $ } = W;
 
@@ -573,6 +574,6 @@ W.quiz($("#quiz"), [
 
 /* ===== v3 story ===== */
 </script>
-<script src="../assets/deck.js?v=6.0"></script>
+<script src="../assets/deck.js?v=6.1"></script>
 </body>
 </html>

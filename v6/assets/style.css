@@ -16,15 +16,15 @@
   --on-accent: #1A1A24;
   --on-fill: #1A1A24;        /* text on a layer-coloured fill */
   --good: #34C768;
-  --bad: #FF4D4D;
+  --bad: #FF6B6B;
   --warn: #FF9831;
 
   /* the six layers of AI jargon */
-  --c-model: #35A4E8;
-  --c-context: #A78BE0;
+  --c-model: #4FB3F2;
+  --c-context: #B8A0EC;
   --c-knowledge: #3CC6C0;
   --c-action: #FF9831;
-  --c-autonomy: #F7609A;
+  --c-autonomy: #FF7BAC;
   --c-trust: #57D886;
 
   --radius: 6px;
@@ -43,15 +43,15 @@
   --accent: #2E2E38;         /* EY dark grey for text accents; yellow stays for fills */
   --on-accent: #FFFFFF;
   --on-fill: #FFFFFF;
-  --good: #168736;
+  --good: #11752E;
   --bad: #D0021B;
-  --warn: #B35A00;
+  --warn: #9E4F00;
   --c-model: #155CB4;
   --c-context: #6B3FC4;
-  --c-knowledge: #0F7E7A;
-  --c-action: #C25400;
+  --c-knowledge: #0B6E6A;
+  --c-action: #A84800;
   --c-autonomy: #B8125E;
-  --c-trust: #168736;
+  --c-trust: #11752E;
 }
 
 * { box-sizing: border-box; }
@@ -98,7 +98,7 @@ h1, h2, h3 { line-height: 1.15; margin: 0; }
 .tag {
   --c: var(--accent);
   display: inline-block; padding: 2px 9px; border-radius: 999px;
-  font-size: 12px; font-weight: 700; letter-spacing: .02em;
+  font-size: 13px; font-weight: 700; letter-spacing: .02em;
   color: var(--c); background: color-mix(in srgb, var(--c) 14%, transparent);
 }
 .card {

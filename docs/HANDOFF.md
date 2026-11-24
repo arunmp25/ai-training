@@ -12,8 +12,8 @@ Then say: "Read docs/HANDOFF.md and docs/HISTORY.md, then continue."
 
 ## Where things stand
 - Repo: github.com/arunmp25/ai-training, branch `main`. Last pushed commit **81ae20a**. The worked examples and the Topic 5 context-bar fix are committed on top of it (see `git log`). Check `git status -sb` to see whether they have been pushed.
-- Work only in `v6/` (copied from v5 on 24 Nov 2026; v5 is now frozen). Asset version is `?v=6.0`. If you change `v6/assets/`, bump it to 6.1 in every v6 page.
-- v6 adds the completion criteria popup and a “Before we start” slide in Topic 1. Pending: a contrast pass (faint unrevealed states, small labels); see `v6/CLAUDE.md`.
+- Work only in `v6/` (copied from v5 on 24 Nov 2026; v5 is now frozen). Asset version is `?v=6.1`. If you change `v6/assets/`, bump it to 6.2 in every v6 page.
+- v6 adds the completion criteria popup and a “Before we start” slide in Topic 1. A contrast pass is done (asset version `?v=6.1`).
 - v5 reworked Session 2 Topics 10 and 11 to be practical (see HISTORY). Next candidate the user was offered: Topic 13, Tools deep dive.
 - v6 has 255 slides (v5 has 254, v4 has 245). All 20 topics load at 1280×720 with no script errors, and every slide has a speaker note.
 
