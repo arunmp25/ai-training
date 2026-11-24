@@ -6,6 +6,7 @@
     { ic: "🗓️", c: "var(--c-model)", big: "90%", t: "Attendance", d: "Attend at least <b>90%</b> of the training sessions." },
     { ic: "📝", c: "var(--c-trust)", big: "80%+", t: "Evaluation", d: "An MCQ evaluation at the end. Score <b>more than 80%</b> to complete the course." },
     { ic: "💬", c: "var(--c-action)", big: "Chat", t: "Questions", d: "Ask any questions in the <b>chat</b>. We will pick them up during the session." },
+    { ic: "✅", c: "var(--c-autonomy)", big: "Feedback", t: "After each session", d: "Submitting feedback after <b>every session</b> is <b>mandatory</b>." },
   ];
   const ov = document.createElement("div");
   ov.className = "crit-ov";
@@ -24,7 +25,7 @@
   .crit-ov { position: fixed; inset: 0; z-index: 100; display: none; align-items: center; justify-content: center; padding: 24px;
     background: rgba(10, 10, 16, .72); }
   .crit-ov.open { display: flex; animation: critFade .25s ease; }
-  .crit-box { position: relative; width: min(980px, 100%); background: var(--bg2); border: 1px solid var(--line); border-top: 6px solid var(--brand);
+  .crit-box { position: relative; width: min(1180px, 100%); background: var(--bg2); border: 1px solid var(--line); border-top: 6px solid var(--brand);
     border-radius: var(--radius); padding: 34px 38px 28px; box-shadow: 0 30px 80px rgba(0,0,0,.45); animation: critUp .35s ease; }
   .crit-box h2 { font-size: 36px; margin: 0 0 24px; }
   .crit-eye { text-transform: uppercase; letter-spacing: .14em; font-size: 13px; font-weight: 800; color: var(--accent); margin-bottom: 8px;
@@ -33,11 +34,11 @@
   .crit-x { position: absolute; top: 14px; right: 14px; width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--line);
     background: var(--card); color: var(--text); font-size: 18px; cursor: pointer; }
   .crit-x:hover { border-color: var(--accent); }
-  .crit-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+  .crit-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
   .crit-card { background: var(--card); border: 1px solid var(--line); border-top: 5px solid var(--c); border-radius: var(--radius);
     padding: 22px 20px; opacity: 0; animation: critUp .45s ease var(--d) forwards; }
   .crit-ic { font-size: 34px; }
-  .crit-big { font-size: 48px; font-weight: 800; color: var(--c); line-height: 1.1; margin: 6px 0 4px; }
+  .crit-big { font-size: 40px; font-weight: 800; color: var(--c); line-height: 1.1; margin: 6px 0 4px; }
   .crit-card > b { font-size: 20px; display: block; margin-bottom: 6px; }
   .crit-card p b { color: var(--c); }
   .crit-card p { margin: 0; font-size: 17px; line-height: 1.45; color: var(--text); }
@@ -45,7 +46,7 @@
   .crit-foot .btn { font-size: 16px; padding: 11px 26px; }
   @keyframes critFade { from { opacity: 0; } to { opacity: 1; } }
   @keyframes critUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
-  @media (max-width: 800px) { .crit-grid { grid-template-columns: 1fr; } }`;
+  @media (max-width: 900px) { .crit-grid { grid-template-columns: 1fr 1fr; } }`;
   document.head.appendChild(css);
   const mount = () => document.body.appendChild(ov);
   if (document.body) mount(); else document.addEventListener("DOMContentLoaded", mount);
