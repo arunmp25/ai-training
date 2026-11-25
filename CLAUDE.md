@@ -29,6 +29,7 @@ v6/                   LATEST. Copy of v5 plus a “Before we start” slide and 
   assets/widgets.css  Widget styles.
   assets/story.css    Behind the scenes drawer, JSON colours, sequence diagrams, speaker notes, v4 code walkthroughs.
   topics/*.html       One file per topic (17 in v3, 20 in v4).
+M365/                 Copilot Chat quick wins: presenter page (index.html), fictional sample files (samples/), and their zip for attendees.
 AI-Training-v3.zip    Standalone package of v3.
 AI-Training-v4.zip    Standalone package of v4.
 AI-Training-v5.zip    Standalone package of v5.

@@ -1,0 +1,11 @@
+claims ops weekly - 20 nov - notes (anita)
+present: priya, rahul, anita, suresh (late), vikram from IT
+- backlog now 1,240?? was 1,180 last wk. rahul says motor queue is worst
+- priya: photo chase - drafted SMS template, legal need to ok wording. maybe next wk
+- vikram: AI summary idea - copilot chat ok for internal docs per IT policy, NOT customer PII yet. needs DPO sign off. suresh to raise w/ DPO
+- queue split: rahul to share proposal fri. concern = home team only 4 ppl
+- surveyor booking pilot pune - vendor demo 28 nov, anita to join
+- suresh: budget for Q1 tight, anything >5L needs CFO
+- complaint from meera nair (CLM-20931) escalated, no surveyor visit in 4 wks!! priya to own, call her today
+- peak season dec-jan - freeze on process changes from 15 dec?? not agreed
+- next mtg 27 nov same time

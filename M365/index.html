@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Copilot Chat quick wins · AI Training</title>
+<script>const t = localStorage.getItem("aitrain-theme"); if (t) document.documentElement.dataset.theme = t;</script>
+<style>
+:root { --brand: #FFE600; --on-brand: #1A1A24; --bg: #1A1A24; --bg2: #23232F; --card: #2E2E38; --card2: #393945; --line: #4A4A57;
+  --text: #FFFFFF; --muted: #B9B9C4; --accent: #FFE600; --c1: #4FB3F2; --c2: #B8A0EC; --c3: #3CC6C0; --c4: #FF9831; --c5: #FF7BAC; --c6: #57D886;
+  --font: "EYInterstate", "Interstate", Arial, "Helvetica Neue", Helvetica, sans-serif; --r: 6px; }
+[data-theme="light"] { --bg: #F6F6FA; --bg2: #FFFFFF; --card: #FFFFFF; --card2: #EDEDF2; --line: #D2D2DA; --text: #1A1A24; --muted: #5E5E6C; --accent: #2E2E38;
+  --c1: #155CB4; --c2: #6B3FC4; --c3: #0B6E6A; --c4: #A84800; --c5: #B8125E; --c6: #11752E; }
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text); font-family: var(--font); line-height: 1.5; }
+a { color: var(--accent); }
+.wrap { max-width: 1180px; margin: 0 auto; padding: 48px 28px 80px; }
+.top { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 30px; }
+.kick { text-transform: uppercase; letter-spacing: .14em; font-weight: 800; color: var(--accent); font-size: 13px; display: flex; align-items: center; gap: 10px; }
+.kick::before { content: ""; width: 26px; height: 6px; background: var(--brand); }
+.btn { display: inline-flex; align-items: center; gap: 6px; padding: 9px 16px; border-radius: 4px; border: 1px solid var(--line); background: var(--card);
+  color: var(--text); font: 600 14px var(--font); cursor: pointer; text-decoration: none; }
+.btn:hover { border-color: var(--accent); }
+.btn.primary { background: var(--brand); border-color: var(--brand); color: var(--on-brand); }
+.hero { position: relative; padding-top: 34px; margin-bottom: 26px; }
+.hero::before { content: ""; position: absolute; top: 0; left: 0; width: 160px; height: 22px; background: var(--brand); clip-path: polygon(0 0, 100% 0, 100% 35%, 0 100%); }
+h1 { font-size: clamp(38px, 5.5vw, 64px); margin: 0 0 12px; letter-spacing: -.02em; line-height: 1.1; }
+.hero p { font-size: 19px; color: var(--muted); max-width: 820px; margin: 0; }
+h2 { font-size: 28px; margin: 44px 0 6px; } .sub2 { color: var(--muted); margin: 0 0 18px; }
+.grid3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
+.box { background: var(--card); border: 1px solid var(--line); border-radius: var(--r); padding: 18px; }
+.box h3 { margin: 0 0 6px; font-size: 18px; } .box p, .box li { color: var(--muted); font-size: 15px; } .box ul { margin: 6px 0 0; padding-left: 18px; }
+.files { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 12px; }
+.file { display: flex; gap: 12px; align-items: center; padding: 12px 14px; background: var(--card); border: 1px solid var(--line); border-radius: var(--r); text-decoration: none; color: var(--text); }
+.file:hover { border-color: var(--accent); } .file .i { font-size: 26px; } .file b { display: block; font-size: 15px; } .file small { color: var(--muted); font-size: 13px; }
+.filter { display: flex; gap: 8px; flex-wrap: wrap; margin: 0 0 18px; }
+.filter .btn.on { background: var(--brand); color: var(--on-brand); border-color: var(--brand); }
+
+/* quick-win cards */
+.wins { display: grid; gap: 18px; }
+.win { --c: var(--c1); background: var(--card); border: 1px solid var(--line); border-left: 6px solid var(--c); border-radius: var(--r); padding: 22px 24px;
+  display: grid; grid-template-columns: 1fr 340px; gap: 22px; }
+.win.noimg { grid-template-columns: 1fr; }
+.win .hd { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; margin-bottom: 4px; }
+.win .no { font-size: 13px; font-weight: 800; letter-spacing: .1em; color: var(--c); }
+.win h3 { font-size: 24px; margin: 0; }
+.win .tags { display: flex; gap: 6px; flex-wrap: wrap; margin: 6px 0 12px; }
+.tag { font-size: 13px; font-weight: 700; padding: 2px 10px; border-radius: 999px; color: var(--c, var(--accent)); background: color-mix(in srgb, var(--c, var(--accent)) 15%, transparent); }
+.tag.plain { --c: var(--muted); }
+.win .what { font-size: 16px; margin: 0 0 12px; }
+.steps { margin: 0 0 12px; padding-left: 20px; font-size: 15px; } .steps li { margin: 3px 0; }
+.prompt { position: relative; background: var(--bg2); border: 1px solid var(--line); border-radius: var(--r); padding: 12px 96px 12px 14px; margin: 8px 0;
+  font-size: 15.5px; white-space: pre-wrap; }
+.prompt .lbl { display: block; font-size: 12px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin-bottom: 4px; }
+.prompt .cp { position: absolute; top: 10px; right: 10px; padding: 6px 12px; font-size: 13px; }
+.prompt .cp.done { background: var(--c6); border-color: var(--c6); color: #1A1A24; }
+.point { margin-top: 12px; padding: 10px 14px; border-radius: var(--r); background: color-mix(in srgb, var(--c) 12%, transparent); font-size: 15px; }
+.point b { color: var(--c); }
+.win .side img { width: 100%; border-radius: var(--r); border: 1px solid var(--line); display: block; }
+.win .side .fl { margin-top: 10px; display: grid; gap: 8px; }
+
+/* present mode: one quick win at a time, bigger text */
+.pbar { display: none; }
+body.present .wrap > :not(.wins):not(.pbar) { display: none; }
+body.present .wrap { max-width: 1280px; padding: 26px 40px 90px; }
+body.present .win { display: none; min-height: calc(100vh - 152px); align-content: start; }
+body.present .win.cur { display: grid; animation: up .35s ease; }
+body.present .win h3 { font-size: 36px; } body.present .win .what { font-size: 20px; } body.present .steps { font-size: 18px; }
+body.present .prompt { font-size: 19px; } body.present .point { font-size: 18px; } body.present .win { grid-template-columns: 1fr 420px; }
+body.present .win.noimg { grid-template-columns: 1fr; }
+body.present .pbar { display: flex; position: fixed; left: 0; right: 0; bottom: 0; height: 56px; align-items: center; gap: 10px; padding: 0 16px;
+  background: var(--bg2); border-top: 3px solid var(--brand); z-index: 5; }
+.pbar .ttl { flex: 1; text-align: center; color: var(--muted); font-size: 14px; font-weight: 600; }
+@keyframes up { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+@media (max-width: 900px) { .win, body.present .win { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <span class="kick">AI Training · Microsoft 365 Copilot Chat</span>
+    <div style="display:flex;gap:8px"><button class="btn primary" id="presentBtn" title="One quick win at a time, for the projector (P)">▶ Present</button><button class="btn" id="themeBtn" title="Light / dark (T)">◐ Theme</button></div>
+  </div>
+
+  <section class="hero">
+    <h1>Copilot Chat quick wins</h1>
+    <p>Twelve short demos that use only <b>Copilot Chat</b>, with no Copilot inside Word, Excel or Outlook needed. Each one takes 3–5 minutes and comes with a ready-made sample file, prompts to copy, and the point to make.</p>
+  </section>
+
+  <h2>Before the session</h2>
+  <p class="sub2">Ten minutes of checks saves a stalled demo.</p>
+  <div class="grid3">
+    <div class="box"><h3>🌐 Open Copilot Chat</h3><ul><li><b>m365copilot.com</b> in the browser, signed in with your work account</li><li>or the <b>Microsoft 365 Copilot</b> app</li><li>or <b>Copilot</b> in Teams</li></ul></div>
+    <div class="box"><h3>✅ Check your tenant</h3><ul><li>Can you <b>upload files</b> (➕ or 📎 in the chat box)?</li><li>Is <b>Create agent</b> available (quick win 12)?</li><li>Is image creation switched on (quick win 10)?</li></ul></div>
+    <div class="box"><h3>🔒 Data rules</h3><ul><li>Use only the <b>sample files below</b> in the demos.</li><li>All names and numbers in them are fictional (HarborShield).</li><li>Remind people what your organisation allows them to upload.</li></ul></div>
+  </div>
+
+  <h2>Sample files</h2>
+  <p class="sub2">Share the folder or the zip with attendees before the session so they can follow along.</p>
+  <div class="files" id="files"></div>
+  <p style="margin-top:14px"><a class="btn primary" href="M365-quick-wins-files.zip" download>⬇ All sample files (.zip)</a></p>
+
+  <h2>The quick wins</h2>
+  <p class="sub2">Copy a prompt, paste it into Copilot Chat, and upload the file shown. Answers vary each time, which is itself a point to make (Topic 3).</p>
+  <div class="filter" id="filter"></div>
+  <div class="wins" id="wins"></div>
+
+  <div class="pbar"><button class="btn" id="pExit">✕ Exit</button><button class="btn" id="pPrev">←</button><span class="ttl" id="pTtl"></span><button class="btn" id="pNext">→</button></div>
+</div>
+
+<script>
+const F = {
+  wb:  { f: "1-whiteboard-photo.png", i: "🖼️", t: "Whiteboard photo", s: "Claims backlog workshop" },
+  err: { f: "2-error-screenshot.png", i: "⚠️", t: "Error screenshot", s: "Claims portal: policy locked" },
+  p25: { f: "3a-motor-policy-2025.pdf", i: "📄", t: "Motor policy 2025", s: "Policy wording, old version" },
+  p26: { f: "3b-motor-policy-2026.pdf", i: "📄", t: "Motor policy 2026", s: "Policy wording, new version" },
+  let: { f: "4-customer-complaint-letter.pdf", i: "✉️", t: "Complaint letter", s: "Meera Nair, claim CLM-20931" },
+  mtg: { f: "5-meeting-notes.txt", i: "📝", t: "Meeting notes", s: "Messy notes from a weekly call" },
+  csv: { f: "6-claims-2026.csv", i: "📊", t: "Claims data", s: "120 claims, 2026 (CSV)" },
+};
+// g: group for the filter; c: colour; topic: link back to the course
+const WINS = [
+  { g: "See", c: "--c1", t: "Whiteboard photo → action list", min: 3, topic: "Topic 8 · Context", files: ["wb"], img: "wb",
+    what: "Copilot reads a photo of handwriting and turns it into a clean, structured list.",
+    steps: ["Upload the whiteboard photo.", "Paste the prompt."],
+    p: [["Prompt", "This is a photo of our workshop whiteboard. Turn it into: 1) a three-line summary, 2) a table of actions with owner and due date, 3) open questions. Mark anything you could not read clearly."],
+        ["Follow-up", "Write a short Teams message to the team with the actions, friendly tone."]],
+    point: "Images are context too. Note that it flags missing due dates instead of inventing them, if it does. If it invents one, that is a hallucination to discuss." },
+  { g: "See", c: "--c1", t: "Explain an error screenshot", min: 3, topic: "Topic 8 · Context", files: ["err"], img: "err",
+    what: "Paste a screenshot, get a plain-English explanation and next steps.",
+    steps: ["Upload the error screenshot.", "Paste the prompt."],
+    p: [["Prompt", "I got this error in our claims portal. Explain in plain English what happened, what I can do now, and what to send the IT service desk. Keep it to 5 bullets."],
+        ["Follow-up", "Draft the service desk ticket for me, including the request ID."]],
+    point: "It reads the request ID and policy number from the image. It can explain the error, but it cannot unlock the policy: it has no tools connected to our systems (Topics 12 and 14)." },
+  { g: "Documents", c: "--c3", t: "Spot the changes between two versions", min: 4, topic: "Topic 9 · RAG", files: ["p25", "p26"],
+    what: "Upload two versions of a policy; Copilot lists every change.",
+    steps: ["Upload both policy PDFs in the same message.", "Paste the prompt.", "Check one or two rows against the PDFs."],
+    p: [["Prompt", "Compare these two versions of our motor policy. Make a table: section, 2025 wording, 2026 wording, what it means for customers. Then list the three changes most likely to cause complaints."]],
+    point: "Eight sections changed: who is covered (age 18), excess, windscreen, courtesy car, reporting time, young driver surcharge, ride-share exclusion and cancellation days. Did it find all eight? Always check." },
+  { g: "Documents", c: "--c3", t: "Answer from the document, with a citation", min: 4, topic: "Topics 9–11 · RAG", files: ["p26", "let"],
+    what: "Ground the answer in the policy, then try a question the document cannot answer.",
+    steps: ["Upload the 2026 policy and the complaint letter.", "Ask the first prompt, then the second."],
+    p: [["Prompt", "Based only on the 2026 policy, is the customer in this letter entitled to a courtesy car? Quote the clause."],
+        ["Trap", "According to the policy, what is the excess for a home insurance claim?"]],
+    point: "The first answer should quote section 5. The second is not in the document (it is a motor policy). A good answer says so; a bad one guesses. That is why grounding and citations matter." },
+  { g: "Documents", c: "--c3", t: "Translate, then check it", min: 3, topic: "Topic 18 · Trust", files: ["let"],
+    what: "Translate a customer letter and back-translate it to check meaning.",
+    steps: ["Upload the complaint letter.", "Translate, then paste the result into a new chat and translate it back."],
+    p: [["Prompt", "Translate this letter into Malayalam, keeping the tone polite and formal."],
+        ["Check (new chat)", "Translate this into English."]],
+    point: "Back-translation is a quick self-check. Use any language your audience speaks (Hindi, Tamil, Marathi…). A new chat matters: the old one would just remember the original (Topic 5)." },
+  { g: "Write", c: "--c2", t: "Draft the reply to the complaint", min: 5, topic: "Topics 7–8 · Prompts", files: ["let", "p26"],
+    what: "The same task with a weak prompt and a structured one.",
+    steps: ["Upload the letter and the 2026 policy.", "Run the weak prompt, then the structured one, and compare."],
+    p: [["Weak", "Reply to this letter."],
+        ["Structured", "Goal: reply to this complaint on behalf of HarborShield Claims.\nContext: the claim has been delayed four weeks; the 2026 policy is attached.\nExpectations: apologise once, confirm a surveyor visit within 3 working days, confirm courtesy car entitlement with the clause, give a named contact (Priya Rao, claims lead), under 200 words, warm but professional.\nSource: only the attached documents."]],
+    point: "Goal, context, expectations, source. The structured version is specific, correct and on-policy. Save it to the Prompt Gallery for the team." },
+  { g: "Write", c: "--c2", t: "Messy notes → a shared page", min: 4, topic: "Topic 8 · Context", files: ["mtg"],
+    what: "Turn rough notes into minutes, then into a Copilot Page the team can edit.",
+    steps: ["Upload the meeting notes (or paste the text).", "Paste the prompt.", "Choose Edit in Pages (or the Pages icon) under the answer."],
+    p: [["Prompt", "Turn these notes into tidy minutes: decisions, actions (owner, due date), risks, and open questions. Flag anything that needs a decision from management."]],
+    point: "Pages turns an answer into a living document others can edit and add to. Note that it picks up the data rule: no customer PII in Copilot yet." },
+  { g: "Analyse", c: "--c4", t: "Chart claims data in seconds", min: 4, topic: "Topic 12 · Tools", files: ["csv"],
+    what: "Upload a CSV; Copilot writes and runs code to analyse and chart it.",
+    steps: ["Upload the claims CSV.", "Paste the prompt.", "Expand the code it ran, if shown."],
+    p: [["Prompt", "Analyse this claims data. Show a chart of claims by month and product, list the 5 oldest open claims, and the average days open by city. Then give me three insights in plain English."],
+        ["Follow-up", "Which open motor claims are over ₹50,000 and older than 30 days?"]],
+    point: "The model does not do the maths itself: it writes code and a tool runs it. Model decides, tool does (Topic 12)." },
+  { g: "Create", c: "--c5", t: "Draft the course MCQ evaluation", min: 3, topic: "Course · Evaluation", files: [],
+    what: "Generate multiple-choice questions with answers and explanations.",
+    steps: ["Paste the prompt.", "Ask for a harder version, or a different topic."],
+    p: [["Prompt", "Write 10 multiple-choice questions to check a non-technical team's understanding of RAG (retrieval-augmented generation). Four options each, one correct. Give the answer and a one-line explanation after each. Mix easy and hard."],
+        ["Follow-up", "Format them as a table I can paste into Microsoft Forms."]],
+    point: "Great first drafts, but a person must check every answer. Models can be confidently wrong (Topic 18)." },
+  { g: "Create", c: "--c5", t: "An image for a poster or slide", min: 2, topic: "Topic 12 · Tools", files: [],
+    what: "Create an image from a one-line description.",
+    steps: ["Paste the prompt.", "Ask for a change: colours, style, layout."],
+    p: [["Prompt", "Create an image for a poster: a friendly flat illustration of a team at a whiteboard, sorting colourful sticky notes labelled with AI words. Yellow and dark grey colours, lots of empty space at the top for a title."]],
+    point: "Image creation is another tool the chat calls. Text inside generated images is often misspelt, so add titles yourself." },
+  { g: "Practise", c: "--c6", t: "Role-play a sceptical customer", min: 5, topic: "Topic 7 · Prompts", files: [],
+    what: "Copilot plays a difficult customer; a volunteer practises the conversation.",
+    steps: ["Paste the prompt.", "A volunteer types the replies. After 4–5 turns, ask for feedback."],
+    p: [["Prompt", "Role-play: you are Meera Nair, a frustrated HarborShield motor customer whose claim has been delayed four weeks with no surveyor visit. I am the claims handler. Stay in character, push back if my answers are vague, and only calm down if I give specific commitments. Start the conversation."],
+        ["Feedback", "Step out of character. Score my handling out of 10 and give three specific tips."]],
+    point: "A role is part of the prompt (Topic 7). The same trick works for interview practice, negotiation, or testing a presentation." },
+  { g: "Practise", c: "--c6", t: "Build a mini agent in five minutes", min: 5, topic: "Topics 16–17 · Harness", files: ["p26"],
+    what: "Create an agent with instructions, knowledge and starter prompts, then change it.",
+    steps: ["In Copilot Chat choose Create agent (or New agent).", "Name: Motor Policy Helper. Paste the instructions. Add the 2026 policy as knowledge.", "Add starter prompts: “Is windscreen covered?”, “How long do I have to report a claim?”", "Test it, then add “Always answer in a table” and test again."],
+    p: [["Instructions", "You help HarborShield staff answer questions about the 2026 motor policy. Answer only from the attached policy and quote the section number. If the answer is not in the policy, say so and suggest contacting the underwriting team. Be brief and use plain English."]],
+    point: "Instructions + knowledge + starter prompts is customising the harness (Topic 17). Change one line and the behaviour changes. If Create agent is not available in your tenant, show this as a demo." },
+];
+const $ = (s) => document.querySelector(s);
+$("#files").innerHTML = Object.values(F).map((x) => `<a class="file" href="samples/${x.f}" target="_blank"><span class="i">${x.i}</span><span><b>${x.t}</b><small>${x.s} · ${x.f.split(".").pop().toUpperCase()}</small></span></a>`).join("");
+const esc = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;");
+$("#wins").innerHTML = WINS.map((w, i) => `<article class="win${w.img ? "" : " noimg"}" data-g="${w.g}" style="--c:var(${w.c})">
+  <div><div class="hd"><span class="no">QUICK WIN ${i + 1}</span><h3>${w.t}</h3></div>
+  <div class="tags"><span class="tag">${w.g}</span><span class="tag plain">⏱ ${w.min} min</span><span class="tag plain">🎓 ${w.topic}</span>${w.files.map((k) => `<a class="tag plain" href="samples/${F[k].f}" target="_blank" style="text-decoration:none">${F[k].i} ${F[k].f}</a>`).join("")}</div>
+  <p class="what">${w.what}</p>
+  <ol class="steps">${w.steps.map((s) => `<li>${s}</li>`).join("")}</ol>
+  ${w.p.map(([l, t]) => `<div class="prompt"><span class="lbl">${l}</span>${esc(t)}<button class="btn cp">⧉ Copy</button></div>`).join("")}
+  <div class="point"><b>Point to make:</b> ${w.point}</div></div>
+  ${w.img ? `<div class="side"><a href="samples/${F[w.img].f}" target="_blank"><img src="samples/${F[w.img].f}" alt="${F[w.img].t}"></a></div>` : ""}
+</article>`).join("");
+
+// copy buttons (clipboard API, with a fallback for file://)
+document.addEventListener("click", async (e) => {
+  const b = e.target.closest(".cp"); if (!b) return;
+  const text = b.parentElement.childNodes[1].textContent;
+  try { await navigator.clipboard.writeText(text); }
+  catch { const ta = document.createElement("textarea"); ta.value = text; document.body.appendChild(ta); ta.select(); document.execCommand("copy"); ta.remove(); }
+  b.textContent = "✓ Copied"; b.classList.add("done"); setTimeout(() => { b.textContent = "⧉ Copy"; b.classList.remove("done"); }, 1500);
+});
+
+// filter by group
+const groups = ["All", ...new Set(WINS.map((w) => w.g))];
+$("#filter").innerHTML = groups.map((g, i) => `<button class="btn${i ? "" : " on"}" data-g="${g}">${g}</button>`).join("");
+$("#filter").onclick = (e) => { const b = e.target.closest("button"); if (!b) return;
+  document.querySelectorAll("#filter .btn").forEach((x) => x.classList.toggle("on", x === b));
+  document.querySelectorAll(".win").forEach((w) => (w.style.display = b.dataset.g === "All" || w.dataset.g === b.dataset.g ? "" : "none")); };
+
+// present mode
+const cards = [...document.querySelectorAll(".win")]; let cur = 0;
+const show = (n) => { cur = Math.max(0, Math.min(cards.length - 1, n)); cards.forEach((c, i) => c.classList.toggle("cur", i === cur));
+  $("#pTtl").textContent = `Quick win ${cur + 1} of ${cards.length} · ${WINS[cur].t}`; scrollTo(0, 0); };
+const present = (on) => { document.body.classList.toggle("present", on); if (on) { document.querySelectorAll(".win").forEach((w) => (w.style.display = "")); show(cur); } };
+$("#presentBtn").onclick = () => present(true); $("#pExit").onclick = () => present(false);
+$("#pPrev").onclick = () => show(cur - 1); $("#pNext").onclick = () => show(cur + 1);
+const theme = () => { const r = document.documentElement, t = r.dataset.theme === "light" ? "dark" : "light"; r.dataset.theme = t; localStorage.setItem("aitrain-theme", t); };
+$("#themeBtn").onclick = theme;
+document.addEventListener("keydown", (e) => {
+  if (e.metaKey || e.ctrlKey || e.altKey) return;
+  const p = document.body.classList.contains("present");
+  if (e.key === "t" || e.key === "T") theme();
+  else if (e.key === "p" || e.key === "P") present(!p);
+  else if (p && (e.key === "ArrowRight" || e.key === "PageDown")) { e.preventDefault(); show(cur + 1); }
+  else if (p && (e.key === "ArrowLeft" || e.key === "PageUp")) { e.preventDefault(); show(cur - 1); }
+  else if (p && e.key === "Escape") present(false);
+});
+</script>
+</body>
+</html>
