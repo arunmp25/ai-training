@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Topic 6 · Anatomy of a prompt</title>
+<link rel="stylesheet" href="../assets/style.css?v=7.0">
+<link rel="stylesheet" href="../assets/widgets.css?v=7.0">
+<link rel="stylesheet" href="../assets/story.css?v=7.0">
+<style>
+  .issues { margin-top: 10px; font-size: 13px; }
+  .issues div { padding: 4px 0; }
+  .dissect { font-size: 16px; line-height: 1.9; background: var(--card); border: 1px solid var(--line); border-radius: 6px; padding: 20px 22px; }
+  .dissect span { --c: var(--accent); background: color-mix(in srgb, var(--c) 18%, transparent); border-bottom: 2px solid var(--c); border-radius: 4px; padding: 1px 3px; transition: opacity .2s, background .2s; }
+  .dissect.dim span { opacity: .45; }
+  .dissect.lib { font-size: 15px; line-height: 1.5; padding: 14px 18px; }
+  .dissect.lib span { display: table; margin: 0 0 7px; }
+  .dissect.dim span.lit { opacity: 1; background: color-mix(in srgb, var(--c) 35%, transparent); }
+  .legend .chip { cursor: pointer; }
+  .sysuser { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .layer-box { --c: var(--accent); border: 2px solid var(--c); border-radius: 6px; padding: 14px 16px; background: color-mix(in srgb, var(--c) 8%, var(--card)); }
+  .layer-box h4 { margin: 0 0 6px; color: var(--c); }
+
+  /* v7: XML tags */
+  .xg { display: grid; grid-template-columns: 1.15fr 1fr; gap: 22px; align-items: start; }
+  .xprompt { background: var(--card); border: 1px solid var(--line); border-radius: 6px; padding: 12px 14px; display: grid; gap: 7px; font-size: 15px; line-height: 1.45; }
+  .xp { --c: var(--line); border: 2px solid transparent; border-radius: 6px; padding: 6px 10px; transition: all .4s; }
+  .xp i { display: none; font-style: normal; font-family: Menlo, Consolas, monospace; font-size: 13.5px; font-weight: 700; color: var(--c); }
+  .xp i.xo { margin-right: 6px; } .xp i.xc { margin-left: 6px; }
+  .xp.on { border-color: var(--c); background: color-mix(in srgb, var(--c) 10%, transparent); }
+  .xp.on i { display: inline; animation: xin .4s ease; }
+  .xout { display: none; font-family: Menlo, Consolas, monospace; font-size: 13.5px; }
+  .xout b { font-family: var(--font); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--c); }
+  .xout.on { display: block; animation: xin .4s ease; }
+  .xrules { margin: 0; padding-left: 22px; display: grid; gap: 10px; font-size: 15.5px; }
+  .xrules li { opacity: 0; transform: translateX(14px); transition: all .4s; }
+  .xrules li.on { opacity: 1; transform: none; }
+  @keyframes xin { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
+  /* v7: full prompt walkthrough */
+  .fp { display: grid; grid-template-columns: 1.25fr 1fr; gap: 20px; align-items: start; }
+  .fp-code { margin: 0; font-size: 12.5px; line-height: 1.45; max-height: 470px; overflow: auto; white-space: pre-wrap; scroll-behavior: smooth; }
+  .fp-code .blk + .blk { margin-top: 6px; }
+  .fp-code .blk { display: block; border-left: 3px solid transparent; padding-left: 8px; opacity: .55; transition: all .35s; }
+  .fp-code .blk.on { opacity: 1; border-left-color: var(--c); background: color-mix(in srgb, var(--c) 12%, transparent); }
+  .fp-code .blk .tg { color: var(--c) !important; font-weight: 700; }
+  .fp-card { --c: var(--accent); border: 2px solid var(--c); border-radius: 6px; padding: 16px 18px; background: color-mix(in srgb, var(--c) 8%, var(--card)); margin-bottom: 12px; min-height: 180px; animation: xin .35s ease; }
+  .fp-card h4 { margin: 0 0 6px; color: var(--c); font-size: 18px; } .fp-card p { margin: 0 0 8px; font-size: 15px; }
+  .fp-card pre { margin: 8px 0 0; font-size: 12.5px; white-space: pre-wrap; }
+  .fp-dots { display: flex; gap: 6px; margin-top: 10px; } .fp-dots span { width: 10px; height: 10px; border-radius: 50%; background: var(--line); } .fp-dots span.on { background: var(--brand); }
+  #patterns .ci-card { padding: 10px 14px; } #patterns .ci-card .ico { font-size: 22px; }
+  #patterns .ci-detail pre { margin: 6px 0 0; font-size: 13px; }
+  /* v7: library */
+  .lib2 { display: grid; grid-template-columns: 1fr 1.6fr; gap: 16px; align-items: start; }
+  .lib2 .weak { border-left: 4px solid var(--bad); background: color-mix(in srgb, var(--bad) 8%, var(--card)); border-radius: 6px; padding: 14px 16px; font-size: 16px; }
+  .lib2 .weak b, .lib2 .strongl { display: block; font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
+  /* v7: best practices */
+  .bp { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 22px; }
+  .bpi { display: grid; grid-template-columns: 38px 1fr; gap: 10px; align-items: start; padding: 9px 12px; border-radius: 6px; background: var(--card); border: 1px solid var(--line);
+    opacity: 0; transform: translateY(10px); transition: all .45s; }
+  .bpi.on { opacity: 1; transform: none; } .bpi.cur { box-shadow: 0 0 0 2px var(--brand); }
+  .bpi .n { width: 32px; height: 32px; border-radius: 50%; background: var(--brand); color: var(--on-brand); font-weight: 800; display: grid; place-items: center; }
+  .bpi b { display: block; font-size: 16px; } .bpi small { color: var(--muted); font-size: 13.5px; line-height: 1.35; display: block; }
+
+</style>
+</head>
+<body class="deck" data-id="05">
+
+<section class="slide title-slide" data-title="Welcome">
+  <div class="big-emoji">🧬</div>
+  <div class="eyebrow">Session 1 · Topic 6</div>
+  <h1>Anatomy of a prompt</h1>
+  <p class="sub">A great prompt isn’t magic words. It’s a handful of <b>components</b>, each removing one thing the model would otherwise have to guess.</p>
+  <aside class="notes"><span class="tag time">⏱ 30 sec</span><p class="say"><b>🎤 Say</b> A great prompt is not magic words. It is a handful of parts, and each part removes one thing the model would otherwise have to guess.</p><ul><li>Link back: the model predicts the most plausible continuation (Topic 3), and each component makes the <i>right</i> continuation the most plausible one.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="The components">
+  <div class="eyebrow">The parts</div>
+  <h2>Seven components of a strong prompt</h2>
+  <p class="sub">You rarely need all seven. Click each to see what it does and an example.</p>
+  <div id="parts"></div>
+  <aside class="notes"><span class="tag time">⏱ 3 min</span><p class="say"><b>🎤 Say</b> Seven parts: role, task, context, examples, format, constraints and tone. You rarely need all seven. Task and context matter most, and examples are the most under-used.</p><ul><li>Memory hook: <b>R-T-C-E-F-C-T</b>, or just think “what would a new colleague ask me before starting?”</li><li>Task and Context matter most. Examples are the most under-used.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="Build a prompt">
+  <div class="eyebrow">Build it live</div>
+  <h2>Switch components on and watch the answer change</h2>
+  <p class="sub">Scenario: replying to an upset customer who was charged twice. Start with only the task, then add parts one by one.</p>
+  <div id="pb"></div>
+  <aside class="notes"><span class="tag time">⏱ 4 min</span><p class="say"><b>🎤 Say</b> Start with only the task and the reply to the upset customer is generic and even offers a discount we never approved. Add each part and watch it improve.</p>
+    <ul><li>Start with only Task ticked: the reply is generic, blames the bank and offers an unapproved discount.</li>
+    <li>Add Context: now it knows the real cause and the refund. Add Constraints: the discount and the blame disappear. Add Format: the placeholder disappears and the length is right.</li>
+    <li>Point to the ⚠ issue list as it shrinks.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="Dissect a great prompt">
+  <div class="eyebrow">Dissection</div>
+  <h2>A real prompt, colour-coded</h2>
+  <p class="sub">Hover or click a component to highlight it.</p>
+  <div class="row legend" id="legend" style="margin-bottom:12px"></div>
+  <div class="dissect" id="dissect">
+    <span data-k="role" style="--c:var(--c-context)">You are an experienced executive assistant.</span>
+    <span data-k="task" style="--c:var(--c-model)">Summarise the meeting transcript below for the leadership team.</span>
+    <span data-k="ctx" style="--c:var(--c-knowledge)">They missed the meeting and need to decide on Friday whether to approve the Q1 hiring plan. They care most about cost and timing.</span>
+    <span data-k="fmt" style="--c:var(--c-action)">Format: a 2-sentence summary, then “Decisions”, “Open questions” and “Action items (owner, date)” as bullet lists. Max 200 words.</span>
+    <span data-k="con" style="--c:var(--c-trust)">Only use information from the transcript. If something is unclear, list it under open questions rather than guessing.</span>
+    <span data-k="tone" style="--c:var(--c-autonomy)">Tone: neutral and concise. No filler.</span>
+    <span data-k="ex" style="--c:var(--warn)">Example action item: “Finance to send revised budget (Ravi, 14 Nov)”.</span>
+    <span data-k="ctx" style="--c:var(--c-knowledge)">&lt;transcript&gt; … &lt;/transcript&gt;</span>
+  </div>
+  <aside class="notes"><span class="tag time">⏱ 2 min</span><p class="say"><b>🎤 Say</b> Here is a real prompt with each part colour-coded. Notice the line “if unclear, say so, don’t guess”: that one line reduces made-up answers.</p><ul><li>Point out the constraint “if unclear, list it, don’t guess”, which directly fights hallucination.</li><li>The transcript sits inside tags: data clearly separated from instructions (more on the next slide but one).</li></ul></aside>
+</section>
+
+<section class="slide" data-title="System vs user prompt">
+  <div style="position:absolute;right:clamp(24px,5vw,72px);top:40px"><button class="btn bts-btn" data-bts="sysuser">🎬 Behind the scenes</button></div>
+  <div class="eyebrow">Two kinds of prompt</div>
+  <h2>System prompt vs user prompt</h2>
+  <p class="sub">Apps split the prompt in two: standing instructions set once, and the message for this turn.</p>
+  <div class="sysuser">
+    <div class="layer-box" style="--c:var(--c-context)"><h4>⚙️ System prompt</h4>
+      <p style="margin:0 0 8px">Set by whoever builds the app. Sent with <b>every</b> request. Defines role, rules, tone, what it may and may not do.</p>
+      <pre class="code">You are the HR assistant for Acme.
+Answer only questions about HR policy.
+Always cite the policy section.
+Never give legal advice; refer to HR.</pre></div>
+    <div class="layer-box" style="--c:var(--accent)"><h4>✉️ User prompt</h4>
+      <p style="margin:0 0 8px">What you type each turn. Changes every time.</p>
+      <pre class="code">How many days of parental leave do I get
+if I joined 8 months ago?</pre></div>
+  </div>
+  <div class="callout" style="margin-top:16px">💡 Where you meet “system prompts” as a user: <b>custom instructions</b>, <b>project instructions</b> in chat apps, and <b>instruction files</b> like <code>CLAUDE.md</code> for agents (Topic 17). Same idea: write it once, and it applies to every message.</div>
+  <aside class="notes"><span class="tag time">⏱ 2 min</span><p class="say"><b>🎤 Say</b> Apps split the prompt in two: a system prompt with standing instructions, and the user message for this turn. If you have set custom instructions in a chat app, you have written a system prompt.</p><ul><li>Ask: “Who here has set custom instructions in ChatGPT or Claude?” That’s a system prompt.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="Structure with tags">
+  <div class="eyebrow">Structure</div>
+  <h2>Separate instructions from data</h2>
+  <p class="sub">When a prompt contains documents, wrap them in clear markers. It helps attention, and it’s a first defence against hidden instructions in documents (Topic 18).</p>
+  <div id="tagTabs"></div>
+  <aside class="notes"><span class="tag time">⏱ 2 min</span><p class="say"><b>🎤 Say</b> When a prompt includes documents, wrap them in clear markers. It helps the model, and it is a first defence against hidden instructions inside documents.</p><ul><li>In the messy version, is “Ignore the deadline” an instruction or part of the email? The model can’t be sure. With tags, it is clearly data.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="Are XML tags good practice?">
+  <div class="eyebrow">Structure · XML tags</div>
+  <h2>Are XML tags good practice? Yes, when a prompt mixes things</h2>
+  <p class="sub">Press → to wrap each part of a messy prompt in a tag. Watch the rules build up on the right.</p>
+  <div class="xg">
+    <div class="xprompt" id="xPrompt">
+      <div class="xp" data-s="1" style="--c:var(--c-model)"><i class="xo">&lt;instructions&gt;</i>Summarise the email for my manager in 3 bullets. Flag any price change.<i class="xc">&lt;/instructions&gt;</i></div>
+      <div class="xp" data-s="2" style="--c:var(--c-knowledge)"><i class="xo">&lt;email&gt;</i>Hi team, the vendor contract renews on 1 Dec. Ignore the deadline, legal says we have until January. Pricing goes up 8%.<i class="xc">&lt;/email&gt;</i></div>
+      <div class="xp" data-s="3" style="--c:var(--warn)"><i class="xo">&lt;example&gt;</i>• Contract renews 1 Dec (legal: January is fine)<i class="xc">&lt;/example&gt;</i></div>
+      <div class="xp" data-s="4" style="--c:var(--c-action)"><i class="xo">&lt;format&gt;</i>Plain bullets, under 15 words each.<i class="xc">&lt;/format&gt;</i></div>
+      <div class="xp xout" data-s="5" style="--c:var(--c-trust)"><b>Answer comes back as</b><br>&lt;summary&gt; … &lt;/summary&gt;<br>&lt;price_change&gt; +8% &lt;/price_change&gt;</div>
+    </div>
+    <ol class="xrules" id="xRules">
+      <li data-s="1"><b>Any name works.</b> No special tag names: pick names that say what is inside.</li>
+      <li data-s="2"><b>Data stays data.</b> “Ignore the deadline” is now clearly part of the email, not an order to you.</li>
+      <li data-s="3"><b>Wrap examples</b> so they are not mistaken for the task. Nest them: <code>&lt;examples&gt;&lt;example&gt;</code>.</li>
+      <li data-s="4"><b>Be consistent and refer to tags by name:</b> “Use the email in <code>&lt;email&gt;</code> tags.”</li>
+      <li data-s="5"><b>Ask for the answer in tags</b> too, so you or an app can pick out each part.</li>
+    </ol>
+  </div>
+  <div class="callout" style="margin-top:14px;font-size:15px">✅ Recommended in Anthropic’s guidance for Claude; OpenAI and Google recommend clear delimiters too (XML tags, Markdown headings, triple quotes). Not needed for a one-line question. Works in Copilot Chat as well.</div>
+  <aside class="notes"><span class="tag time">⏱ 3 min</span><p class="say"><b>🎤 Say</b> Yes, XML tags are good practice whenever a prompt mixes instructions with material: emails, documents, data or examples. There are no magic tag names; what matters is that each part is clearly labelled, and that you refer to the tags by name.</p><ul><li>Press → five times: each press wraps one part and adds one rule.</li><li>Step 5 is the useful trick for apps: ask for the answer in tags, and code can pick out <code>&lt;price_change&gt;</code> without guessing.</li><li>For a one-line question, tags add nothing. Use them when there is something to separate.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="A full prompt with tags">
+  <div class="eyebrow">Worked example · XML tags</div>
+  <h2>A claims triage prompt, built with tags</h2>
+  <p class="sub">Press → to step through each block, then see the answer come back in tags.</p>
+  <div class="fp">
+    <pre class="code fp-code" id="fpCode"></pre>
+    <div class="fp-side"><div class="fp-card" id="fpCard"></div>
+      <button class="btn bts-btn" data-bts="triage">🎬 Behind the scenes</button></div>
+  </div>
+  <aside class="notes"><span class="tag time">⏱ 3 min</span><p class="say"><b>🎤 Say</b> Here is a real-shaped prompt for triaging a motor claim. Each block has one job: the role, the instructions, the policy, the claim, examples and the format we want back. Because the answer comes back in tags, an app can read the decision without guessing.</p><ul><li>Press → for each block. The last step shows the answer: REFER_TO_HANDLER, because “an app job” suggests paid ride-sharing, excluded under section 8.</li><li>Point out <code>&lt;missing&gt;</code>: we gave the model a way to say what it does not know.</li><li>Open 🎬 Behind the scenes: the role and instructions go in the system prompt, the material in the user message.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="Makeovers">
+  <div class="eyebrow">Before → after</div>
+  <h2>Prompt makeovers</h2>
+  <p class="sub">Six weak prompts. Think how you’d fix each one, then flip.</p>
+  <div id="makeovers"></div>
+  <aside class="notes"><span class="tag time">⏱ 2 min</span><p class="say"><b>🎤 Say</b> Prompt makeovers: read the weak version, decide how you would fix it, then flip.</p></aside>
+</section>
+
+<section class="slide" data-title="Prompt library">
+  <div class="eyebrow">More examples</div>
+  <h2>Prompt library: eight everyday tasks</h2>
+  <p class="sub">Each tab shows a weak prompt and a strong one. Hover a component to highlight it.</p>
+  <div class="row legend" id="legend3" style="margin-bottom:10px"></div>
+  <div id="libTabs2"></div>
+  <aside class="notes"><span class="tag time">⏱ 4 min</span><p class="say"><b>🎤 Say</b> Here are eight everyday tasks, each with a weak prompt and a strong one. Notice that the strong prompts are not clever: they just answer the questions the model would otherwise guess, such as who it is for, what shape the answer should take and what to avoid.</p><ul><li>Ask the room which task they do most, and open that tab first.</li><li>Hover the legend: most strong prompts use task, context, format and one constraint. Role and examples appear when they help.</li><li>These work as they are in Copilot Chat. Encourage people to save their favourites in the Prompt Gallery.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="Prompt patterns">
+  <div class="eyebrow">Patterns</div>
+  <h2>Eight prompt patterns worth knowing</h2>
+  <p class="sub">Short phrases that reliably improve answers. Click each one for an example.</p>
+  <div id="patterns"></div>
+  <aside class="notes"><span class="tag time">⏱ 3 min</span><p class="say"><b>🎤 Say</b> These are patterns, not magic words: each one fixes a specific problem. Examples fix style, asking it to think fixes hard reasoning, giving it an out fixes made-up answers, and chaining fixes tasks that are too big for one prompt.</p><ul><li>“Ask me first” is the favourite for non-technical users: it turns a vague request into an interview.</li><li>Reasoning models already think before answering; “think first” still helps on other models and makes the reasoning visible.</li><li>“Quote first” is the long-document trick: find the evidence, then answer from it.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="Prompts for your role">
+  <div class="eyebrow">Worked examples</div>
+  <h2>Three prompts from a Guidewire project</h2>
+  <p class="sub">The same components, used by a business analyst, a developer and a tester for one change: a young-driver surcharge. Hover a component.</p>
+  <div class="row legend" id="legend2" style="margin-bottom:10px"></div>
+  <div id="libTabs"></div>
+  <aside class="notes"><span class="tag time">⏱ 3 min</span><p class="say"><b>🎤 Say</b> Here is one change, a young-driver surcharge, seen by three roles. Each prompt uses the same building blocks: role, task, context, format and constraints. The constraint lines, such as “don’t invent fields” and “say if you’re unsure”, are what stop made-up answers.</p><ul><li>Ask people to pick the tab closest to their own job and say what they would add.</li><li>All three keep the data (requirement, diff, rule) in tags at the end, as on the previous slides.</li><li>The tester prompt reuses the golden quote: MTR-55120 at ₹18,400, and ₹44,750 with an 18-year-old driver.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="Ten best practices">
+  <div class="eyebrow">Best practices</div>
+  <h2>Ten best practices for prompting</h2>
+  <p class="sub">Press → to add each one.</p>
+  <div class="bp" id="bp"></div>
+  <aside class="notes"><span class="tag time">⏱ 4 min</span><p class="say"><b>🎤 Say</b> If you remember one slide from this topic, make it this one. Treat the model like a bright new colleague who knows nothing about your situation: be clear, explain why, show an example, say what you want back, and test it on a few real cases.</p><ul><li>Press → ten times; pause on 2 (explain why), 7 (long documents first) and 10 (test).</li><li>Number 6: “write in plain paragraphs” works better than “don’t use bullet points”.</li><li>Number 7: with long documents, putting the question at the end usually gives noticeably better answers.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="Myths">
+  <div class="eyebrow">Myths</div>
+  <h2>Four prompting myths</h2>
+  <p class="sub">Flip each card for what actually works.</p>
+  <div id="myths"></div>
+  <aside class="notes"><span class="tag time">⏱ 2 min</span><p class="say"><b>🎤 Say</b> A lot of prompting advice online is folklore from older models. Today’s models follow instructions closely, so clarity beats tricks, and shouting can make them over-apply a rule.</p><ul><li>Ask for a show of hands: who has typed “IMPORTANT” in capitals? Most people have.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="What’s missing?">
+  <div class="eyebrow">Your turn</div>
+  <h2>What’s the biggest thing missing?</h2>
+  <div id="missing"></div>
+  <aside class="notes"><span class="tag time">⏱ 2 min</span><p class="say"><b>🎤 Say</b> For each prompt, what is the biggest thing missing?</p><ul><li>Several answers can be partly right. Go for the <i>biggest</i> gap.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="Did it click?">
+  <div class="eyebrow">Quick check</div>
+  <h2>Did it click?</h2>
+  <div id="quiz6"></div>
+  <aside class="notes"><span class="tag time">⏱ 2 min</span><p class="say"><b>🎤 Say</b> Four quick questions on tags and best practices.</p><ul><li>Use a wrong answer to go back to the best practices slide.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="The next question">
+  <div class="eyebrow">The question everyone asks next</div>
+  <h2>“Can I just paste our 20,000-page underwriting manual into the prompt?”</h2>
+  
+  <div class="big-emoji" style="margin:8px 0 6px">📚</div><div class="callout" style="--c:var(--accent);margin-top:16px;max-width:900px">It’s the obvious next step: if context matters, give it everything. The next topic does the maths on that idea, and then shows what works instead.</div>
+  <aside class="notes"><span class="tag time">⏱ 2 min</span><p class="say"><b>🎤 Say</b> Someone always asks this at the end of the session: can I just paste our 20,000-page underwriting manual into the prompt? Hold that thought: the next topic answers it.</p><ul><li>Leave the question hanging. Topic 7 opens with it.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="Takeaways">
+  <div class="eyebrow">Takeaways</div>
+  <h2>What to remember</h2>
+  <div class="cols-4" style="margin:10px 0 24px">
+    <div class="card"><b>🧩 Components, not magic</b><p>Role, Task, Context, Examples, Format, Constraints, Tone. Each removes a guess.</p></div>
+    <div class="card"><b>⚙️ System vs user</b><p>Standing instructions go in the system prompt or instruction file; the specific ask goes in the message.</p></div>
+    <div class="card"><b>🧱 Structure with tags</b><p>Wrap instructions, documents, examples and format in XML tags. Refer to them by name; ask for the answer in tags.</p></div>
+    <div class="card"><b>✅ Best practices</b><p>Be clear, explain why, show examples, say what you want back, documents first and question last. Then test.</p></div>
+  </div>
+  <div class="row"><a class="btn primary" data-nexttopic>Next →</a></div>
+  <aside class="notes"><span class="tag time">⏱ 30 sec</span><p class="say"><b>🎤 Say</b> That is the engine, the desk and the prompt. Next we take on the 20,000-page question.</p><ul><li>Tease Topic 7: “Can you fit 20,000 pages into one prompt? Let us find out. (Spoiler: no.)”</li></ul></aside>
+</section>
+
+<script src="../assets/course.js?v=7.0"></script>
+<script src="../assets/widgets.js?v=7.0"></script>
+<script>
+const { $, $$ } = W;
+
+W.clickInfo($("#parts"), [
+  { icon: "🎭", title: "Role", c: "context", html: "<p><b>Who</b> should the AI be? Sets expertise, vocabulary and perspective.</p><pre class='code'>You are a senior employment lawyer.</pre><p class='muted'>Why it works: it nudges predictions towards how that kind of expert writes.</p>" },
+  { icon: "🎯", title: "Task", c: "model", html: "<p><b>What</b> exactly should it do? Use a clear action verb.</p><pre class='code'>Summarise… / Rewrite… / Compare… / Draft… / Classify…</pre><p class='muted'>The only truly required component.</p>" },
+  { icon: "🧳", title: "Context", c: "knowledge", html: "<p>Background it can’t know: audience, purpose, situation, data.</p><pre class='code'>The audience is new customers who are not technical.\nThe goal is to reduce support calls.</pre><p class='muted'>The single biggest quality lever.</p>" },
+  { icon: "🖼️", title: "Examples", c: "warn", html: "<p>Show one to three examples of good output (“few-shot”).</p><pre class='code'>Here’s a product description we liked: “…”</pre><p class='muted'>Shows style and level of detail far better than describing them.</p>" },
+  { icon: "📐", title: "Format", c: "action", html: "<p>The shape of the answer: length, structure, sections, table, JSON.</p><pre class='code'>Return a table with columns: Risk, Impact, Owner.\nMax 150 words.</pre>" },
+  { icon: "🚧", title: "Constraints", c: "trust", html: "<p>What to avoid, and the rules to follow.</p><pre class='code'>Don’t mention competitors. Only use the attached data.\nIf you’re unsure, say so.</pre><p class='muted'>“Say if you don’t know” is a powerful anti-hallucination line.</p>" },
+  { icon: "🎨", title: "Tone", c: "autonomy", html: "<p>How it should sound.</p><pre class='code'>Warm and plain-spoken. No jargon. British English.</pre>" },
+  { icon: "🪜", title: "Bonus: think first", c: "muted", html: "<p>For complex problems, ask it to reason before answering.</p><pre class='code'>Think through the options step by step,\nthen give your recommendation.</pre><p class='muted'>It produces text left to right (Topic 3), so letting it “show its work” first often improves the final answer. Many models now do this automatically.</p>" },
+], { cols: 4 });
+
+W.promptBuilder($("#pb"), [
+  { id: "role", label: "🎭 Role", c: "context", text: "You are a senior customer support agent at Acme Cloud." },
+  { id: "task", label: "🎯 Task", c: "model", text: "Write a reply to the customer email below.", on: true },
+  { id: "ctx", label: "🧳 Context", c: "knowledge", text: "Customer: Dana, on our Business plan for 3 years. She was charged twice in October because of a billing bug on our side (now fixed). We are refunding the duplicate charge within 5 business days." },
+  { id: "ex", label: "🖼️ Example", c: "warn", text: "A reply we liked: “Hi Tom, you’re right, and I’m sorry. Here’s what happened and what we’re doing…”" },
+  { id: "fmt", label: "📐 Format", c: "action", text: "Format: greeting, 2–3 short paragraphs, sign off as “Alex, Acme Support”. Under 120 words." },
+  { id: "con", label: "🚧 Constraints", c: "trust", text: "Do not offer discounts or credits. Do not blame the payment provider." },
+  { id: "tone", label: "🎨 Tone", c: "autonomy", text: "Tone: warm, accountable, plain English." },
+], (on) => {
+  const issues = [];
+  const greet = on.has("ctx") ? "Hi Dana," : (issues.push("Generic greeting: it doesn’t know the customer’s name"), "Dear Valued Customer,");
+  let p1 = on.has("tone") || on.has("ex") ? "You’re right, and I’m sorry. Being charged twice is frustrating" + (on.has("ctx") ? ", especially after three years with us." : ".")
+         : on.has("role") ? "Thank you for contacting Acme Cloud Support regarding your billing concern." : "We apologize for any inconvenience you may have experienced.";
+  if (!on.has("tone") && !on.has("ex")) issues.push("Stiff, corporate tone");
+  let p2;
+  if (on.has("ctx")) p2 = "This was caused by a billing bug on our side, which is now fixed. We’re refunding the duplicate October charge, and you’ll see it within 5 business days.";
+  else if (on.has("con")) { p2 = "We are looking into the issue and will update you as soon as possible."; issues.push("No real explanation or resolution: it doesn’t know the facts"); }
+  else { p2 = "This may have been caused by an issue with your bank or payment provider. We are looking into it."; issues.push("Blames the payment provider (wrong, and unapproved)"); issues.push("No real resolution: it doesn’t know the facts"); }
+  let p3 = on.has("con") ? "" : (issues.push("Offers a discount nobody approved"), "As a gesture of goodwill, we’d like to offer you 20% off your next three months!");
+  let extra = on.has("fmt") ? "" : (issues.push("Too long, with filler"), "Please do not hesitate to reach out if you have any further questions or concerns. We truly value your business and look forward to continuing to serve you in the future.");
+  const sign = on.has("fmt") ? "Alex, Acme Support" : (issues.push("Placeholder signature"), "Best regards,<br>[Your Name]");
+  return `<p>${greet}</p><p>${p1} ${p2}</p>${p3 ? `<p>${p3}</p>` : ""}${extra ? `<p>${extra}</p>` : ""}<p>${sign}</p>
+    <div class="issues">${issues.length ? issues.map((i) => `<div style="color:var(--bad)">⚠ ${i}</div>`).join("") : '<div style="color:var(--good)">✅ Ready to send</div>'}</div>`;
+});
+
+/* dissect legend */
+const LEG = [["role", "🎭 Role", "context"], ["task", "🎯 Task", "model"], ["ctx", "🧳 Context", "knowledge"], ["ex", "🖼️ Example", "warn"], ["fmt", "📐 Format", "action"], ["con", "🚧 Constraints", "trust"], ["tone", "🎨 Tone", "autonomy"]];
+$("#legend").innerHTML = LEG.map(([k, l, c]) => `<span class="chip" data-k="${k}" style="--c:${W.cv(c)}">${l}</span>`).join("");
+const dis = $("#dissect");
+const hl = (k) => { dis.classList.toggle("dim", !!k); $$("span", dis).forEach((s) => s.classList.toggle("lit", s.dataset.k === k)); };
+$$("#legend .chip").forEach((c) => { c.onmouseenter = () => hl(c.dataset.k); c.onclick = () => hl(c.dataset.k); });
+$("#legend").onmouseleave = () => hl(null);
+
+/* ---- prompt library (worked examples) ---- */
+const sp = (k, c, t) => `<span data-k="${k}" style="--c:var(--${c})">${t}</span>`;
+const LIB = [
+  { label: "📋 Business analyst", html: `<div class="dissect lib">
+    ${sp("role", "c-context", "You are a senior business analyst on a Guidewire PolicyCenter programme.")}
+    ${sp("task", "c-model", "Turn the requirement below into a user story with acceptance criteria.")}
+    ${sp("ctx", "c-knowledge", "The audience is the Personal Auto scrum team. Underwriting signed off this rule on 14 Nov.")}
+    ${sp("fmt", "c-action", "Format: “As a … I want … so that …”, then 3 to 6 acceptance criteria in Given / When / Then.")}
+    ${sp("con", "c-trust", "Don’t invent fields or screens that aren’t in the requirement. List anything missing as an open question.")}
+    ${sp("ex", "warn", "Example criterion: “Given a driver aged 18, when the quote is rated, then the young-driver surcharge is applied.”")}
+    ${sp("ctx", "c-knowledge", "&lt;requirement&gt; Add a surcharge for drivers under 21 on Personal Auto, from 1 Jan … &lt;/requirement&gt;")}</div>` },
+  { label: "💻 Developer", html: `<div class="dissect lib">
+    ${sp("role", "c-context", "You are a senior Guidewire developer reviewing a pull request.")}
+    ${sp("task", "c-model", "Review the Gosu change below.")}
+    ${sp("ctx", "c-knowledge", "It adds the young-driver surcharge in hs.rating. Our rules: money is MonetaryAmount, labels use display keys, never edit base files.")}
+    ${sp("fmt", "c-action", "Format: a table of findings (severity, file:line, issue, suggested fix), then a one-line verdict.")}
+    ${sp("con", "c-trust", "Only comment on the diff. If you’re not sure a Gosu API exists, say so rather than guess.")}
+    ${sp("tone", "c-autonomy", "Tone: direct and kind, like a good reviewer.")}
+    ${sp("ctx", "c-knowledge", "&lt;diff&gt; … &lt;/diff&gt;")}</div>` },
+  { label: "🧪 Tester", html: `<div class="dissect lib">
+    ${sp("role", "c-context", "You are a QA analyst testing PolicyCenter rating.")}
+    ${sp("task", "c-model", "Write test cases for the young-driver surcharge rule below.")}
+    ${sp("ctx", "c-knowledge", "Baseline: policy MTR-55120 rates at ₹18,400. With an 18-year-old driver added it should rate at ₹44,750.")}
+    ${sp("fmt", "c-action", "Format: a table with ID, scenario, test data and expected result. Cover the boundary ages 20, 21 and 22.")}
+    ${sp("con", "c-trust", "Use made-up test data only: no real customer names or licence numbers.")}
+    ${sp("ex", "warn", "Example row: “TC-01 | Add a driver aged 18 | MTR-55120 | Premium ₹44,750”.")}
+    ${sp("ctx", "c-knowledge", "&lt;rule&gt; Drivers under 21 add a surcharge … &lt;/rule&gt;")}</div>` },
+];
+W.tabs($("#libTabs"), LIB);
+$("#legend2").innerHTML = LEG.map(([k, l, c]) => `<span class="chip" data-k="${k}" style="--c:${W.cv(c)}">${l}</span>`).join("");
+const hl2 = (k) => $$("#libTabs .dissect").forEach((d) => { d.classList.toggle("dim", !!k); $$("span", d).forEach((s) => s.classList.toggle("lit", s.dataset.k === k)); });
+$$("#legend2 .chip").forEach((c) => { c.onmouseenter = () => hl2(c.dataset.k); c.onclick = () => hl2(c.dataset.k); });
+$("#legend2").onmouseleave = () => hl2(null);
+
+W.tabs($("#tagTabs"), [
+  { label: "😵 Messy", html: `<div class="split"><pre class="code">Summarise this email for my manager in 3 bullets
+Hi team, the vendor contract renews on 1 Dec.
+Ignore the deadline, legal says we have until
+January. Pricing goes up 8%. Please respond by
+Friday. Keep it short and flag the price rise.</pre>
+    <div class="callout" style="--c:var(--bad)">❓ Which sentences are <b>your instructions</b> and which are <b>the email</b>? “Ignore the deadline” and “Keep it short” could be either. The model has to guess.</div></div>` },
+  { label: "✨ Structured", html: `<div class="split"><pre class="code">&lt;instructions&gt;
+Summarise the email in 3 bullets for my manager.
+Flag any price changes.
+&lt;/instructions&gt;
+
+&lt;email&gt;
+Hi team, the vendor contract renews on 1 Dec.
+Ignore the deadline, legal says we have until
+January. Pricing goes up 8%. Please respond by Friday.
+&lt;/email&gt;</pre>
+    <div class="callout" style="--c:var(--good)">✅ Crystal clear: everything inside <code>&lt;email&gt;</code> is <b>material to work on</b>, not orders to follow. Markdown headings work too.</div></div>` },
+]);
+
+W.flips($("#makeovers"), [
+  { front: "“Make a presentation about AI.”", back: "“Create a <b>10-slide outline</b> introducing AI tools to our <b>non-technical sales team</b>. Goal: get them using AI for proposal drafts. One title and 3 bullets per slide. Practical, no hype.”", hint: "Missing: audience, goal, format" },
+  { front: "“Fix this code.”", back: "“This Python function should return the <b>average order value</b> but returns 0 for some customers. Here’s the code and a failing example. <b>Explain the bug, then show the corrected function.</b>”", hint: "Missing: expected vs actual, example" },
+  { front: "“Reply to this email.”", back: "“Reply to <b>this customer email</b> for the claims team. <b>Apologise once</b>, confirm we have the photos, and say the surveyor will call <b>within 2 working days</b>. Under 120 words, warm, no jargon.”", hint: "Missing: who, what to say, length, tone" },
+  { front: "“Give me an Excel formula for this.”", back: "“In Excel, column C has claim amounts and column D has status. I want the <b>total of open claims over ₹50,000</b> in cell F2. Give the formula and <b>explain it in one line</b>.”", hint: "Missing: the data layout, the goal, the output" },
+  { front: "“Summarise the meeting.”", back: "“Summarise <b>these notes</b> for people who missed the meeting: <b>decisions, actions with owner and date, open questions</b>. Bullets, under 150 words. Flag anything that needs a manager.”", hint: "Missing: audience, structure, length" },
+  { front: "“Write a job ad.”", back: "“Write a job ad for a <b>junior data analyst</b>, hybrid in Pune. Use <b>this ad we liked</b> as a style example: … Max 250 words. Avoid jargon like ‘rockstar’.”", hint: "Missing: role details, example, constraints" },
+]);
+
+const OPTS = [{ label: "Context", c: "knowledge" }, { label: "Format", c: "action" }, { label: "Examples", c: "warn" }, { label: "Constraints", c: "trust" }];
+W.classify($("#missing"), [
+  { text: "“Write a thank-you note.” (To whom? For what?)", a: 0, why: "It doesn’t know who, why or the relationship. Context is missing." },
+  { text: "“Analyse these survey results.” (Then you need to paste them into a spreadsheet.)", a: 1, why: "Ask for a table or CSV with the columns you need." },
+  { text: "“Write product descriptions in our brand style.” (Nothing shows the style.)", a: 2, why: "Show 1–2 descriptions you like. Describing a style is hard; showing it is easy." },
+  { text: "“Summarise this contract.” (Legal says: never interpret clauses, only summarise them, and flag anything unclear.)", a: 3, why: "Those rules must be stated, or it will interpret freely." },
+], OPTS, { cols: 2 });
+
+
+/* ===== v7: tags, full prompt, library, patterns, best practices, myths, quiz ===== */
+function stepSlide(title, max, go) {
+  let at = 0;
+  const set = (i) => { at = i; go(i); };
+  document.addEventListener("slide:enter", (e) => { if (e.detail.slide.dataset.title === title) set(e.detail.back ? max : 0); });
+  document.addEventListener("slide:advance", (e) => { if (e.detail.slide.dataset.title === title && at < max) { e.preventDefault(); set(at + 1); } });
+  return set;
+}
+stepSlide("Are XML tags good practice?", 5, (i) => {
+  $$("#xPrompt .xp, #xRules li").forEach((el) => el.classList.toggle("on", +el.dataset.s <= i));
+});
+
+const FP = [
+  { k: "role", c: "c-context", h: "🎭 &lt;role&gt;", p: "Who the model is and who it works for. Sets focus and vocabulary.", lines:
+`<role>
+You are a claims triage assistant for HarborShield motor insurance.
+</role>` },
+  { k: "ins", c: "c-model", h: "🎯 &lt;instructions&gt;", p: "The task, the three allowed decisions, and permission to say what is missing. It asks for reasoning in its own tag.", lines:
+`<instructions>
+Decide: FAST_TRACK, STANDARD or REFER_TO_HANDLER.
+Use only the policy below. If information is missing, say so.
+Think through the policy checks in <thinking> tags first.
+</instructions>` },
+  { k: "pol", c: "c-knowledge", h: "📚 &lt;policy&gt;", p: "The material to work from. Only the three clauses that matter: select, don’t dump (Topic 7).", lines:
+`<policy>
+§3 Excess: ₹7,500 per own-damage claim.
+§6 Report within 14 days of the incident.
+§8 Not covered: paid ride-sharing unless declared.
+</policy>` },
+  { k: "clm", c: "c-action", h: "📨 &lt;claim&gt;", p: "The case itself. Inside a tag, a sentence like “dropping a passenger off for an app job” is evidence, not an instruction.", lines:
+`<claim>
+Policy MTR-55120. Rear-end collision on 2 Nov, reported 4 Nov.
+Repair estimate ₹38,000. Driver says he was "dropping a
+passenger off for an app job".
+</claim>` },
+  { k: "ex", c: "warn", h: "🖼️ &lt;examples&gt;", p: "Two short examples show the decision style. Nested tags keep them separate from the real claim.", lines:
+`<examples>
+<example>Windscreen chip, reported next day, ₹3,000 → FAST_TRACK</example>
+<example>Theft reported after 20 days → REFER_TO_HANDLER</example>
+</examples>` },
+  { k: "fmt", c: "c-trust", h: "📐 &lt;output_format&gt;", p: "Exactly what to send back, in tags, so the app can read <code>&lt;decision&gt;</code> directly.", lines:
+`<output_format>
+<decision>…</decision>
+<reason>one sentence citing the section</reason>
+<missing>anything you still need to know</missing>
+</output_format>` },
+];
+const ANS = `<thinking>Reported after 2 days: §6 OK. Estimate is above the excess. "App job" suggests paid ride-sharing: §8 applies unless it was declared.</thinking>
+<decision>REFER_TO_HANDLER</decision>
+<reason>Possible paid ride-sharing use, excluded under §8 unless declared.</reason>
+<missing>Was ride-share use declared on the policy?</missing>`;
+const escH = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;");
+const tagify = (s) => escH(s).replace(/(&lt;\/?[a-z_]+>)/g, '<span class="tg">$1</span>');
+$("#fpCode").innerHTML = FP.map((b, i) => `<span class="blk" data-i="${i}" style="--c:var(--${b.c})">${tagify(b.lines)}</span>`).join("");
+stepSlide("A full prompt with tags", FP.length + 1, (i) => {
+  $$("#fpCode .blk").forEach((el) => el.classList.toggle("on", i === 0 || +el.dataset.i === i - 1 || i > FP.length));
+  const box = $("#fpCode"), blk = $$("#fpCode .blk")[Math.min(Math.max(i - 1, 0), FP.length - 1)];
+  box.scrollTop = i === 0 ? 0 : i > FP.length ? box.scrollHeight : blk.offsetTop - box.offsetTop - 40;
+  const dots = `<div class="fp-dots">${[...Array(FP.length + 2)].map((_, k) => `<span class="${k <= i ? "on" : ""}"></span>`).join("")}</div>`;
+  const card = $("#fpCard");
+  if (i === 0) { card.style.setProperty("--c", "var(--accent)"); card.innerHTML = `<h4>Six blocks, one job each</h4><p>Role, instructions, policy, claim, examples, output format. Press → to look at each one.</p>${dots}`; }
+  else if (i <= FP.length) { const b = FP[i - 1]; card.style.setProperty("--c", `var(--${b.c})`); card.innerHTML = `<h4>${b.h}</h4><p>${b.p}</p>${dots}`; }
+  else { card.style.setProperty("--c", "var(--good)"); card.innerHTML = `<h4>✅ The answer, in tags</h4><pre class="code">${tagify(ANS)}</pre>${dots}`; }
+  card.style.animation = "none"; void card.offsetWidth; card.style.animation = "";
+});
+W.BTS.triage = {
+  title: "The triage prompt as an API request",
+  sub: "Standing instructions go in the system prompt; the material for this claim goes in the user message.",
+  parts: [
+    { label: "Request → model", c: "accent", json: `POST /v1/messages
+{
+  "model": "claude-sonnet-5-5",
+  "max_tokens": 600,
+  // role + instructions: the same for every claim
+  "system": "<role>You are a claims triage assistant for HarborShield motor insurance.</role>\\n<instructions>Decide: FAST_TRACK, STANDARD or REFER_TO_HANDLER. Use only the policy provided. If information is missing, say so. Think through the policy checks in <thinking> tags first.</instructions>",
+  "messages": [
+    { "role": "user",
+      // material for this claim, each part in its own tag
+      "content": "<policy>§3 Excess ₹7,500 … §8 Not covered: paid ride-sharing unless declared.</policy>\\n<claim>Policy MTR-55120. Rear-end collision on 2 Nov …</claim>\\n<examples>…</examples>\\n<output_format>…</output_format>" }
+  ]
+}` },
+    { label: "Response ← model", c: "good", json: `{
+  "role": "assistant",
+  "stop_reason": "end_turn",
+  "content": [{ "type": "text",
+    "text": "<thinking>Reported after 2 days: §6 OK …</thinking>\\n<decision>REFER_TO_HANDLER</decision>\\n<reason>Possible paid ride-sharing use, excluded under §8 unless declared.</reason>\\n<missing>Was ride-share use declared on the policy?</missing>" }]
+}`, note: "Your app reads the text between <decision> and </decision> and routes the claim. No guessing at free text." },
+  ],
+};
+
+const s3 = (k, t) => { const m = { role: "c-context", task: "c-model", ctx: "c-knowledge", ex: "warn", fmt: "c-action", con: "c-trust", tone: "c-autonomy" }; return `<span data-k="${k}" style="--c:var(--${m[k]})">${t}</span>`; };
+const L2 = [
+  ["📄 Summarise", "Summarise this report.", [["role", "You are briefing a busy claims director."], ["task", "Summarise the attached Q3 claims report."], ["ctx", "She cares about cost, backlog and customer complaints."], ["fmt", "5 bullets under 20 words each, most important first, then one line: “Decision needed:”."], ["con", "Use only numbers from the report; mark any estimate."]]],
+  ["🔎 Extract", "Get the details from these emails.", [["task", "Extract every claim mentioned in the emails below."], ["fmt", "Table: claim ID, customer, date of loss, amount, next action. One row per claim."], ["con", "Leave a cell blank if it isn’t stated. Don’t guess."], ["ctx", "&lt;emails&gt; … &lt;/emails&gt;"]]],
+  ["🗂️ Classify", "Sort these complaints.", [["task", "Put each complaint below into one category: Delay, Payment, Staff, Policy wording or Other."], ["ex", "Example: “Nobody called me back for two weeks” → Delay."], ["fmt", "Return: number, category, sentiment (one word)."], ["con", "If two categories fit, choose the main one and add a short note."]]],
+  ["✉️ Email", "Write an email about the outage.", [["role", "Write as the IT service desk lead."], ["task", "Tell all claims staff the portal will be down on Saturday, 6–10 am."], ["ctx", "Drafts are saved automatically; urgent claims go to the phone line."], ["fmt", "A subject line and four short lines."], ["tone", "Calm and clear. No blame."]]],
+  ["📊 Analyse", "Analyse this spreadsheet.", [["task", "Find what drives long claim times in the attached CSV."], ["ctx", "Columns: product, city, amount, days_open. Our target is 10 days."], ["fmt", "Three findings, each with the number behind it, then one chart I should make."], ["con", "Say how confident you are and what extra data would help."]]],
+  ["💡 Brainstorm", "Give me ideas to cut the backlog.", [["task", "Give 10 ideas to cut our motor claims time from 23 to 10 days."], ["ctx", "Main causes: missing photos, surveyors booked by phone, mixed queues."], ["fmt", "Table: idea, effort (low, medium, high), impact, first step."], ["con", "At least three ideas must cost nothing."]]],
+  ["🧐 Critique", "Is this any good?", [["role", "Act as a sceptical CFO."], ["task", "Find the three weakest points in my business case below."], ["fmt", "For each: the problem, why it matters, how to fix it."], ["con", "Be direct. Don’t rewrite it and don’t praise it."]]],
+  ["🎯 Rewrite", "Make this simpler.", [["task", "Rewrite the policy clause below for a customer with no insurance knowledge."], ["fmt", "Under 60 words, plain English, one everyday example."], ["con", "Keep the meaning exactly. Don’t add promises."], ["tone", "Friendly."]]],
+];
+W.tabs($("#libTabs2"), L2.map(([label, weak, strong]) => ({ label, html: `<div class="lib2"><div class="weak"><b>Weak</b>“${weak}”</div>
+  <div><span class="strongl">Strong</span><div class="dissect lib">${strong.map(([k, t]) => s3(k, t)).join("")}</div></div></div>` })));
+$("#legend3").innerHTML = LEG.map(([k, l, c]) => `<span class="chip" data-k="${k}" style="--c:${W.cv(c)}">${l}</span>`).join("");
+const hl3 = (k) => $$("#libTabs2 .dissect").forEach((d) => { d.classList.toggle("dim", !!k); $$("span", d).forEach((s) => s.classList.toggle("lit", s.dataset.k === k)); });
+$$("#legend3 .chip").forEach((c) => { c.onmouseenter = () => hl3(c.dataset.k); c.onclick = () => hl3(c.dataset.k); });
+$("#legend3").onmouseleave = () => hl3(null);
+
+W.clickInfo($("#patterns"), [
+  { icon: "🖼️", title: "Show examples", sub: "fixes style and format", c: "warn", html: "<p>Two to five varied examples of input → output teach style better than any description.</p><pre class='code'>&lt;examples&gt;\n&lt;example&gt;“Nobody called back” → Delay&lt;/example&gt;\n&lt;example&gt;“Charged twice” → Payment&lt;/example&gt;\n&lt;/examples&gt;</pre>" },
+  { icon: "🤔", title: "Think first", sub: "fixes hard reasoning", c: "model", html: "<p>Ask it to reason before answering, and keep the reasoning separate.</p><pre class='code'>Think it through in &lt;thinking&gt; tags,\nthen give the answer in &lt;answer&gt; tags.</pre><p class='muted'>Reasoning models do this on their own; it still helps elsewhere and makes the steps visible.</p>" },
+  { icon: "🎭", title: "Give it a role", sub: "fixes focus and tone", c: "context", html: "<p>A role sets vocabulary and what to pay attention to.</p><pre class='code'>You are a senior underwriter reviewing a\nnew commercial property submission.</pre>" },
+  { icon: "❓", title: "Ask me first", sub: "fixes vague requests", c: "knowledge", html: "<p>Let the model interview you before it starts.</p><pre class='code'>Before you start, ask me up to five\nquestions you need answered to do this well.</pre>" },
+  { icon: "🚪", title: "Give it an out", sub: "fixes made-up answers", c: "trust", html: "<p>Permission to say “I don’t know” cuts hallucinations sharply.</p><pre class='code'>If the answer is not in the policy, say\n“Not in the policy” instead of guessing.</pre>" },
+  { icon: "✅", title: "Check your work", sub: "fixes careless errors", c: "good", html: "<p>A second pass catches mistakes the first pass missed.</p><pre class='code'>Then check each figure against the report\nand correct anything that doesn’t match.</pre>" },
+  { icon: "⛓️", title: "Chain the steps", sub: "fixes tasks that are too big", c: "action", html: "<p>Split a big job into prompts that each do one thing, passing results along.</p><pre class='code'>1. Extract the claims  →  2. Find patterns\n→  3. Draft the summary for the director</pre><p class='muted'>Chaining is pattern one in optional Topic 20.</p>" },
+  { icon: "📑", title: "Quote first", sub: "fixes long-document answers", c: "autonomy", html: "<p>For long documents, find the evidence first, then answer from it.</p><pre class='code'>First copy the relevant sentences into\n&lt;quotes&gt; tags. Then answer using only them.</pre>" },
+], { cols: 4 });
+
+const BP = [
+  ["Be clear and direct", "Write as if briefing a bright new colleague who knows nothing about your situation."],
+  ["Explain why", "“Keep it short: it will be read on a phone” beats “Keep it short”."],
+  ["Show 3–5 examples", "Varied examples, wrapped in &lt;example&gt; tags."],
+  ["Structure with tags", "Separate instructions, documents, examples and format."],
+  ["Say what you want back", "Length, format, sections, audience. Ask for tags if an app reads it."],
+  ["Say what to do, not only what to avoid", "“Write plain paragraphs” works better than “no bullet points”."],
+  ["Long documents first, question last", "Put the material at the top and your question at the end."],
+  ["Let it think on hard tasks", "Ask for reasoning first, or use a reasoning model."],
+  ["Ground it, and give it an out", "Answer from the sources, quote them, and say “I don’t know” if needed."],
+  ["Test and refine", "Try a few real cases, compare, and improve the prompt. Save what works."],
+];
+$("#bp").innerHTML = BP.map(([t, s], i) => `<div class="bpi" data-i="${i}"><span class="n">${i + 1}</span><div><b>${t}</b><small>${s}</small></div></div>`).join("");
+stepSlide("Ten best practices", BP.length, (i) => $$("#bp .bpi").forEach((el) => { el.classList.toggle("on", +el.dataset.i < i); el.classList.toggle("cur", +el.dataset.i === i - 1); }));
+
+W.flips($("#myths"), [
+  { front: "🪄 “There are magic words”", back: "There aren’t. Clear context, an example and the format you want beat any secret phrase." },
+  { front: "📢 “SHOUTING gets results”", back: "Today’s models follow instructions closely. ALL CAPS and “CRITICAL!!!” can make them over-apply a rule. Say it once, calmly, with the reason." },
+  { front: "🏆 “Tell it it’s the world’s best expert”", back: "A role helps with focus and tone. Flattery adds nothing. Give it the relevant facts instead." },
+  { front: "📜 “Longer is always better”", back: "Every line should remove a guess. Padding dilutes attention and costs tokens (Topic 5)." },
+], 4);
+
+W.quiz($("#quiz6"), [
+  { q: "When are XML tags most useful?", o: ["In every one-line question", "When a prompt mixes instructions with documents, data or examples", "Only with Claude", "Only in code"], a: 1, e: "Tags separate parts. With nothing to separate, they add nothing. Most major models handle them well." },
+  { q: "You paste a 40-page contract and ask a question about it. Where should the question go?", o: ["Before the contract", "After the contract, at the end", "In the middle", "It makes no difference"], a: 1, e: "Long material first, question last tends to give better answers." },
+  { q: "Which instruction is likely to work best?", o: ["“NEVER use bullet points!!!”", "“Write in short plain paragraphs: this will be read aloud on a call.”", "“Don’t format it badly.”", "“You are the best writer in the world.”"], a: 1, e: "It says what to do and why, calmly." },
+  { q: "The model keeps inventing a policy clause. What’s the best fix?", o: ["Write the prompt in capitals", "Tell it to answer only from the attached policy, and to say “Not in the policy” otherwise", "Make the prompt longer", "Raise the temperature"], a: 1, e: "Ground it in the source and give it an out." },
+]);
+
+/* ===== v3 story ===== */
+W.BTS.sysuser = {
+  title: "A finished prompt, as the API sees it",
+  sub: "The system prompt is the standing brief. The user message is today’s job, with the data wrapped in tags.",
+  parts: [
+    { label: "Request", c: "accent", json: `{
+  "model": "claude-sonnet-5-5",
+  "max_tokens": 600,
+  "system": "You are HarborShield's customer-communications writer.
+             Tone: warm, plain English, no jargon. UK spelling.
+             Never promise discounts. Never mention competitors.",
+  "messages": [{
+    "role": "user",
+    "content": "<segment>Home insurance, renews in 30 days, premium up 6% because of storm claims</segment>
+                <example>Hi Sam, your cover renews on 1 June. Here's what's changing…</example>
+                <task>Write a renewal reminder email. Under 150 words. One button: Review my renewal.
+                If you need information that isn't here, say so instead of inventing it.</task>"
+  }]
+}` },
+    { label: "Response (trimmed)", c: "good", json: `{
+  "content": [{ "type": "text",
+    "text": "Subject: Your home cover renews on 1 July\\n\\nHi {first_name}, your HarborShield home insurance renews in 30 days…" }],
+  "stop_reason": "end_turn",
+  "usage": { "input_tokens": 182, "output_tokens": 141 }
+}`, note: "182 tokens of brief, 141 tokens of answer, and no poem. Compare the vague version: 14 tokens in, 498 tokens of guesswork out." },
+  ],
+};
+</script>
+<script src="../assets/deck.js?v=7.0"></script>
+</body>
+</html>

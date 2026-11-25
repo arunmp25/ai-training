@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Topic 7 · Context engineering</title>
+<link rel="stylesheet" href="../assets/style.css?v=7.0">
+<link rel="stylesheet" href="../assets/widgets.css?v=7.0">
+<link rel="stylesheet" href="../assets/story.css?v=7.0">
+<style>
+  .items { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .item { padding: 12px 14px; border-radius: 6px; background: var(--card); border: 1px solid var(--line); cursor: pointer; transition: all .2s; font-size: 14.5px; }
+  .item:hover { border-color: var(--accent); }
+  .item.in { background: color-mix(in srgb, var(--accent) 16%, var(--card)); border-color: var(--accent); }
+  .item.good { border-color: var(--good); background: color-mix(in srgb, var(--good) 14%, var(--card)); }
+  .item.bad { border-color: var(--bad); background: color-mix(in srgb, var(--bad) 12%, var(--card)); }
+  .item .cost { float: right; font-size: 12px; font-weight: 800; color: var(--muted); }
+  .item .fb { display: none; font-size: 12.5px; color: var(--muted); margin-top: 6px; }
+  .checked .item .fb { display: block; }
+  .budget { height: 18px; border-radius: 99px; background: var(--card2); overflow: hidden; }
+  .budget i { display: block; height: 100%; background: var(--accent); transition: width .3s; }
+  .budget.over i { background: var(--bad); }
+  .ctx-stack { display: grid; gap: 6px; }
+  .ctx-stack div { --c: var(--accent); padding: 10px 14px; border-radius: 6px; border: 1px solid var(--c); background: color-mix(in srgb, var(--c) 12%, var(--card)); font-weight: 600; font-size: 14px; display: flex; justify-content: space-between; }
+  .ctx-stack div.you { border-width: 3px; box-shadow: 0 0 20px color-mix(in srgb, var(--c) 40%, transparent); }
+  .calc20k { display: grid; grid-template-columns: 1fr 1.15fr; gap: 20px; align-items: start; }
+  .calc20k .big { font-size: 34px; font-weight: 800; font-variant-numeric: tabular-nums; }
+  .calc20k .stat { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; padding: 7px 0; border-bottom: 1px dashed var(--line); }
+  .calc20k .stat b { font-variant-numeric: tabular-nums; }
+  .desk-bar { height: 22px; border-radius: 8px; background: var(--card2); overflow: hidden; position: relative; margin: 6px 0 2px; }
+  .desk-bar i { position: absolute; inset: 0 auto 0 0; background: var(--c-context); transition: width .3s; }
+  .desk-bar.over i { background: var(--bad); }
+  .ce-list { display: grid; gap: 6px; }
+  .ce-item { display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: center; padding: 7px 12px; border-radius: 6px; border: 1px solid var(--line); background: var(--card); font-size: 14px; }
+  .ce-item small { display: block; color: var(--muted); font-size: 12.5px; }
+  .ce-tag { font-size: 12px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; padding: 2px 8px; border-radius: 10px; border: 1px solid currentColor; white-space: nowrap; }
+
+  /* v7: long chats go stale */
+  .st-g { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; align-items: start; }
+  .st-chat { display: flex; flex-direction: column; gap: 7px; height: 420px; overflow: hidden; justify-content: flex-end; background: var(--card); border: 1px solid var(--line); border-radius: 6px; padding: 12px; }
+  .st-m { max-width: 85%; padding: 7px 11px; border-radius: 10px; font-size: 14px; line-height: 1.35; animation: stIn .35s ease; }
+  .st-m.u { align-self: flex-end; background: color-mix(in srgb, var(--c-model) 22%, var(--card2)); }
+  .st-m.a { align-self: flex-start; background: var(--card2); }
+  .st-m.doc { align-self: flex-end; background: color-mix(in srgb, var(--warn) 22%, var(--card2)); font-weight: 700; }
+  .st-m.bad { outline: 2px solid var(--bad); }
+  .st-meter { margin-bottom: 14px; } .st-lbl { display: flex; justify-content: space-between; font-size: 15px; margin-bottom: 6px; } .st-lbl b { font-size: 20px; }
+  .st-bar { height: 18px; border-radius: 9px; background: var(--card2); overflow: hidden; } .st-bar i { display: block; height: 100%; width: 90%; background: var(--good); transition: width .6s, background .6s; }
+  .st-why { font-size: 16px; min-height: 52px; margin-bottom: 12px; }
+  .st-fix { display: grid; gap: 10px; } .st-fix .card { padding: 10px 14px; opacity: 0; transform: translateY(10px); transition: all .45s; }
+  .st-fix.on .card { opacity: 1; transform: none; } .st-fix.on .card:nth-child(2) { transition-delay: .15s; } .st-fix.on .card:nth-child(3) { transition-delay: .3s; }
+  .st-fix b { display: block; font-size: 16px; } .st-fix small { color: var(--muted); font-size: 14px; }
+  @keyframes stIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+  /* v7: Copilot desk */
+  .cp-g { display: grid; grid-template-columns: 1.1fr 1fr; gap: 24px; align-items: start; }
+  .cp-stack { display: flex; flex-direction: column-reverse; gap: 6px; }
+  .cp-l { --c: var(--accent); display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-radius: 6px; border: 2px solid var(--c); background: color-mix(in srgb, var(--c) 14%, var(--card)); font-size: 15px; animation: stIn .4s ease; }
+  .cp-l b { flex: 1; } .cp-l small { color: var(--muted); font-size: 13px; }
+  .cp-l.you { --c: var(--brand); }
+  .cp-card { --c: var(--accent); border-left: 4px solid var(--c); background: var(--card); border-radius: 6px; padding: 14px 16px; font-size: 16px; min-height: 120px; margin-bottom: 14px; }
+  .cp-card h4 { margin: 0 0 6px; color: var(--c); font-size: 18px; }
+  .cp-tips { display: grid; gap: 8px; } .cp-tips div { padding: 10px 14px; border-radius: 6px; background: color-mix(in srgb, var(--good) 12%, var(--card)); font-size: 16px; opacity: 0; transform: translateX(12px); transition: all .4s; }
+  .cp-tips.on div { opacity: 1; transform: none; } .cp-tips.on div:nth-child(2) { transition-delay: .15s; } .cp-tips.on div:nth-child(3) { transition-delay: .3s; }
+  /* v7: checklist */
+  .ck { display: grid; grid-template-columns: repeat(auto-fit, minmax(330px, 1fr)); gap: 10px 20px; max-width: 1100px; }
+  .cki { display: grid; grid-template-columns: 40px 1fr; gap: 12px; align-items: center; padding: 10px 14px; border-radius: 6px; background: var(--card); border: 1px solid var(--line); transition: all .4s; }
+  .cki .bx { width: 34px; height: 34px; border-radius: 6px; border: 2px solid var(--line); display: grid; place-items: center; font-size: 20px; font-weight: 800; color: transparent; transition: all .35s; }
+  .cki.on { border-color: color-mix(in srgb, var(--good) 60%, var(--line)); } .cki.on .bx { background: var(--good); border-color: var(--good); color: var(--on-fill); transform: scale(1.08); }
+  .cki b { font-size: 17px; } .cki small { display: block; color: var(--muted); font-size: 14px; }
+  /* v7: deep dive and caching */
+  .dd-list { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; max-width: 980px; }
+  .dd-list a { display: flex; gap: 10px; align-items: center; padding: 14px 16px; border-radius: 6px; border: 1px solid var(--line); background: var(--card); cursor: pointer; font-size: 16px; font-weight: 600; color: var(--text); text-decoration: none; }
+  .dd-list a:hover { border-color: var(--brand); }
+  .ca-req { margin: 10px 0 4px; font-size: 13px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+  .ca-row { display: flex; gap: 4px; height: 52px; }
+  .ca-seg { --c: var(--line); display: flex; flex-direction: column; justify-content: center; padding: 0 10px; border-radius: 4px; border: 2px solid var(--c); background: color-mix(in srgb, var(--c) 14%, var(--card)); font-size: 13.5px; font-weight: 700; overflow: hidden; white-space: nowrap; }
+  .ca-seg small { font-weight: 400; color: var(--muted); font-size: 12px; }
+  .ca-seg.hit { --c: var(--good); } .ca-seg.miss { --c: var(--bad); } .ca-seg.new { --c: var(--c-model); }
+  .ca-sum { margin-top: 12px; font-size: 16px; }
+
+</style>
+</head>
+<body class="deck" data-id="06">
+
+<section class="slide title-slide" data-title="Welcome">
+  <div class="big-emoji">🧳</div>
+  <div class="eyebrow">Session 1 · Topic 7</div>
+  <h1>Context engineering</h1>
+  <p class="sub">Prompt engineering is about the right <b>words</b>. Context engineering is about putting the right <b>information</b> on the desk, and keeping the wrong information off it.</p>
+  <aside class="notes"><span class="tag time">⏱ 30 sec</span><p class="say"><b>🎤 Say</b> Prompt engineering is about the right words. Context engineering is about putting the right information on the desk and keeping the wrong information off it.</p><ul><li>This is where the industry focus shifted: once prompts are decent, quality depends on <i>what you feed in</i>.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="Can you paste 20,000 pages?">
+  <div class="eyebrow">Do the maths</div>
+  <h2>Can you paste a 20,000-page manual into the prompt?</h2>
+  <p class="sub">Drag the slider from one page up to the whole manual. Numbers are illustrative (≈600 tokens a page, $3 per million input tokens, 2,000 broker questions a day).</p>
+  <div class="calc20k">
+    <div class="card">
+      <div class="label">Pages pasted into every question</div>
+      <input type="range" id="pg" min="0" max="7" step="1" value="0" style="width:100%">
+      <div class="big" id="pgOut"></div>
+      <div id="win" style="margin-top:10px"></div>
+      <div class="label" style="margin-top:14px">How full is the desk?</div>
+      <div class="desk-bar" id="deskBar"><i></i></div>
+      <div class="muted" id="deskTxt" style="font-size:14px"></div>
+    </div>
+    <div class="card">
+      <div class="stat"><span>Tokens per question</span><b id="sTok"></b></div>
+      <div class="stat"><span>Cost per question</span><b id="sCost"></b></div>
+      <div class="stat"><span>Cost per day (2,000 questions)</span><b id="sDay"></b></div>
+      <div class="stat"><span>Time just to read it</span><b id="sTime"></b></div>
+      <div class="callout" id="quip" style="margin-top:12px"></div>
+    </div>
+  </div>
+  <aside class="notes"><span class="tag time">⏱ 3 min</span><p class="say"><b>🎤 Say</b> Back to the 20,000-page question. Drag the slider: one page is fine, a few hundred is expensive, the whole manual does not fit at all, and the daily cost is huge.</p><ul><li>Walk it up slowly: 1 page, 20 pages (fine), 500 (getting pricey), 20,000 (impossible). Let the room gasp at the per-day number.</li><li>Three problems, not one: it doesn’t fit, it would cost a fortune, and even when it fits, models lose details buried in the middle of huge contexts (Topic 4).</li><li>Prices and window sizes are round, illustrative numbers. The shape of the problem is what matters.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="Prompt vs context">
+  <div class="eyebrow">The bigger picture</div>
+  <h2>Your prompt is one slice of the context</h2>
+  <p class="sub">In a real AI app or agent, the context is assembled from many sources for every single request. Someone (or something) has to decide what goes in.</p>
+  <div class="split wide-right" style="align-items:start">
+    <div class="ctx-stack" id="ctxStack"></div>
+    <div class="stack-v">
+      <div class="callout" style="--c:var(--c-context)"><b>Context engineering</b> = designing the system that decides, for every request, <b>which</b> information goes on the desk, in <b>what form</b>, and <b>what is left off</b>.</div>
+      <div class="card"><b>Good context is:</b><ul style="margin:8px 0 0;padding-left:20px"><li><b>Relevant</b>: only what this task needs</li><li><b>Fresh</b>: up to date, not last year’s policy</li><li><b>Consistent</b>: no contradicting instructions</li><li><b>Compact</b>: summarised where possible</li><li><b>Structured</b>: clearly labelled sections</li></ul></div>
+    </div>
+  </div>
+  <aside class="notes"><span class="tag time">⏱ 2 min</span><p class="say"><b>🎤 Say</b> In a real app your prompt is a small slice. The context is assembled from many sources on every request, and someone has to decide what goes in.</p><ul><li>Highlight the glowing “your message” row: often under 1% of the tokens.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="Pack the briefcase">
+  <div class="eyebrow">Game</div>
+  <h2>Pack the briefcase</h2>
+  <p class="sub">A customer asks: <b>“Why was I charged twice in October?”</b> You have a budget of <b>10 units</b> of context. Click items to pack them, then check your briefing.</p>
+  <div class="row" style="margin-bottom:10px"><div class="grow"><div class="budget" id="budget"><i></i></div></div><b id="budgetLbl">0 / 10</b>
+    <button class="btn primary" id="pkCheck">✔ Check briefing</button><button class="btn ghost" id="pkReset">↺ Reset</button></div>
+  <div class="items" id="items"></div>
+  <div class="callout hidden" id="pkResult" style="margin-top:12px"></div>
+  <aside class="notes"><span class="tag time">⏱ 3 min</span><p class="say"><b>🎤 Say</b> You have a budget of ten units. Pack the briefing for this customer question. The common mistake is packing the whole manual just in case.</p><ul><li>Let the room shout picks. Common mistake: packing the full manual “just in case”, which blows the budget and adds noise.</li><li>Best briefing: incident note, invoices, refund policy, reply guide, refund tool = 6 units, all relevant.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="The four moves">
+  <div class="eyebrow">Techniques</div>
+  <h2>The four moves of context engineering</h2>
+  <p class="sub">Click each move. You’ll meet every one of them again in later topics.</p>
+  <div id="moves"></div>
+  <aside class="notes"><span class="tag time">⏱ 2 min</span><p class="say"><b>🎤 Say</b> Context engineering has four moves: select, compress, write and isolate. Each one comes back in a later topic.</p><ul><li>Select → RAG (Topic 9). Compress → compaction (Topic 5). Write → memory and notes files (Topic 17). Isolate → subagents (Topic 17).</li></ul></aside>
+</section>
+
+<section class="slide" data-title="A developer’s desk">
+  <div class="eyebrow">Worked example</div>
+  <h2>“Add a Roadside Assistance coverage to Personal Auto”</h2>
+  <p class="sub">What a coding agent should have on the desk for this Guidewire task, and what it should leave off. Each item is one of the four moves.</p>
+  <div class="split" style="align-items:start">
+    <div><div class="label">✅ On the desk · about 15,000 tokens</div><div class="ce-list"><div class="ce-item"><div>📌 AGENTS.md (≈ 1,200 tokens)<small>Build commands, folder map, Gosu rules. Always loaded.</small></div><span class="ce-tag" style="color:var(--c-context)">Write</span></div><div class="ce-item"><div>🔎 The Personal Auto product model files<small>Found by searching for existing coverages, not pasted by hand.</small></div><span class="ce-tag" style="color:var(--c-knowledge)">Select</span></div><div class="ce-item"><div>📄 One similar coverage as a pattern<small>Towing and Labour: the closest existing example to copy.</small></div><span class="ce-tag" style="color:var(--c-knowledge)">Select</span></div><div class="ce-item"><div>📝 Jira story PC-1482, summarised<small>Acceptance criteria only, not the 60-comment thread.</small></div><span class="ce-tag" style="color:var(--c-action)">Compress</span></div><div class="ce-item"><div>👥 Subagent: “Where is coverage rated?”<small>Searched 400 files in its own context, returned 8 lines.</small></div><span class="ce-tag" style="color:var(--c-autonomy)">Isolate</span></div></div></div>
+    <div><div class="label">🚫 Left off</div><div class="ce-list"><div class="ce-item"><div>📚 The full Guidewire documentation<small>Thousands of pages. Search it when needed instead.</small></div><span class="ce-tag" style="color:var(--bad)">Off</span></div><div class="ce-item"><div>🗂️ Every .etx and PCF file in the repo<small>Thousands of files. Only the few that matter are read.</small></div><span class="ce-tag" style="color:var(--bad)">Off</span></div><div class="ce-item"><div>💬 Yesterday’s chat about a different bug<small>Stale and irrelevant. Start a fresh session.</small></div><span class="ce-tag" style="color:var(--bad)">Off</span></div><div class="ce-item"><div>🔑 Customer data from the dev database<small>Not needed for a code change, and a privacy risk.</small></div><span class="ce-tag" style="color:var(--bad)">Off</span></div></div>
+      <div class="callout" style="font-size:14px;margin-top:10px">Small, relevant and fresh beats big. Topic 17 shows the AGENTS.md, skill and subagent files that make this happen automatically.</div></div>
+  </div>
+  <aside class="notes"><span class="tag time">⏱ 3 min</span><p class="say"><b>🎤 Say</b> Here are the four moves on a real Guidewire task. The agent writes standing rules once in AGENTS.md, selects the product model and one similar coverage, compresses the Jira story, and isolates the big search in a subagent. Everything else stays off the desk.</p><ul><li>Ask the room: “What would a new developer need on day one for this task?” It is the same list.</li><li>The documentation is not useless; it is reached by search (RAG, Topic 9) when a question needs it, instead of being pasted in.</li><li>Token numbers are illustrative.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="Long chats go stale">
+  <div class="eyebrow">Long conversations</div>
+  <h2>Long chats go stale</h2>
+  <p class="sub">Press → to watch one chat collect clutter, then see three fixes.</p>
+  <div class="st-g">
+    <div class="st-chat" id="stChat"></div>
+    <div>
+      <div class="st-meter"><div class="st-lbl"><span>Focus on your current question</span><b id="stPct"></b></div><div class="st-bar"><i id="stFill"></i></div></div>
+      <div class="st-why" id="stWhy"></div>
+      <div class="st-fix" id="stFix">
+        <div class="card"><b>🆕 New chat</b><small>New topic, new chat. The cheapest fix there is.</small></div>
+        <div class="card"><b>🗜️ Summarise, then carry on</b><small>“Summarise our decisions so far in 10 bullets.” Paste that into a new chat.</small></div>
+        <div class="card"><b>📝 Keep a notes file</b><small>Decisions and facts in a document you attach when needed.</small></div>
+      </div>
+    </div>
+  </div>
+  <aside class="notes"><span class="tag time">⏱ 3 min</span><p class="say"><b>🎤 Say</b> Every message stays on the desk, so a long chat slowly fills with old topics, pasted material and instructions that contradict each other. Answers get vaguer. The fix is simple: start a new chat for a new topic, or carry over a short summary.</p><ul><li>Press → four times: off-topic messages, a pasted document, a contradiction, then the fixes.</li><li>Ask: “Who has a chat that has been open for weeks?” Most people do.</li><li>Agents do the same automatically: compaction (Topic 5) and notes files (Topic 17).</li></ul></aside>
+</section>
+
+<section class="slide" data-title="Standing context">
+  <div class="eyebrow">The “write” move</div>
+  <h2>Standing context: set it once</h2>
+  <p class="sub">Things you would otherwise repeat in every chat belong in one place. Click each to see where it lives and what to put there.</p>
+  <div id="standing"></div>
+  <aside class="notes"><span class="tag time">⏱ 3 min</span><p class="say"><b>🎤 Say</b> If you find yourself repeating the same background in every chat, such as your role, your team’s rules or your preferred format, write it down once. Every tool has a place for it: custom instructions, project instructions, agent instructions or an instruction file.</p><ul><li>For this audience, start with Copilot custom instructions: everyone can set them today.</li><li>Keep standing context short and stable. Anything that changes often belongs in the message or an attached file.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="What Copilot Chat puts on the desk">
+  <div class="eyebrow">In practice · Copilot Chat</div>
+  <h2>What Copilot Chat puts on the desk</h2>
+  <p class="sub">One question, built up layer by layer. Press → to add each layer. Simplified: the exact assembly is Microsoft’s.</p>
+  <div class="cp-g">
+    <div class="cp-stack" id="cpStack"></div>
+    <div><div class="cp-card" id="cpCard"></div><div class="cp-tips" id="cpTips">
+      <div>📎 <b>Attach the file</b> instead of describing it.</div>
+      <div>🆕 <b>New chat</b> for a new topic.</div>
+      <div>⚙️ <b>Set custom instructions</b> once.</div></div></div>
+  </div>
+  <aside class="notes"><span class="tag time">⏱ 3 min</span><p class="say"><b>🎤 Say</b> When you type one question into Copilot Chat, the model sees much more than your words: Microsoft’s own instructions, your custom instructions, any files you attached, web results and the chat so far. You control most of those layers, and that is context engineering for everyday users.</p><ul><li>Press → five times, then show the three tips.</li><li>Link to the M365 quick wins: attaching the policy PDF is “select”; a new chat is “isolate”.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="Fix the context">
+  <div class="eyebrow">Your turn</div>
+  <h2>Fix the context: which move?</h2>
+  <p class="sub">Six things going wrong. Pick the move that fixes each one.</p>
+  <div id="fixCtx"></div>
+  <aside class="notes"><span class="tag time">⏱ 3 min</span><p class="say"><b>🎤 Say</b> Six real situations. For each one, which of the four moves fixes it: select, compress, write or isolate?</p><ul><li>Do it as a room vote. Some have a second-best answer; go for the best.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="Common mistakes">
+  <div class="eyebrow">Watch out</div>
+  <h2>Context mistakes that quietly ruin answers</h2>
+  <p class="sub">Flip each card for the fix.</p>
+  <div id="mistakes"></div>
+  <aside class="notes"><span class="tag time">⏱ 2 min</span><p class="say"><b>🎤 Say</b> These mistakes quietly ruin answers. Flip each card for the fix.</p></aside>
+</section>
+
+<section class="slide" data-title="Context checklist">
+  <div class="eyebrow">Best practices</div>
+  <h2>A context checklist</h2>
+  <p class="sub">Before you send it, or before you ship it. Press → to tick each one.</p>
+  <div class="ck" id="ck"></div>
+  <aside class="notes"><span class="tag time">⏱ 2 min</span><p class="say"><b>🎤 Say</b> Seven checks for any context, whether it is one chat or a production agent. If an answer is wrong, walk down this list before blaming the model.</p><ul><li>Press → seven times.</li><li>“Ordered” covers two ideas: long material first and the question last, and stable content first so it can be cached (see the deep dive).</li></ul></aside>
+</section>
+
+<section class="slide" data-title="Quick check">
+  <div class="eyebrow">Quick check</div>
+  <h2>Did it click?</h2>
+  <div id="quiz"></div>
+  <aside class="notes"><span class="tag time">⏱ 1 min</span><p class="say"><b>🎤 Say</b> Quick check.</p></aside>
+</section>
+
+<section class="slide" data-title="Takeaways">
+  <div class="eyebrow">Takeaways</div>
+  <h2>What to remember</h2>
+  <div class="cols-4" style="margin:10px 0 24px">
+    <div class="card"><b>🧳 Curate the desk</b><p>Quality depends on what’s in the context, not just the wording of your request.</p></div>
+    <div class="card"><b>🔀 Four moves</b><p>Select, compress, write (save outside), isolate.</p></div>
+    <div class="card"><b>✅ Checklist</b><p>Relevant, minimal, fresh, ordered, labelled, sourced, separated. New topic, new chat.</p></div>
+    <div class="card"><b>➡️ Next problem</b><p>How do we <i>select</i> the right paragraph from 50,000 documents, automatically? <b>RAG.</b></p></div>
+  </div>
+  <div class="row"><a class="btn primary" data-nexttopic>Next →</a><a class="btn" href="04b-model-selection.html">Optional · Topic 8: Choosing a model</a></div>
+  <aside class="notes"><span class="tag time">⏱ 30 sec</span><p class="say"><b>🎤 Say</b> Selecting the right information is the move that matters most, and the standard way to do it is RAG. That is where the next session starts.</p><ul><li>End of Session 1. Session 2 opens with RAG: picking the right paragraph from 50,000 documents.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="Deep dive">
+  <div class="eyebrow">Optional · Deep dive</div>
+  <h2>Deep dive: order for caching</h2>
+  <p class="sub">For the curious, or for self-study. In a live session, skip to the next topic.</p>
+  <div class="dd-list">
+    <a data-goto="16"><b>⚡</b>Order for caching: stable first</a>
+  </div>
+  <div class="row" style="margin-top:22px"><a class="btn primary" data-nexttopic>Skip to the next topic →</a></div>
+  <aside class="notes"><span class="tag time">⏱ 30 sec</span><p class="say"><b>🎤 Say</b> One optional slide on prompt caching: why the order of the context changes the cost and speed of every request. We will skip it today.</p><ul><li>Point developers here for self-study.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="Order for caching">
+  <div class="eyebrow">Deep dive · Prompt caching</div>
+  <h2>Put what doesn’t change first</h2>
+  <p class="sub">Providers can cache the start of a prompt. If the start is identical, the next request reuses it: cheaper and faster. Switch between the two orders.</p>
+  <div id="cacheTabs"></div>
+  <div class="row" style="margin-top:12px"><button class="btn bts-btn" data-bts="cache">🎬 Behind the scenes</button><span class="muted" style="font-size:14px">Cached reads cost about a tenth of normal input. The cache lasts about 5 minutes by default, longer as an option. Check your provider.</span></div>
+  <aside class="notes"><span class="tag time">⏱ 3 min</span><p class="say"><b>🎤 Say</b> Caching works on the beginning of the prompt: if the first part is byte-for-byte the same as last time, the provider reuses it. So put the stable parts first, such as the system prompt, tool definitions and long reference documents, and the changing question last.</p><ul><li>The wrong order puts something that changes, such as today’s date or the user’s question, at the top. Then nothing after it can be cached.</li><li>Open 🎬 Behind the scenes for the real <code>cache_control</code> marker and the usage numbers.</li></ul></aside>
+</section>
+
+<script src="../assets/course.js?v=7.0"></script>
+<script src="../assets/widgets.js?v=7.0"></script>
+<script>
+const { $, $$ } = W;
+
+$("#ctxStack").innerHTML = [
+  ["⚙️ System prompt", "context", "1.5K"], ["📌 Instruction file / memory", "autonomy", "2K"], ["🛠️ Tool definitions", "action", "3K"],
+  ["📚 Retrieved documents", "knowledge", "6K"], ["🔧 Tool results", "trust", "4K"], ["💬 Conversation history", "model", "8K"],
+  ["✉️ Your message", "accent", "0.1K", true],
+].map(([l, c, t, you]) => `<div class="${you ? "you" : ""}" style="--c:${W.cv(c)}"><span>${l}</span><span class="muted">${t} tokens</span></div>`).join("");
+
+/* ---- packing game ---- */
+const ITEMS = [
+  { t: "🧾 October billing incident note", cost: 1, ok: 1, fb: "Explains exactly why: the root cause." },
+  { t: "📄 This customer’s last 3 invoices", cost: 2, ok: 1, fb: "Shows the duplicate charge: the evidence." },
+  { t: "📚 Full 300-page product manual", cost: 8, ok: 0, fb: "Huge, and almost all irrelevant. Blows the budget and adds noise." },
+  { t: "🗃️ All 20,000 past support tickets", cost: 10, ok: 0, fb: "Way too much. If useful, retrieve the 2–3 similar ones (RAG)." },
+  { t: "✍️ Reply tone guide (1 page)", cost: 1, ok: 1, fb: "Keeps the reply on-brand." },
+  { t: "💶 Refund policy section", cost: 1, ok: 1, fb: "Tells it what it’s allowed to offer." },
+  { t: "🏢 Company history and mission", cost: 2, ok: 0, fb: "Nice, but not needed to answer this." },
+  { t: "🔧 Tool: issue_refund", cost: 1, ok: 1, fb: "Lets it actually fix the problem (Topic 12)." },
+  { t: "💬 Customer’s full chat log since 2021", cost: 4, ok: 0, fb: "Mostly stale. A one-line summary would do." },
+];
+let packed = new Set();
+function renderPack() {
+  const used = [...packed].reduce((a, i) => a + ITEMS[i].cost, 0);
+  $("#items").innerHTML = ITEMS.map((it, i) => `<div class="item ${packed.has(i) ? "in" : ""}" data-i="${i}"><span class="cost">${it.cost} unit${it.cost > 1 ? "s" : ""}</span>${it.t}<div class="fb">${it.ok ? "✅" : "❌"} ${it.fb}</div></div>`).join("");
+  $("#budget i").style.width = Math.min(100, used * 10) + "%";
+  $("#budget").classList.toggle("over", used > 10);
+  $("#budgetLbl").textContent = `${used} / 10`;
+  $$("#items .item").forEach((el) => (el.onclick = () => { const i = +el.dataset.i; packed.has(i) ? packed.delete(i) : packed.add(i); $("#items").classList.remove("checked"); $("#pkResult").classList.add("hidden"); renderPack(); }));
+}
+$("#pkCheck").onclick = () => {
+  const used = [...packed].reduce((a, i) => a + ITEMS[i].cost, 0);
+  const goodIn = [...packed].filter((i) => ITEMS[i].ok).length, badIn = [...packed].filter((i) => !ITEMS[i].ok).length;
+  const goodTotal = ITEMS.filter((x) => x.ok).length;
+  $$("#items .item").forEach((el) => { const i = +el.dataset.i; if (packed.has(i)) el.classList.add(ITEMS[i].ok ? "good" : "bad"); });
+  $("#items").classList.add("checked");
+  const r = $("#pkResult"); r.classList.remove("hidden");
+  const perfect = used <= 10 && goodIn === goodTotal && !badIn;
+  r.style.setProperty("--c", perfect ? "var(--good)" : used > 10 ? "var(--bad)" : "var(--warn)");
+  r.innerHTML = used > 10 ? `⚠ Over budget (${used}/10): this won’t fit on the desk. Something must go.`
+    : perfect ? `🎉 Perfect briefing: all ${goodTotal} essentials in just ${used} units, no noise.`
+    : `You packed ${goodIn}/${goodTotal} essentials${badIn ? ` and ${badIn} distraction${badIn > 1 ? "s" : ""}` : ""}. Read the notes on each card, then adjust.`;
+};
+$("#pkReset").onclick = () => { packed = new Set(); $("#items").classList.remove("checked"); $("#pkResult").classList.add("hidden"); renderPack(); };
+renderPack();
+
+W.clickInfo($("#moves"), [
+  { icon: "🎯", title: "Select", sub: "pull in only what’s relevant", c: "knowledge", html: "<p>Don’t dump everything: <b>find</b> the few pieces that matter for this request.</p><p><b>Example:</b> from 50,000 help articles, retrieve the 3 about billing errors.</p><p class='muted'>Main technique: <b>RAG</b>, next topic.</p>" },
+  { icon: "🗜️", title: "Compress", sub: "summarise what’s long", c: "context", html: "<p>Keep the meaning, drop the bulk.</p><p><b>Example:</b> replace 40 turns of chat history with a 5-line summary; trim a tool result to the fields that matter.</p><p class='muted'>In agents this is called <b>compaction</b> (Topic 5).</p>" },
+  { icon: "📝", title: "Write (save outside)", sub: "notes the AI can re-read", c: "autonomy", html: "<p>Store information <b>outside</b> the context and bring it back only when needed.</p><p><b>Example:</b> an agent keeps a to-do list or <code>NOTES.md</code> file; a memory feature saves “user is vegetarian”.</p><p class='muted'>Instruction files and memory: Topic 17.</p>" },
+  { icon: "🧪", title: "Isolate", sub: "split work across contexts", c: "action", html: "<p>Give sub-tasks their <b>own separate context</b> so the main one stays clean.</p><p><b>Example:</b> three helper agents each research one competitor and return a one-paragraph summary.</p><p class='muted'>That’s <b>subagents</b>: Topic 17.</p>" },
+], { cols: 4 });
+
+W.flips($("#mistakes"), [
+  { front: "🗑️ The kitchen sink", back: "Pasting everything “just in case”. <b>Fix:</b> select the relevant part; more isn’t better." },
+  { front: "🕰️ Stale information", back: "Last year’s price list in the context means confidently wrong answers. <b>Fix:</b> keep sources fresh and dated." },
+  { front: "⚔️ Contradictions", back: "System prompt says “be brief”, the instruction file says “be thorough”. <b>Fix:</b> one source of truth for each rule." },
+  { front: "👻 Ghosts of failed attempts", back: "A long chat full of wrong turns keeps steering the model wrong. <b>Fix:</b> start a fresh chat with a clean summary." },
+  { front: "🧰 Too many tools", back: "50 tool definitions eat context and confuse tool choice. <b>Fix:</b> only load the tools the task needs." },
+  { front: "🔓 Untrusted text mixed in", back: "A web page or email in the context can carry hidden instructions. <b>Fix:</b> label it clearly as data (Topic 18)." },
+]);
+
+W.quiz($("#quiz"), [
+  { q: "Your chat has wandered across three topics and the answers are getting worse. Best move?", o: ["Keep going: it will catch up", "Ask for a summary of the decisions, then start a new chat with it", "Write your next message in capitals", "Paste everything again"], a: 1, e: "Carry a short summary into a clean chat: compress, then isolate." },
+  { q: "Where should rules you repeat every week go?", o: ["At the top of every message", "In custom instructions, project instructions or an instruction file", "Nowhere: the model remembers", "In a separate chat"], a: 1, e: "Write them down once, outside the chat: the write move." },
+  { q: "What’s the core idea of context engineering?", o: ["Using longer prompts", "Choosing what information goes into the context, and what stays out", "Training the model on your data", "Using a bigger model"], a: 1, e: "It’s about curating the desk: relevant, fresh, compact, structured." },
+  { q: "An agent’s chat history is huge and old. Which move?", o: ["Select", "Compress", "Isolate", "Ignore it"], a: 1, e: "Summarise it (compaction) to keep the key facts and lose the bulk." },
+  { q: "You want three competitors researched without flooding the main context with web pages. Which move?", o: ["Write", "Compress", "Isolate", "Select"], a: 2, e: "Isolate: give each research task its own context (a subagent), and return only summaries." },
+]);
+
+
+/* ===== v7: stale chats, standing context, Copilot desk, fix, checklist, caching ===== */
+function stepSlide(title, max, go) {
+  let at = 0;
+  const set = (i) => { at = i; go(i); };
+  document.addEventListener("slide:enter", (e) => { if (e.detail.slide.dataset.title === title) set(e.detail.back ? max : 0); });
+  document.addEventListener("slide:advance", (e) => { if (e.detail.slide.dataset.title === title && at < max) { e.preventDefault(); set(at + 1); } });
+  return set;
+}
+const ST = [
+  { m: [["u", "Help me plan the Q1 claims team offsite."], ["a", "Sure. How many people, and what budget?"], ["u", "18 people, ₹3 lakh, one day in Pune."], ["a", "Here is a draft agenda…"]], p: 92, w: "One topic, a clean desk. Answers are sharp." },
+  { m: [["u", "Different thing: can you explain our new excess rules?"], ["a", "The excess is now ₹7,500…"], ["u", "And draft a LinkedIn post about the awards?"], ["a", "Here’s a post…"]], p: 74, w: "Three topics in one chat. The offsite details are still on the desk, taking attention." },
+  { m: [["doc", "📄 [pasted: 30-page vendor contract]"], ["u", "Back to the offsite: which venue is best?"]], p: 55, w: "A long paste sits between you and the question. Most of it has nothing to do with venues." },
+  { m: [["u", "Keep everything casual and short.", "bad"], ["a", "Got it."], ["u", "Write the offsite invite, formal please.", "bad"], ["a", "Hey team! 🎉 Offsite vibes…"]], p: 38, w: "Contradictory instructions from different moments. The model has to guess which one wins." },
+  { m: [], p: 90, w: "<b>Fix:</b> start fresh for a new topic, or carry a short summary across." },
+];
+stepSlide("Long chats go stale", 4, (i) => {
+  const msgs = ST.slice(0, Math.min(i, 3) + 1).flatMap((s) => s.m);
+  $("#stChat").innerHTML = (i === 4 ? [["u", "🆕 New chat · Summary: offsite, 18 people, ₹3 lakh, Pune, formal tone."], ["u", "Which venue is best?"], ["a", "Given your budget and 18 people, here are three venues…"]] : msgs)
+    .map(([k, t, b]) => `<div class="st-m ${k}${b ? " bad" : ""}">${t}</div>`).join("");
+  const s = ST[i], f = $("#stFill");
+  f.style.width = s.p + "%"; f.style.background = s.p > 70 ? "var(--good)" : s.p > 50 ? "var(--warn)" : "var(--bad)";
+  $("#stPct").textContent = s.p + "%"; $("#stWhy").innerHTML = s.w;
+  $("#stFix").classList.toggle("on", i === 4);
+});
+
+W.clickInfo($("#standing"), [
+  { icon: "⚙️", title: "Copilot custom instructions", sub: "and memory", c: "accent", html: "<p>Settings → Personalisation in Copilot Chat. Applies to every chat you start.</p><pre class='code'>I work in motor claims at HarborShield.\nUse UK English. Answer briefly, with\nbullets, and say when you're unsure.</pre><p class='muted'>Memory, where it is switched on, saves facts you tell it. Check and clear it now and then.</p>" },
+  { icon: "🤖", title: "Agent instructions", sub: "Copilot agents", c: "autonomy", html: "<p>When you create an agent, its instructions and knowledge files are its standing context, for everyone who uses it.</p><pre class='code'>Answer only from the 2026 motor policy.\nQuote the section number. If it isn't\nin the policy, say so.</pre>" },
+  { icon: "🗂️", title: "Projects", sub: "Claude, ChatGPT", c: "knowledge", html: "<p>A project holds instructions and files shared by every chat inside it.</p><p><b>Put there:</b> the brief, reference documents, style guide. <b>Not there:</b> today’s question.</p>" },
+  { icon: "📄", title: "Instruction files", sub: "CLAUDE.md, AGENTS.md", c: "action", html: "<p>Coding agents read a file in the repository at the start of every session.</p><pre class='code'># CLAUDE.md\nBuild: ./gwb compile\nAll our code is in package hs.*\nNever edit generated files.</pre><p class='muted'>More in Topic 17.</p>" },
+  { icon: "🧩", title: "System prompts", sub: "your own apps", c: "model", html: "<p>When you build an app, the system prompt is the standing context for every user.</p><p>Keep it stable so it can be cached (deep dive), and keep changing facts out of it.</p>" },
+], { cols: 5 });
+
+const CP = [
+  { k: "you", c: "brand", t: "Your message", s: "“Is windscreen damage covered under our new motor policy?”", h: "✉️ Your message", p: "The only part you see. On its own, Copilot doesn’t know which policy you mean." },
+  { k: "sys", c: "c-model", t: "Copilot’s own instructions", s: "Microsoft’s system prompt: safety, tone, citing sources", h: "🧩 Copilot’s own instructions", p: "Always there, set by Microsoft. You can’t see or change them." },
+  { k: "ci", c: "accent", t: "Your custom instructions", s: "“I work in motor claims. UK English. Be brief.”", h: "⚙️ Your custom instructions", p: "Written once by you, added to every chat. This is the “write” move." },
+  { k: "file", c: "c-knowledge", t: "The file you attached", s: "📄 3b-motor-policy-2026.pdf", h: "📎 Your attached file", p: "Now it can answer from §4, and cite it. This is “select”: you picked the right source." },
+  { k: "web", c: "c-action", t: "Web results", s: "When web search is on: pages it found", h: "🌐 Web results", p: "Useful for public facts; noise for questions about your own documents. Some tenants let you switch it off." },
+  { k: "hist", c: "c-context", t: "The chat so far", s: "Every earlier message in this chat", h: "💬 Chat history", p: "Helpful when it is on topic, clutter when it isn’t. A new chat clears it: that is “isolate”." },
+];
+stepSlide("What Copilot Chat puts on the desk", CP.length, (i) => {
+  const n = Math.min(i + 1, CP.length);
+  $("#cpStack").innerHTML = CP.slice(0, n).map((l) => `<div class="cp-l${l.k === "you" ? " you" : ""}" style="--c:var(--${l.c})"><b>${l.t}</b><small>${l.s}</small></div>`).join("");
+  const l = CP[n - 1], card = $("#cpCard");
+  card.style.setProperty("--c", `var(--${l.c})`);
+  card.innerHTML = i >= CP.length ? `<h4>You control four of the six layers</h4>Custom instructions, attached files, web search and the chat history are all yours to manage.` : `<h4>${l.h}</h4>${l.p}`;
+  $("#cpTips").classList.toggle("on", i >= CP.length);
+});
+
+W.classify($("#fixCtx"), [
+  { text: "You pasted the whole 50-page policy to ask one question about windscreens.", a: 0, why: "Select: attach or paste only the relevant section." },
+  { text: "The assistant quotes last year’s premium table.", a: 0, why: "Select the current, dated source, and remove the old one." },
+  { text: "An agent’s session history has grown to 150,000 tokens and it is getting confused.", a: 1, why: "Compress: summarise the history (compaction) and carry on." },
+  { text: "A tool returns 2,000 lines of logs; only the error line matters.", a: 1, why: "Compress: trim tool results to the fields that matter." },
+  { text: "Every Monday you re-explain your team’s rules to the AI.", a: 2, why: "Write: put them in custom instructions or an instruction file, once." },
+  { text: "One chat is doing three research tasks, each with dozens of web pages.", a: 3, why: "Isolate: one chat or subagent per task, returning only summaries." },
+], [{ label: "Select", c: "knowledge" }, { label: "Compress", c: "context" }, { label: "Write", c: "autonomy" }, { label: "Isolate", c: "action" }], { cols: 2 });
+
+const CK = [["Relevant", "Only what this task needs."], ["Minimal", "Summaries over dumps; trim tool results."], ["Fresh", "Current, dated versions. Remove the old ones."], ["Ordered", "Long material first, question last. Stable parts first."],
+  ["Labelled", "Each part in its own tag or heading (Topic 6)."], ["Sourced", "Say where each fact came from, so answers can cite it."], ["Separated", "One task per chat or agent. New topic, new chat."]];
+$("#ck").innerHTML = CK.map(([t, s], i) => `<div class="cki" data-i="${i}"><span class="bx">✓</span><div><b>${t}</b><small>${s}</small></div></div>`).join("");
+stepSlide("Context checklist", CK.length, (i) => $$("#ck .cki").forEach((el) => el.classList.toggle("on", +el.dataset.i < i)));
+
+const seg = (cls, t, s, w) => `<div class="ca-seg ${cls}" style="flex:${w}"><span>${t}</span><small>${s}</small></div>`;
+W.tabs($("#cacheTabs"), [
+  { label: "✅ Stable first", html: `<div class="ca-req">Request 1 · cache written</div><div class="ca-row">${seg("new", "System prompt", "2K tokens", 2)}${seg("new", "Tool definitions", "3K", 3)}${seg("new", "Policy document", "15K", 8)}${seg("new", "Question A", "50", 1)}</div>
+    <div class="ca-req">Request 2 · same start, new question</div><div class="ca-row">${seg("hit", "System prompt", "cached", 2)}${seg("hit", "Tool definitions", "cached", 3)}${seg("hit", "Policy document", "cached", 8)}${seg("new", "Question B", "50", 1)}</div>
+    <div class="ca-sum">✅ 20,000 tokens read from the cache at about a tenth of the price, and the answer starts sooner.</div>` },
+  { label: "❌ Changing part first", html: `<div class="ca-req">Request 1</div><div class="ca-row">${seg("new", "Today’s date + question A", "60", 1)}${seg("new", "System prompt", "2K", 2)}${seg("new", "Tool definitions", "3K", 3)}${seg("new", "Policy document", "15K", 8)}</div>
+    <div class="ca-req">Request 2 · the first part changed</div><div class="ca-row">${seg("miss", "Date + question B", "changed", 1)}${seg("miss", "System prompt", "not cached", 2)}${seg("miss", "Tool definitions", "not cached", 3)}${seg("miss", "Policy document", "not cached", 8)}</div>
+    <div class="ca-sum">❌ The cache matches from the start. One changed token at the top means everything after it is paid for again.</div>` },
+]);
+W.BTS.cache = {
+  title: "Prompt caching in the Messages API",
+  sub: "Mark the end of the stable part with cache_control. Everything up to that point is cached.",
+  parts: [
+    { label: "Request → model", c: "accent", json: `POST /v1/messages
+{
+  "model": "claude-sonnet-5-5",
+  "max_tokens": 800,
+  "system": [
+    { "type": "text", "text": "You are the HarborShield policy assistant. Answer only from the policy …" },
+    { "type": "text", "text": "<policy> …15,000 tokens of the 2026 motor policy… </policy>",
+      // cache everything up to and including this block
+      "cache_control": { "type": "ephemeral" } }
+  ],
+  "messages": [
+    // the changing part goes last
+    { "role": "user", "content": "Is windscreen damage covered?" }
+  ]
+}` },
+    { label: "Response usage ← second request", c: "good", json: `{
+  "usage": {
+    "cache_read_input_tokens": 17050,   // reused: billed at a fraction of the input price
+    "cache_creation_input_tokens": 0,
+    "input_tokens": 12,                 // only the new question
+    "output_tokens": 164
+  }
+}`, note: "The first request shows cache_creation_input_tokens instead. Prices and cache lifetimes vary by provider and model: check the current docs." },
+  ],
+};
+
+/* ===== v3 story ===== */
+(() => {
+  const PG = [1, 5, 20, 100, 500, 2000, 5000, 20000], TPP = 600, PRICE = 3 / 1e6, QPD = 2000;
+  let win = 200000;
+  const money = (x) => x < 1 ? "$" + x.toFixed(3) : "$" + Math.round(x).toLocaleString();
+  const QUIPS = [
+    ["good", "✅ One page fits easily. Cheap, fast, focused."],
+    ["good", "✅ Five pages: still tiny. This is what a good prompt looks like."],
+    ["good", "✅ Twenty pages fits fine. Most real questions need far less."],
+    ["warn", "🟡 100 pages fits, but you pay to re-read all of it on every single question."],
+    ["warn", "🟠 500 pages: the desk is crowded. Details in the middle start getting missed (Topic 4)."],
+    ["bad", "🔴 Doesn’t fit a normal desk. Even the big desk is mostly full and very slow."],
+    ["bad", "🔴 Doesn’t fit anywhere, even after removing the appendix on hailstones."],
+    ["bad", "💀 <b>The whole manual.</b> It doesn’t fit, and if it did, every answer would cost more than a team lunch, and every day more than a small car."],
+  ];
+  function upd() {
+    const i = +$("#pg").value, pages = PG[i], tok = pages * TPP, fill = tok / win;
+    $("#pgOut").textContent = pages.toLocaleString() + (pages === 1 ? " page" : " pages");
+    $("#sTok").textContent = tok.toLocaleString();
+    $("#sCost").textContent = money(tok * PRICE) + (fill > 1 ? " (if it fit)" : "");
+    $("#sDay").textContent = money(tok * PRICE * QPD);
+    const sec = tok / 40000;
+    $("#sTime").textContent = sec < 1 ? "under a second" : sec < 90 ? Math.round(sec) + " seconds" : Math.round(sec / 60) + " minutes";
+    const bar = $("#deskBar"); bar.classList.toggle("over", fill > 1); bar.querySelector("i").style.width = Math.min(100, fill * 100) + "%";
+    $("#deskTxt").innerHTML = fill > 1 ? `<b style="color:var(--bad)">${fill.toFixed(0)}× too big</b> for this desk` : `${(fill * 100).toFixed(fill < .01 ? 2 : 0)}% of the desk`;
+    const [c, q] = QUIPS[i]; $("#quip").style.setProperty("--c", W.cv(c)); $("#quip").innerHTML = q;
+  }
+  W.tabs($("#win"), [{ label: "Desk: 200K tokens" }, { label: "Big desk: 1M tokens" }], { onChange: (i) => { win = i ? 1000000 : 200000; upd(); } });
+  $("#win .tab-body")?.remove();
+  $("#pg").oninput = upd;
+})();
+</script>
+<script src="../assets/deck.js?v=7.0"></script>
+</body>
+</html>

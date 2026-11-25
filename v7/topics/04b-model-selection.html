@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Topic 8 · Choosing a model</title>
+<link rel="stylesheet" href="../assets/style.css?v=7.0">
+<link rel="stylesheet" href="../assets/widgets.css?v=7.0">
+<link rel="stylesheet" href="../assets/story.css?v=7.0">
+<style>
+  .tiers .ci-card { min-height: 96px; }
+  .stat { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px; }
+  .stat span { padding: 4px 10px; border-radius: 6px; background: var(--card2); font-size: 13px; font-weight: 700; }
+  .calc { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px 18px; }
+  .calc label { font-size: 13px; color: var(--muted); font-weight: 700; display: block; }
+  .calc input[type=range] { width: 100%; accent-color: var(--brand); }
+  .calc b.v { font-size: 18px; }
+  .costrow { display: grid; grid-template-columns: 210px 1fr 120px; gap: 12px; align-items: center; margin: 10px 0; }
+  .costrow .lab { font-weight: 700; font-size: 14px; }
+  .costrow .track { height: 30px; background: var(--card2); border-radius: 6px; overflow: hidden; }
+  .costrow .fill { height: 100%; width: 0; border-radius: 6px; transition: width .7s cubic-bezier(.2,.8,.2,1); background: var(--c); }
+  .costrow .amt { font-weight: 800; font-size: 18px; text-align: right; }
+  .evtab { width: 100%; border-collapse: collapse; font-size: 15px; }
+  .evtab th, .evtab td { padding: 10px 12px; border-bottom: 1px solid var(--line); text-align: left; }
+  .evtab td.cell { opacity: 0; transform: translateY(6px); transition: opacity .4s, transform .4s; }
+  .evtab td.cell.show { opacity: 1; transform: none; }
+  .evtab tr.win td { background: color-mix(in srgb, var(--good) 18%, transparent); }
+  .evtab tr.fail td.cell.show.acc { color: var(--bad); }
+  .dial { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+</style>
+</head>
+<body class="deck" data-id="04b">
+
+<section class="slide title-slide" data-title="Welcome">
+  <div class="big-emoji">⚖️</div>
+  <div class="eyebrow">Session 1 · Topic 8</div>
+  <h1>Choosing a model: big, medium or small?</h1>
+  <p class="sub">There is no single “best” model. There is the right model for each job, chosen on quality, speed, cost and context size, and checked on your own examples.</p>
+  <aside class="notes"><span class="tag time">⏱ 30 sec</span><p class="say"><b>🎤 Say</b> Every request we have seen so far went to a model. But which one? Providers offer large, medium and small models at very different prices. Today: how to choose.</p><ul><li>Link back: the desk (Topic 5) costs money per token, and different models charge very different amounts per token.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="Same question, three models">
+  <div class="eyebrow">Example</div>
+  <h2>Same job, three models</h2>
+  <p class="sub">Two requests from a claims team. Switch models and compare the answer, the wait and the cost.</p>
+  <div id="same"></div>
+  <aside class="notes"><span class="tag time">⏱ 3 min</span><p class="say"><b>🎤 Say</b> On the easy job, all three models give a good answer, so the small one wins on speed and cost. On the hard job, the small model misses the exclusion clause. The right choice depends on the job, not the model.</p><ul><li>Click through the three tabs for the easy task, then the hard task.</li><li>The timings and costs are illustrative, to show the shape of the trade-off.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="The model tiers">
+  <div class="eyebrow">The line-up</div>
+  <h2>Most providers offer three sizes</h2>
+  <p class="sub">The names change, but the pattern holds. Click each tier. Prices are Anthropic’s list prices per million tokens (November 2026).</p>
+  <div id="tiers" class="tiers"></div>
+  <aside class="notes"><span class="tag time">⏱ 3 min</span><p class="say"><b>🎤 Say</b> Most providers sell a large, a medium and a small model. Anthropic calls them Opus, Sonnet and Haiku. OpenAI and Google have their own equivalents. Bigger means more capable, slower and more expensive.</p><ul><li>Prices and model names change often. Check current pricing before presenting.</li><li>Open-weight models (such as Llama, Mistral or Qwen) are an option when data must stay on your own servers, at the cost of running them yourself.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="What to compare">
+  <div class="eyebrow">The checklist</div>
+  <h2>Five things to compare</h2>
+  <p class="sub">Click each card to flip it.</p>
+  <div id="five"></div>
+  <aside class="notes"><span class="tag time">⏱ 3 min</span><p class="say"><b>🎤 Say</b> Quality, speed, cost, context size and features. You rarely get the best of all five, so decide which matters most for this job.</p><ul><li>Speed matters most for live chat; cost matters most at high volume; quality matters most when mistakes are expensive.</li><li>Data location and compliance can rule a model out before anything else.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="Cost calculator">
+  <div class="eyebrow">Try it</div>
+  <h2>What will it cost per month?</h2>
+  <p class="sub">Move the sliders. Cost = requests × (input tokens × input price + output tokens × output price).</p>
+  <div class="card calc" style="margin-bottom:6px">
+    <div><label>Requests per day</label><input type="range" id="cReq" min="100" max="50000" step="100" value="5000"><b class="v" id="vReq"></b></div>
+    <div><label>Input tokens per request</label><input type="range" id="cIn" min="200" max="50000" step="100" value="3000"><b class="v" id="vIn"></b></div>
+    <div><label>Output tokens per request</label><input type="range" id="cOut" min="50" max="4000" step="50" value="400"><b class="v" id="vOut"></b></div>
+  </div>
+  <div id="costs"></div>
+  <div class="callout" style="--c:var(--c-model);margin-top:6px">Output tokens cost <b>five times</b> as much as input here. Long answers and a long desk (Topic 5) are what drive the bill.</div>
+  <aside class="notes"><span class="tag time">⏱ 3 min</span><p class="say"><b>🎤 Say</b> Here is a claims assistant handling 5,000 requests a day. The large model costs about 3,000 dollars a month; the small one about 75. Now push the input tokens up, as if we pasted a whole manual into every request, and watch what happens.</p><ul><li>List prices per million tokens: large 4 / 20 dollars, medium 2 / 10, small 0.10 / 0.50 (small model price for prompts up to 100K tokens). November 2026; check before presenting.</li><li>Prompt caching and batch processing can cut these costs a lot. That is an engineering detail for later.</li></ul></aside>
+</section>
+
+<section class="slide seq-slide arch-slide" data-title="Route to the right model">
+  <div class="eyebrow">Animated · use more than one</div>
+  <h2>You don’t have to pick just one</h2>
+  <p class="sub">A small router sends each request to the cheapest model that can handle it. Pick a flow and press →.</p>
+  <div id="router"></div>
+  <aside class="notes"><span class="tag time">⏱ 3 min</span><p class="say"><b>🎤 Say</b> Real systems often use several models. A small, cheap model labels each request, and code sends it to the right size. Or the small model tries first and passes the case up when it is unsure.</p><ul><li>Run “Simple question”, “Hard case”, then “Escalation”.</li><li>This is the routing pattern. It returns in optional Topic 20 on agent patterns.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="Effort and thinking">
+  <div class="eyebrow">A dial inside one model</div>
+  <h2>Before you switch models, try the effort dial</h2>
+  <p class="sub">Many models can think for longer before answering. More thinking means better answers on hard problems, but slower replies and more tokens.</p>
+  <div id="dial" class="dial"></div>
+  <aside class="notes"><span class="tag time">⏱ 2 min</span><p class="say"><b>🎤 Say</b> Most current models have a thinking or effort setting. Low effort answers quickly; high effort works through the problem first. Sometimes a medium model at high effort beats a large model at low effort, and costs less.</p><ul><li>In the API this is a setting on the request (for Claude, the effort level). In chat apps it is often a toggle such as “extended thinking”.</li><li>Thinking tokens are billed as output tokens.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="Test on your own examples">
+  <div class="eyebrow">How to decide</div>
+  <h2>Choose with a test, not a hunch</h2>
+  <p class="sub">Run 50 real claim emails through each model and score the answers. Our bar: at least 95% correct. Press the button.</p>
+  <div class="card" style="padding:6px 14px"><table class="evtab" id="evtab"><thead><tr><th>Model</th><th>Correct (of 50)</th><th>Accuracy</th><th>Avg. time</th><th>Cost per 1,000 emails</th></tr></thead><tbody></tbody></table></div>
+  <div class="row" style="margin-top:12px"><button class="btn primary" id="evRun">▶ Run the test</button><button class="btn ghost" id="evReset">↺ Reset</button><span class="muted" id="evMsg"></span></div>
+  <aside class="notes"><span class="tag time">⏱ 3 min</span><p class="say"><b>🎤 Say</b> This is how you actually choose. Take real examples, run them through each model and score the answers. The small model is cheapest but misses our 95% bar. The large model is best but costs twice as much as the medium one for one extra correct answer. Medium wins.</p><ul><li>The results are illustrative. The method is the point: a small test set, a clear bar, then the cheapest model that passes.</li><li>Keep the test set. When a new model comes out, re-run it in minutes. Topic 18 calls this an eval.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="Which size?">
+  <div class="eyebrow">Your turn</div>
+  <h2>Which size would you try first?</h2>
+  <p class="sub">Pick the smallest model you would expect to do the job well.</p>
+  <div id="pick"></div>
+  <aside class="notes"><span class="tag time">⏱ 3 min</span><p class="say"><b>🎤 Say</b> For each task, which size would you try first? There is room for debate; the habit to build is starting small and moving up only when a test says so.</p><ul><li>Do it as a room vote.</li><li>For the coding agent, either answer can be right: test it.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="Quick check">
+  <div class="eyebrow">Quick check</div>
+  <h2>Did it click?</h2>
+  <div id="quiz"></div>
+  <aside class="notes"><span class="tag time">⏱ 1 min</span><p class="say"><b>🎤 Say</b> Quick check.</p><ul><li>Use wrong answers to revisit the cost calculator or the test slide.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="Takeaways">
+  <div class="eyebrow">Takeaways</div>
+  <h2>What to remember</h2>
+  <div class="cols-3" style="margin:10px 0 24px">
+    <div class="card"><b>⚖️ Right size for the job</b><p>Large, medium and small models trade quality against speed and cost. No single model is best for everything.</p></div>
+    <div class="card"><b>💸 Tokens are the bill</b><p>Cost = requests × tokens × price. Output tokens cost more, and volume multiplies everything.</p></div>
+    <div class="card"><b>🧪 Test, then choose</b><p>Run your own examples, set a bar, and pick the cheapest model that passes. Route the hard cases up.</p></div>
+  </div>
+  <div class="row"><a class="btn primary" data-nexttopic>Next →</a></div>
+  <aside class="notes"><span class="tag time">⏱ 30 sec</span><p class="say"><b>🎤 Say</b> Pick the right size for the job, remember that tokens are the bill, and choose with a test. That ends Session 1. Session 2 opens with RAG: grounding the model in your own documents.</p><ul><li>This topic is optional. Use it when the room asks “which model should we use?”, or set it as reading.</li></ul></aside>
+</section>
+
+<script src="../assets/course.js?v=7.0"></script>
+<script src="../assets/widgets.js?v=7.0"></script>
+<script>
+const { $, $$ } = W;
+const SAME = {
+  easy: { q: "Summarise this claim email in one line: “Rear-ended at a signal on 3 Nov, bumper damaged, other driver admitted fault.”",
+    r: [
+      ["claude-haiku-5-5", "Rear-end collision on 3 Nov; bumper damage; third party admits fault.", "≈1 s", "$0.0002", "good"],
+      ["claude-sonnet-5-5", "3 Nov rear-end collision at a signal: bumper damaged, other driver accepted fault.", "≈2 s", "$0.004", "good"],
+      ["claude-opus-5-5", "Rear-end collision at a signal on 3 November; bumper damage; the other driver admitted liability.", "≈4 s", "$0.008", "good"] ] },
+  hard: { q: "Is this water-damage claim covered? (Policy wording and a surveyor’s report attached, 18 pages.)",
+    r: [
+      ["claude-haiku-5-5", "Yes, water damage is covered under section 3.", "≈2 s", "$0.003", "bad"],
+      ["claude-sonnet-5-5", "Probably not: clause 5.3 excludes gradual seepage, and the surveyor dates the leak to several months. Recommend a handler review.", "≈6 s", "$0.09", "good"],
+      ["claude-opus-5-5", "Not covered as claimed: clause 5.3 excludes gradual seepage and the surveyor finds a months-old leak. The sudden pipe burst in week 1 may be covered under 3.2; suggest a partial settlement review.", "≈12 s", "$0.18", "good"] ] },
+};
+function sameHtml(k) {
+  const S = SAME[k];
+  return `<div class="bubble user" style="max-width:none">${S.q}</div><div id="same_${k}"></div>`;
+}
+W.tabs($("#same"), [{ label: "📝 Easy job", html: sameHtml("easy") }, { label: "⚖️ Hard job", html: sameHtml("hard") }], { onChange: (i, body) => {
+  const k = i ? "hard" : "easy", S = SAME[k];
+  W.tabs(body.querySelector("#same_" + k), S.r.map(([m, a, t, c, ok]) => ({ label: m, html: `<div class="bubble ai" style="max-width:none;border-color:var(--${ok})">${a} ${ok === "bad" ? "❌ <i>misses the exclusion clause</i>" : "✅"}</div><div class="stat"><span>⏱ ${t}</span><span>💸 ${c} per request</span></div>` })));
+} });
+
+W.clickInfo($("#tiers"), [
+  { icon: "🐇", title: "Small", sub: "claude-haiku-5-5", c: "good", html: "<p><b>Fastest and cheapest.</b> Classifying, extracting, routing, simple answers, high volume.</p><div class='stat'><span>$0.10 in / $0.50 out</span><span>1M-token context</span></div>" },
+  { icon: "🚗", title: "Medium", sub: "claude-sonnet-5-5", c: "model", html: "<p><b>The everyday default.</b> Writing, summarising, chat assistants, most coding and agent work.</p><div class='stat'><span>$2 in / $10 out</span><span>1M-token context</span></div>" },
+  { icon: "🦉", title: "Large", sub: "claude-opus-5-5", c: "autonomy", html: "<p><b>Most capable of the three.</b> Hard reasoning, long documents, long agent tasks where mistakes are costly.</p><div class='stat'><span>$4 in / $20 out</span><span>1M-token context</span></div>" },
+  { icon: "🏠", title: "Open-weight", sub: "run it yourself", c: "trust", html: "<p><b>Models you can download and host</b>, such as Llama, Mistral or Qwen. Data stays on your servers, but you pay for the hardware and the running of it, and quality varies.</p>" },
+], { cols: 4 });
+
+W.flips($("#five"), [
+  { front: "🎯 Quality", back: "How often is it right on <b>your</b> tasks? Larger models handle harder reasoning.", c: "model" },
+  { front: "⏱ Speed", back: "Time to the first word and to the full answer. Crucial for live chat.", c: "good" },
+  { front: "💸 Cost", back: "Price per million input and output tokens, times your volume.", c: "warn" },
+  { front: "🗂️ Context size", back: "How big the desk is. Most current models take 200K to 1M tokens.", c: "context" },
+  { front: "🧩 Features and rules", back: "Images, tools, thinking, and where the data is processed. Compliance can decide for you.", c: "trust" },
+], 5);
+
+const PRICES = [["Large · claude-opus-5-5", 4, 20, "autonomy"], ["Medium · claude-sonnet-5-5", 2, 10, "model"], ["Small · claude-haiku-5-5", 0.10, 0.50, "good"]];
+$("#costs").innerHTML = PRICES.map(([m, , , c]) => `<div class="costrow" style="--c:${W.cv(c)}"><div class="lab">${m}</div><div class="track"><div class="fill"></div></div><div class="amt"></div></div>`).join("");
+const fmt = (x) => x >= 100 ? "$" + Math.round(x).toLocaleString("en-GB") : "$" + x.toFixed(2);
+function calc() {
+  const r = +$("#cReq").value, i = +$("#cIn").value, o = +$("#cOut").value;
+  $("#vReq").textContent = r.toLocaleString("en-GB"); $("#vIn").textContent = i.toLocaleString("en-GB"); $("#vOut").textContent = o.toLocaleString("en-GB");
+  const monthly = PRICES.map(([, pi, po]) => r * 30 * (i * pi + o * po) / 1e6), max = Math.max(...monthly);
+  $$("#costs .costrow").forEach((row, k) => {
+    row.querySelector(".fill").style.width = Math.max(1, monthly[k] / max * 100) + "%";
+    row.querySelector(".amt").textContent = fmt(monthly[k]) + "/mo";
+  });
+}
+["#cReq", "#cIn", "#cOut"].forEach((s) => $(s).addEventListener("input", calc));
+document.addEventListener("slide:enter", (e) => { if (e.detail && e.detail.slide && e.detail.slide.dataset.title === "Cost calculator") { $$("#costs .fill").forEach((f) => f.style.width = "0"); setTimeout(calc, 60); } });
+calc();
+
+W.arch($("#router"), { vb: [820, 500], nodes: {"in": {"x": 10, "y": 200, "w": 150, "h": 100, "c": "muted", "tag": "Input", "t": "Customer message", "s": ["chat, email or form"], "d": "Every message from customers, all day."}, "rt": {"x": 220, "y": 190, "w": 170, "h": 120, "c": "warn", "tag": "Small model", "t": "Router", "s": ["claude-haiku-5-5", "Labels the request:", "easy · normal · hard"], "d": "A small, fast, cheap model that only decides how hard the request is. Code reads the label and picks the model."}, "sm": {"x": 500, "y": 40, "w": 300, "h": 90, "c": "good", "tag": "Small · fast · cheapest", "t": "FAQ answers", "s": ["claude-haiku-5-5"], "d": "Simple questions with a known answer: opening hours, documents needed, claim status."}, "md": {"x": 500, "y": 205, "w": 300, "h": 90, "c": "model", "tag": "Medium · the everyday choice", "t": "Claims and quotes", "s": ["claude-sonnet-5-5"], "d": "Most real work: summarising a claim, explaining a quote, drafting a reply."}, "lg": {"x": 500, "y": 370, "w": 300, "h": 90, "c": "autonomy", "tag": "Large · most capable", "t": "Complex disputes", "s": ["claude-opus-5-5"], "d": "The hard minority: long policy wording, conflicting evidence, careful reasoning."}}, edges: {"in-rt": ["in", "rt", "h"], "rt-sm": ["rt", "sm", "h", -30], "rt-md": ["rt", "md", "h"], "rt-lg": ["rt", "lg", "h", 30], "sm-md": ["sm", "md", "v"]}, flows: [{"name": "Simple question", "intro": "<p>Most traffic is easy. The router sends it to the small model.</p><p><b>Why:</b> the small model answers it just as well, in a fraction of the time and cost.</p>", "steps": [{"who": "Input → router", "t": "“What documents do I need for a claim?”", "note": "The router reads the message.", "on": ["in", "rt"], "think": ["rt"], "p": [{"e": "in-rt"}]}, {"who": "Router", "t": "Label: easy", "note": "One cheap call returns one word. Code picks the small model.", "on": ["rt", "sm"], "p": [{"e": "rt-sm"}], "code": "{ \"difficulty\": \"easy\", \"confidence\": 0.96 }"}, {"who": "Small model", "t": "Answer sent", "note": "A short, correct answer in about a second.", "on": ["sm"], "p": [{"e": "rt-sm", "r": 1}]}]}, {"name": "Typical claim", "intro": "<p>A normal piece of work goes to the medium model.</p><p><b>Why:</b> it needs real understanding, but not the most expensive model.</p>", "steps": [{"who": "Input → router", "t": "Claim email with photos and a garage estimate", "note": "The router reads the message.", "on": ["in", "rt"], "think": ["rt"], "p": [{"e": "in-rt"}]}, {"who": "Router", "t": "Label: normal", "note": "Code picks the medium model.", "on": ["rt", "md"], "p": [{"e": "rt-md"}], "code": "{ \"difficulty\": \"normal\", \"confidence\": 0.91 }"}, {"who": "Medium model", "t": "Summary and draft reply", "note": "Good quality at a mid price. This is where most work lands.", "on": ["md"], "think": ["md"], "p": [{"e": "rt-md", "r": 1}]}]}, {"name": "Hard case", "intro": "<p>The hard minority goes to the large model.</p><p><b>Why:</b> you pay for the most capable model only where it makes a difference.</p>", "steps": [{"who": "Input → router", "t": "Dispute over an exclusion clause, 40 pages of evidence", "note": "The router reads the message.", "on": ["in", "rt"], "think": ["rt"], "p": [{"e": "in-rt"}]}, {"who": "Router", "t": "Label: hard", "note": "Code picks the large model.", "on": ["rt", "lg"], "p": [{"e": "rt-lg"}], "code": "{ \"difficulty\": \"hard\", \"confidence\": 0.88 }"}, {"who": "Large model", "t": "Careful analysis for a claims handler", "note": "Slower and pricier, but this case justifies it. A person still decides.", "on": ["lg"], "think": ["lg"], "p": [{"e": "rt-lg", "r": 1}]}]}, {"name": "Escalation", "intro": "<p>Another common design: try the small model first and move up only if it is unsure.</p><p><b>Why:</b> you start cheap and escalate the few cases that need more.</p>", "steps": [{"who": "Input → router", "t": "“Am I covered if my son drives abroad?”", "note": "Looks simple, so it goes to the small model.", "on": ["in", "rt"], "p": [{"e": "in-rt"}]}, {"who": "Router → small model", "t": "Label: easy", "note": "The small model tries first.", "on": ["rt", "sm"], "think": ["sm"], "p": [{"e": "rt-sm"}]}, {"who": "Small model", "t": "Not sure: escalate", "note": "It returns low confidence instead of guessing. Code passes the case up.", "bad": ["sm"], "p": [{"e": "sm-md", "x": 1}], "code": "{ \"answer\": null, \"confidence\": 0.41, \"reason\": \"depends on the territorial limits clause\" }"}, {"who": "Medium model", "t": "Answer with the clause quoted", "note": "Only the uncertain few pay the higher price.", "on": ["md"], "think": ["md"], "p": [{"e": "sm-md"}]}]}] });
+
+W.clickInfo($("#dial"), [
+  { icon: "⚡", title: "Low effort", sub: "answer straight away", c: "good", html: "<p>Fast and cheap. Fine for simple questions, classification and chat.</p>" },
+  { icon: "⚖️", title: "Medium effort", sub: "think a little", c: "model", html: "<p>A sensible default for everyday work.</p>" },
+  { icon: "🧠", title: "High effort", sub: "work it through first", c: "autonomy", html: "<p>Slower and uses more tokens, but better on hard reasoning, maths, code and long tasks. Thinking tokens are billed as output.</p>" },
+], { cols: 3, start: 1 });
+
+const EVAL = [["Small · claude-haiku-5-5", 41, "1.2 s", 0.5], ["Medium · claude-sonnet-5-5", 48, "3.5 s", 10.0], ["Large · claude-opus-5-5", 49, "7.0 s", 20.0]], BAR = 0.95;
+const tb = $("#evtab tbody");
+function evReset() {
+  tb.innerHTML = EVAL.map(([m]) => `<tr><td><b>${m}</b></td><td class="cell"></td><td class="cell acc"></td><td class="cell"></td><td class="cell"></td></tr>`).join("");
+  $("#evMsg").textContent = ""; $("#evRun").disabled = false;
+}
+let evTimers = [];
+function evRun() {
+  evReset(); $("#evRun").disabled = true;
+  const rows = $$("tr", tb);
+  EVAL.forEach(([m, ok, t, c], k) => {
+    const cells = $$("td.cell", rows[k]), acc = ok / 50;
+    [ok, Math.round(acc * 100) + "%", t, "$" + c.toFixed(2)].forEach((v, j) => {
+      evTimers.push(setTimeout(() => { cells[j].textContent = v; cells[j].classList.add("show"); if (j === 1 && acc < BAR) rows[k].classList.add("fail"); }, 350 + k * 900 + j * 180));
+    });
+  });
+  evTimers.push(setTimeout(() => { rows[1].classList.add("win"); $("#evMsg").innerHTML = "✅ <b>Medium</b> is the cheapest model that clears the 95% bar."; }, 350 + 3 * 900 + 300));
+}
+$("#evRun").onclick = evRun;
+$("#evReset").onclick = () => { evTimers.forEach(clearTimeout); evTimers = []; evReset(); };
+evReset();
+
+W.classify($("#pick"), [{"text": "Sort 50,000 emails a day into claim, quote or complaint.", "a": 0, "why": "High volume, simple labels: a <b>small</b> model is fast and cheap enough."}, {"text": "Pull the policy number and date out of a form.", "a": 0, "why": "Extraction with a clear answer: <b>small</b>."}, {"text": "Summarise a claim and draft a polite reply to the customer.", "a": 1, "why": "Everyday writing and understanding: <b>medium</b>."}, {"text": "A chat assistant for agents answering product questions.", "a": 1, "why": "Good quality and quick replies: <b>medium</b> is the usual default."}, {"text": "Compare two 60-page reinsurance contracts and list every difference in liability.", "a": 2, "why": "Long, careful reasoning where mistakes are costly: <b>large</b>."}, {"text": "An agent that fixes bugs across a large codebase.", "a": 2, "why": "Long multi-step work with many decisions: <b>large</b> (or medium with high effort, if tests show it is enough)."}], [{"label": "Small", "c": "good"}, {"label": "Medium", "c": "model"}, {"label": "Large", "c": "autonomy"}], { cols: 2 });
+W.quiz($("#quiz"), [{"q": "What is the best way to choose between two models for a task?", "o": ["Always pick the newest", "Always pick the cheapest", "Test both on your own real examples and compare quality, speed and cost", "Pick the one with the biggest context window"], "a": 2, "e": "Benchmarks are a starting point. Your own examples decide."}, {"q": "Why do output tokens matter so much for cost?", "o": ["They are free", "They usually cost several times more per token than input", "They are counted twice", "Only output tokens are charged"], "a": 1, "e": "Output is typically about five times the price of input, so long answers add up quickly."}, {"q": "Your app handles 50,000 simple classification requests a day. What should you try first?", "o": ["The largest model, to be safe", "A small model, checked against a test set", "A model with a 1M-token context window", "No model at all"], "a": 1, "e": "Small models are often good enough for simple, high-volume tasks. Prove it with a test set."}]);
+</script>
+<script src="../assets/deck.js?v=7.0"></script>
+</body>
+</html>

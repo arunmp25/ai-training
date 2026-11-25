@@ -1,0 +1,793 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Topic 11 · RAG patterns and vector databases</title>
+<link rel="stylesheet" href="../assets/style.css?v=7.0">
+<link rel="stylesheet" href="../assets/widgets.css?v=7.0">
+<link rel="stylesheet" href="../assets/story.css?v=7.0">
+<style>
+  .rec-list { display: grid; gap: 6px; max-height: 52vh; overflow-y: auto; }
+  .rec { display: grid; grid-template-columns: 70px 1fr; gap: 8px; padding: 8px 10px; border-radius: 6px; border: 1px solid var(--line); background: var(--card); cursor: pointer; font-size: 14px; transition: opacity .3s; }
+  .rec.on { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+  .rec .id { font-family: ui-monospace, Menlo, monospace; color: var(--muted); font-size: 12.5px; }
+  .rec.out { opacity: .5; }
+  .rec .why { font-size: 12px; color: var(--bad); font-weight: 700; }
+  .rec .sc { float: right; font-weight: 800; color: var(--good); font-variant-numeric: tabular-nums; }
+  .scale-tbl { width: 100%; border-collapse: collapse; }
+  .scale-tbl td, .scale-tbl th { padding: 10px 12px; border-bottom: 1px solid var(--line); text-align: right; font-variant-numeric: tabular-nums; }
+  .scale-tbl th { font-size: 12px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }
+  .scale-tbl td:first-child, .scale-tbl th:first-child { text-align: left; }
+  .hnsw svg { width: 100%; max-height: 54vh; aspect-ratio: 1.6; background: var(--card); border: 1px solid var(--line); border-radius: 6px; }
+  .cols3r { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  .rlist { display: grid; gap: 6px; }
+  .rlist div { padding: 8px 10px; border-radius: 9px; background: var(--card); border: 1px solid var(--line); font-size: 13.5px; }
+  .rlist div.good { border-color: var(--good); background: color-mix(in srgb, var(--good) 10%, var(--card)); }
+  .rlist div.bad { border-color: color-mix(in srgb, var(--bad) 60%, var(--line)); }
+  .rlist .rk { font-weight: 800; color: var(--muted); margin-right: 6px; }
+  .rlist .sc { float: right; color: var(--muted); font-size: 12px; font-variant-numeric: tabular-nums; }
+  .rr { position: relative; }
+  .rr .item { position: absolute; left: 0; right: 0; padding: 9px 12px; border-radius: 6px; background: var(--card); border: 1px solid var(--line); font-size: 14.5px; transition: top .7s cubic-bezier(.3,.9,.3,1), border-color .4s, background .4s; }
+  .rr .item.best { border-color: var(--good); background: color-mix(in srgb, var(--good) 12%, var(--card)); }
+  .rr .item .sc { float: right; font-weight: 800; font-variant-numeric: tabular-nums; }
+  .gold td, .gold th { padding: 8px 10px; border-bottom: 1px solid var(--line); font-size: 14px; text-align: left; }
+  .gold th { font-size: 12px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }
+  .gold td.c { text-align: center; font-weight: 800; }
+  /* ---- v5: RAG patterns ---- */
+  .pat { display: grid; grid-template-columns: 250px 1fr; gap: 16px; }
+  .pat-list { display: flex; flex-direction: column; gap: 4px; }
+  .pat-list .grp { font-size: 12px; text-transform: uppercase; letter-spacing: .1em; color: var(--muted); font-weight: 800; margin: 4px 0 2px; }
+  .pat-list button { text-align: left; padding: 6px 10px; border-radius: 6px; border: 1px solid var(--line); background: var(--card); color: var(--text); font: inherit; font-size: 14.5px; cursor: pointer; }
+  .pat-list button.on { border-color: var(--brand); background: color-mix(in srgb, var(--brand) 14%, var(--card)); font-weight: 700; }
+  .pat-main { padding: 14px 18px; }
+  .pat-main h3 { margin: 0; font-size: 23px; }
+  .pflow { position: relative; display: flex; align-items: center; margin: 22px 0 50px; }
+  .pnode { --c: var(--brand); flex: 0 0 auto; width: 108px; text-align: center; padding: 8px 6px; border-radius: 8px; border: 2px solid var(--line); background: var(--card2); font-size: 12.5px; line-height: 1.25; opacity: .55; transition: all .3s; }
+  .pnode .i { font-size: 24px; display: block; }
+  .pnode.lit { opacity: 1; border-color: var(--c); background: color-mix(in srgb, var(--c) 16%, var(--card)); transform: translateY(-3px); }
+  .ppar { display: flex; flex-direction: column; gap: 6px; }
+  .pcon { flex: 1; min-width: 12px; height: 4px; border-radius: 2px; background: var(--line); overflow: hidden; }
+  .pcon i { display: block; height: 100%; background: var(--brand); transform: scaleX(0); transform-origin: left; transition: transform .3s; }
+  .pcon.lit i { transform: scaleX(1); }
+  .ploop { position: absolute; top: 100%; height: 26px; border: 2px dashed var(--muted); border-top: none; border-radius: 0 0 14px 14px; opacity: .6; transition: all .3s; }
+  .ploop span { position: absolute; left: 50%; top: 100%; transform: translate(-50%, -50%); background: var(--card); padding: 0 8px; font-size: 12.5px; font-weight: 700; white-space: nowrap; color: var(--muted); }
+  .ploop.lit { border-color: var(--warn); opacity: 1; }
+  .ploop.lit span { color: var(--warn); }
+  .pinfo { display: grid; grid-template-columns: 120px 1fr; gap: 9px 12px; font-size: 15.5px; }
+  .pinfo > b { color: var(--muted); font-size: 12.5px; text-transform: uppercase; letter-spacing: .06em; padding-top: 3px; }
+  .pinfo .eg { font-style: italic; }
+  #whichPat .cl-item { padding: 9px 12px; }
+  #whichPat .cl-text { font-size: 14.5px; margin-bottom: 6px; }
+  #whichPat .cl-why { font-size: 13px; }
+  /* ladder */
+  .lad-wrap { display: grid; grid-template-columns: 1fr 340px; gap: 18px; align-items: end; }
+  .ladder { display: flex; flex-direction: column-reverse; gap: 8px; }
+  .rung { display: flex; align-items: center; gap: 12px; padding: 10px 14px; border-radius: 6px; border: 2px solid var(--line); background: var(--card); opacity: .5; transform: translateY(10px); transition: all .45s; }
+  .rung:nth-child(2) { margin-left: 40px; } .rung:nth-child(3) { margin-left: 80px; } .rung:nth-child(4) { margin-left: 120px; }
+  .rung.on { opacity: 1; transform: none; }
+  .rung.cur { border-color: var(--brand); box-shadow: 0 0 0 1px var(--brand); }
+  .rung .no { width: 28px; height: 28px; border-radius: 50%; background: var(--brand); color: var(--on-brand); display: grid; place-items: center; font-weight: 800; flex: 0 0 auto; }
+  .rung .ic { font-size: 26px; }
+  .rung b { display: block; font-size: 16.5px; } .rung small { color: var(--muted); font-size: 13.5px; }
+  .lad-meters { display: grid; gap: 12px; padding: 14px 16px; }
+  .lad-meters .m .l { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+  .lad-meters .m .t { height: 14px; border-radius: 7px; background: var(--card2); overflow: hidden; }
+  .lad-meters .m .t i { display: block; height: 100%; border-radius: 7px; transition: width .6s ease; }
+  /* vector database picker */
+  .vq { display: grid; gap: 12px; }
+  .vq .qq b { display: block; font-size: 14px; margin-bottom: 6px; }
+  .vq .seg { display: flex; flex-wrap: wrap; gap: 6px; }
+  .vq .seg button { padding: 6px 12px; border-radius: 999px; border: 1px solid var(--line); background: var(--card); color: var(--text); font: inherit; font-size: 14px; cursor: pointer; }
+  .vq .seg button.on { border-color: var(--brand); background: var(--brand); color: var(--on-brand); font-weight: 700; }
+  .vrec { padding: 18px 20px; border-top: 4px solid var(--brand); }
+  .vrec .k { font-size: 12px; text-transform: uppercase; letter-spacing: .1em; color: var(--muted); font-weight: 800; }
+  .vrec .pick { font-size: 26px; font-weight: 800; margin: 4px 0 10px; }
+  .vrec.pop .pick { animation: vPop .45s ease; }
+  @keyframes vPop { 0% { transform: scale(.85); opacity: 0; } 70% { transform: scale(1.04); } 100% { transform: scale(1); opacity: 1; } }
+  .vrec p { margin: 0 0 10px; font-size: 15.5px; }
+  /* build or buy */
+  .tiers { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  .tier { --c: var(--accent); border-top: 4px solid var(--c); padding: 14px 16px; opacity: .5; transform: translateY(12px); transition: all .5s; }
+  .tier.on { opacity: 1; transform: none; }
+  .tier h3 { margin: 0; font-size: 21px; }
+  .tier .ts { color: var(--muted); font-size: 13px; margin-bottom: 8px; }
+  .tier p { margin: 0 0 7px; font-size: 13.5px; }
+  .tier p b { display: block; font-size: 12px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }
+  .tm { display: grid; grid-template-columns: 100px 1fr; gap: 5px 8px; align-items: center; font-size: 12.5px; margin-top: 10px; }
+  .tm i { display: block; height: 10px; border-radius: 5px; background: var(--card2); position: relative; overflow: hidden; }
+  .tm i::after { content: ""; position: absolute; inset: 0; width: 0; background: var(--c); border-radius: 5px; transition: width .8s ease .2s; }
+  .tier.on .tm i::after { width: var(--w); }
+  #buyNote { opacity: 0; transition: opacity .4s; } #buyNote.on { opacity: 1; }
+  .dd-list { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; max-width: 980px; }
+  .dd-list a { display: flex; gap: 10px; align-items: center; padding: 14px 16px; border-radius: 6px; border: 1px solid var(--line); background: var(--card); cursor: pointer; font-size: 16px; font-weight: 600; color: var(--text); text-decoration: none; }
+  .dd-list a:hover { border-color: var(--brand); }
+  .dd-list a b { font-size: 24px; }
+</style>
+</head>
+<body class="deck" data-id="07c">
+
+<section class="slide title-slide" data-title="Welcome">
+  <div class="big-emoji">🧩</div>
+  <div class="eyebrow">Session 2 · Topic 11</div>
+  <h1>RAG patterns and vector databases</h1>
+  <p class="sub">How teams get the <b>right</b> chunks, not just similar ones: filters, hybrid search and re-ranking, <b>nine RAG patterns</b> in common use, which <b>vector database</b> to pick, and when not to build at all.</p>
+  <aside class="notes"><span class="tag time">⏱ 30 sec</span><p class="say"><b>🎤 Say</b> Embeddings find the nearest chunks. This topic is about making them the right chunks, the patterns teams use in real systems, and the practical choices: which database, and whether to build anything at all.</p><ul><li>Recap in one line: chunks become vectors (Topic 10). Now where do they live, and how do we make retrieval reliable?</li><li>How vector search gets fast (HNSW) is in the optional deep dive at the end.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="What it stores">
+  <div class="eyebrow">Inside a vector database</div>
+  <h2>A record = vector + text + metadata</h2>
+  <p class="sub">Each chunk is stored as one record. Click a record to see everything that’s saved with it.</p>
+  <div class="split">
+    <div class="rec-list" id="recs"></div>
+    <div class="stack-v"><pre class="code" id="recJson" style="max-height:40vh;overflow:auto"></pre>
+      <div class="callout" style="--c:var(--c-knowledge);font-size:14.5px"><b>Normal database:</b> “find rows <i>where</i> dept = HR” (exact match).<br><b>Vector database:</b> “find the 5 rows <i>nearest</i> to this vector” (similarity), optionally <i>plus</i> exact filters on metadata.</div></div>
+  </div>
+  <aside class="notes"><span class="tag time">⏱ 3 min</span><p class="say"><b>🎤 Say</b> Each chunk is stored as one record: the vector, the text and metadata. Metadata gives you citations, freshness and permission checks.</p><ul><li>Metadata is the unsung hero: <code>source</code> and <code>section</code> give you citations, <code>updated</code> lets you prefer fresh docs, <code>access</code> stops permission leaks.</li><li>The text is stored too, because the model needs the words, not the numbers.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="A query, with filters">
+  <div class="eyebrow">Querying</div>
+  <h2>Top-k + metadata filters = the right chunks for <i>this</i> user</h2>
+  <p class="sub">An employee asks <b>“How is the annual bonus calculated?”</b>. Turn the filters on and off.</p>
+  <div class="split wide-left">
+    <div class="rec-list" id="fRecs" style="max-height:56vh"></div>
+    <div class="stack-v">
+      <div class="toggle-row"><span class="switch" id="fAcc"></span><b>Only what this user may see</b></div>
+      <div class="toggle-row"><span class="switch" id="fNew"></span><b>Only the current version</b></div>
+      <div><div class="label">Top-k: <span id="fkLbl"></span></div><input type="range" id="fk" min="1" max="6" value="3"></div>
+      <pre class="code" id="fCode" style="font-size:12.5px"></pre>
+      <div class="callout" id="fNote" style="font-size:14px"></div>
+    </div>
+  </div>
+  <aside class="notes"><span class="tag time">⏱ 3 min</span><p class="say"><b>🎤 Say</b> Filters make sure the results are right for this user. Without them, the top hit is an HR-only spreadsheet and an out-of-date policy.</p><ul><li>With both filters off, the top hit is the <b>salary bands spreadsheet</b> (HR-only) and the 2023 policy. Nearest in meaning, but wrong for this user and out of date.</li><li>Filters run <i>inside</i> the database query, so forbidden chunks never reach the model at all. Never rely on the prompt to hide them.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="Hybrid search">
+  <div class="eyebrow">Better retrieval</div>
+  <h2>Hybrid search: keywords and meaning, combined</h2>
+  <p class="sub">Ever searched for policy POL-88812 and got POL-88821? Meaning search finds “similar”, and similar numbers aren’t the same policy. Keyword search (<b>BM25</b>) is great at exact codes and names. Vector search is great at meaning. Hybrid runs both and merges the rankings. Pick a question. ✅ = the chunk that actually answers it.</p>
+  <div class="row" style="margin-bottom:12px" id="hyQ"></div>
+  <div class="cols3r" id="hyCols"></div>
+  <p class="muted" style="font-size:13px;margin-top:10px">Merged with <b>Reciprocal Rank Fusion</b>: each chunk scores 1 ÷ (60 + its rank) in each list, and the scores are added. Being near the top of <i>either</i> list helps.</p>
+  <aside class="notes"><span class="tag time">⏱ 3 min</span><p class="say"><b>🎤 Say</b> Search for POL-88812 and meaning search may return POL-88821, because similar numbers look alike to an embedding. Keyword search catches exact matches, so we run both.</p><ul><li>Error code question: vector search puts E-4417 first (it looks alike to an embedding); keyword nails E-4471.</li><li>“Won’t let me in”: keyword search gets distracted by “laptop” (bag policy, refresh) and buries the answer at #3; vector search nails it.</li><li>Uber question: keyword grabs the Uber Business setup page; vector understands “ride-hailing”. Hybrid lifts the chunk that ranks well in both.</li><li>Hybrid gets both right. That’s why most production RAG uses hybrid search.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="Re-ranking">
+  <div class="eyebrow">Better retrieval</div>
+  <h2>Re-ranking: a careful second read of the shortlist</h2>
+  <p class="sub">Vector search compares two <i>summaries</i> (vectors), so it’s fast but rough. A <b>re-ranker</b> reads the question and each chunk <i>together</i>, so it’s slower but much sharper. Use it on the top 20–50 only. Question: <b>“Can I bring my dog to the office?”</b></p>
+  <div class="split wide-left">
+    <div class="rr" id="rr"></div>
+    <div class="stack-v">
+      <div class="row"><button class="btn primary" id="rrGo">🔁 Run the re-ranker</button><button class="btn ghost" id="rrReset">↺ Reset</button></div>
+      <div class="callout" id="rrNote" style="font-size:14.5px"></div>
+    </div>
+  </div>
+  <aside class="notes"><span class="tag time">⏱ 2 min</span><p class="say"><b>🎤 Say</b> A re-ranker reads the question and each candidate together. It is slower but much more precise, so it only sees the shortlist.</p><ul><li>The classic two-stage design: <b>retrieve</b> broadly and cheaply (top 50), then <b>re-rank</b> precisely and keep the top 3–5 for the prompt.</li><li>Technical names: vector search uses a bi-encoder (each text embedded separately); a re-ranker is a cross-encoder (both texts read together).</li></ul></aside>
+</section>
+
+<section class="slide seq-slide" data-title="Sequence: Hybrid search and re-ranking, in order">
+  <div class="eyebrow">Sequence diagram</div>
+  <h2>Hybrid search and re-ranking, in order</h2>
+  <p class="sub">Searching “POL-88812 claim history”: meaning search alone confuses near-identical IDs, so two searches run and a re-ranker picks.</p>
+  <div id="seqHybrid"></div>
+  <aside class="notes"><span class="tag time">⏱ 3 min</span><p class="say"><b>🎤 Say</b> Here is that whole flow as a sequence: two searches in parallel, merge, re-rank, then the model. The look-alike policy drops out at the re-ranking step.</p><ul><li>Step through with → or the clicker. Each step shows the real message on the right.</li><li>Order of cost: keyword (cheapest), vector, re-ranker (most expensive per item). That is why the funnel narrows.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="Nine RAG patterns">
+  <div class="eyebrow">RAG patterns</div>
+  <h2>Nine RAG patterns teams actually use</h2>
+  <p class="sub">Each one fixes a specific problem. Press <b>→</b> to walk through them, or click one.</p>
+  <div class="pat">
+    <div class="pat-list" id="patList"></div>
+    <div class="card pat-main">
+      <h3 id="patName"></h3>
+      <div class="pflow" id="patFlow"></div>
+      <div class="pinfo" id="patInfo"></div>
+    </div>
+  </div>
+  <aside class="notes"><span class="tag time">⏱ 6 min</span><p class="say"><b>🎤 Say</b> These are the nine patterns you will meet in real RAG systems. The first six find better chunks; the last three let the model think while it searches. None of them is magic: each fixes one specific problem, so you add it when you see that problem.</p><ul><li>Each → lights up the next pattern’s flow. The dashed loop under agentic and corrective RAG is the “try again” step.</li><li>Hybrid and re-ranking were the previous slides; spend the time on the new ones.</li><li>Permission-aware is not optional. Say it twice.</li><li>Agentic RAG is where RAG meets tools and agents (Topics 12 and 15): search becomes a tool the model decides to call.</li><li>GraphRAG needs a knowledge graph built first (customers, policies, claims, brokers and how they link). Powerful, but real work.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="Which pattern?">
+  <div class="eyebrow">Try it</div>
+  <h2>Which pattern fixes it?</h2>
+  <p class="sub">Six real complaints about a RAG assistant. Pick the pattern that fixes each one.</p>
+  <div id="whichPat"></div>
+  <aside class="notes"><span class="tag time">⏱ 3 min</span><p class="say"><b>🎤 Say</b> Here are six complaints about a RAG assistant. For each, which pattern fixes it? Let the room vote before you click.</p><ul><li>Answers: hybrid, permissions, rewrite, small-to-big, agentic, GraphRAG.</li><li>The salary one is a security incident, not a quality issue. Filters belong inside the database query.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="Start simple">
+  <div class="eyebrow">Practical advice</div>
+  <h2>Start simple. Add a pattern when you see the problem.</h2>
+  <p class="sub">Press <b>→</b> to climb. Every rung improves answers, and adds cost, delay and things to run.</p>
+  <div class="lad-wrap">
+    <div class="ladder" id="ladder">
+      <div class="rung" data-s="1"><span class="no">1</span><span class="ic">📄</span><div><b>Basic RAG + permission filters</b><small>Start here. Filters from day one.</small></div></div>
+      <div class="rung" data-s="2"><span class="no">2</span><span class="ic">🔤</span><div><b>Add hybrid search</b><small>When IDs, codes or names are missed.</small></div></div>
+      <div class="rung" data-s="3"><span class="no">3</span><span class="ic">🎯</span><div><b>Add re-ranking and small-to-big</b><small>When the right chunk is found but not on top, or answers lack context.</small></div></div>
+      <div class="rung" data-s="4"><span class="no">4</span><span class="ic">🤖</span><div><b>Add agentic, corrective or GraphRAG</b><small>When questions need several searches, or links across records.</small></div></div>
+    </div>
+    <div class="card lad-meters" id="ladMeters"></div>
+  </div>
+  <div class="callout" style="--c:var(--c-trust);font-size:14.5px;margin-top:14px">Climb one rung at a time. Re-run your golden questions (later in this topic) and keep a step only if the score goes up.</div>
+  <aside class="notes"><span class="tag time">⏱ 2 min</span><p class="say"><b>🎤 Say</b> The most common mistake is building the fanciest pattern first. Start with basic RAG and permission filters, measure, and climb only when you see a specific problem. Each rung adds quality, and also cost, delay and things to look after.</p><ul><li>Each → adds a rung and moves the meters.</li><li>Many internal assistants never need rung 4.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="End to end">
+  <div class="eyebrow">Putting it together</div>
+  <h2>One question, the whole journey</h2>
+  <p class="sub">“How is the annual bonus calculated?” Step through a production-grade RAG pipeline.</p>
+  <div class="split wide-right"><div id="e2eCtrl"></div><div id="e2eLog" style="max-height:52vh"></div></div>
+  <aside class="notes"><span class="tag time">⏱ 3 min</span><p class="say"><b>🎤 Say</b> One question, the whole journey, from chunking to the cited answer. Every step is something we have covered.</p><ul><li>Each step maps to something we covered: chunking (Topic 9), embeddings (Topic 10), filters, hybrid, re-ranking (Topic 11; the HNSW index is in the deep dive), the augmented prompt (Topic 9), citations.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="Which vector database?">
+  <div class="eyebrow">Practical choice</div>
+  <h2>Which vector database should we use?</h2>
+  <p class="sub">Answer four questions. The usual answer is <b>the database you already run</b>.</p>
+  <div class="split wide-left">
+    <div class="vq" id="vq"></div>
+    <div class="stack-v">
+      <div class="card vrec" id="vrec"></div>
+      <p class="muted" style="font-size:12.5px;margin:0">All of these do top-k search and metadata filters. Product names change fast: this is November 2026, so check before you commit.</p>
+    </div>
+  </div>
+  <aside class="notes"><span class="tag time">⏱ 3 min</span><p class="say"><b>🎤 Say</b> Which vector database? For most teams the honest answer is the one you already run. Postgres has pgvector, MongoDB and Elasticsearch have vector search built in, and every cloud has a managed option. A dedicated vector database earns its place at very large scale or when you need full control.</p><ul><li>Try: PostgreSQL + production → pgvector. Then “Nothing suitable” + Azure → Azure AI Search. Then On-premises + hundreds of millions → Milvus.</li><li>Prototype always gives a local library: fine for a demo, move before real users arrive.</li><li>What decides it in practice: who will run it, where the data must live, and whether you need hybrid search and permission filters.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="The landscape">
+  <div class="eyebrow">For reference</div>
+  <h2>The vector database landscape: six families</h2>
+  <p class="sub">The main families. Many teams start with what they already run.</p>
+  <table class="cmp">
+    <tr><th>Family</th><th>Examples</th><th>Good when</th></tr>
+    <tr><td><b>🐘 Extension to your existing database</b></td><td>pgvector (PostgreSQL), MongoDB Atlas Vector Search</td><td>You already run it; vectors sit next to your normal data; up to millions of chunks</td></tr>
+    <tr><td><b>☁️ Managed vector service</b></td><td>Pinecone, Zilliz Cloud, Weaviate Cloud, Qdrant Cloud</td><td>Large scale with no ops team; pay as you go</td></tr>
+    <tr><td><b>📦 Open-source vector database</b></td><td>Weaviate, Qdrant, Milvus</td><td>You want control, self-hosting or on-premises data</td></tr>
+    <tr><td><b>🔎 Search engine with vectors</b></td><td>Elasticsearch, OpenSearch</td><td>You already have search; strong keyword + hybrid</td></tr>
+    <tr><td><b>🏢 Cloud platform search</b></td><td>Azure AI Search, Google Vertex AI Vector Search, Amazon OpenSearch Service</td><td>You’re committed to one cloud and want it integrated</td></tr>
+    <tr><td><b>💻 Local / embedded library</b></td><td>Chroma, LanceDB, FAISS</td><td>Prototypes, notebooks, small apps, running on a laptop</td></tr>
+  </table>
+  <aside class="notes"><span class="tag time">⏱ 2 min</span><p class="say"><b>🎤 Say</b> Choosing a vector database: many teams start with the database they already run. Product names change fast, so check before recommending.</p><ul><li>Product names change fast. Check the current offerings before recommending one.</li><li>Questions that decide it: How many vectors? Do we need hybrid search? Filtering and permissions? Where must data live? Who runs it?</li></ul></aside>
+</section>
+
+<section class="slide" data-title="Build or buy?">
+  <div class="eyebrow">Build or buy?</div>
+  <h2>You may not need to build a pipeline at all</h2>
+  <p class="sub">Three ways to get RAG. Press <b>→</b> to reveal each.</p>
+  <div class="tiers" id="tiers">
+    <div class="tier card" data-s="1" style="--c:var(--good)">
+      <h3>🛒 Use it</h3><div class="ts">Upload files to an assistant · no code</div>
+      <p><b>Examples</b> Claude Projects, ChatGPT Projects, Microsoft 365 Copilot over SharePoint, Google NotebookLM</p>
+      <p><b>Good for</b> A team asking questions of its own documents. Working this afternoon.</p>
+      <p><b>Limits</b> Little control over chunking, search or who sees what.</p>
+      <div class="tm"><span>Speed to start</span><i style="--w:95%"></i><span>Control</span><i style="--w:20%"></i><span>Effort to run</span><i style="--w:10%"></i></div>
+    </div>
+    <div class="tier card" data-s="2" style="--c:var(--c-knowledge)">
+      <h3>⚙️ Configure it</h3><div class="ts">Managed RAG service · some setup</div>
+      <p><b>Examples</b> Amazon Bedrock Knowledge Bases, Azure AI Search, Google Vertex AI RAG Engine, Pinecone Assistant</p>
+      <p><b>Good for</b> Internal apps on your cloud. Point it at a bucket or SharePoint; it chunks, embeds, stores and searches.</p>
+      <p><b>You still own</b> Permissions, the prompt, testing with golden questions.</p>
+      <div class="tm"><span>Speed to start</span><i style="--w:65%"></i><span>Control</span><i style="--w:55%"></i><span>Effort to run</span><i style="--w:40%"></i></div>
+    </div>
+    <div class="tier card" data-s="3" style="--c:var(--c-action)">
+      <h3>🛠️ Build it</h3><div class="ts">Your own pipeline · a team to run it</div>
+      <p><b>Examples</b> Your chunker + embedding model + vector database + re-ranker, often joined up with LangChain or LlamaIndex</p>
+      <p><b>Good for</b> Customer-facing systems, tricky documents (tables, scanned forms), strict control and audit.</p>
+      <p><b>You still own</b> Everything, including keeping the index fresh.</p>
+      <div class="tm"><span>Speed to start</span><i style="--w:25%"></i><span>Control</span><i style="--w:95%"></i><span>Effort to run</span><i style="--w:90%"></i></div>
+    </div>
+  </div>
+  <div class="callout" id="buyNote" style="--c:var(--c-trust);font-size:14.5px;margin-top:14px">Many teams start with <b>Configure it</b> and build only the parts that need more control. Whichever you pick, check where the documents are stored and who can see them.</div>
+  <aside class="notes"><span class="tag time">⏱ 3 min</span><p class="say"><b>🎤 Say</b> Before building a pipeline, ask whether you need one. A team can upload documents to an assistant today. A managed service on your cloud does the chunking, embedding and search for you. Build your own only where you need the control.</p><ul><li>Each → reveals the next option and fills its meters.</li><li>“Use it” is often the right answer for a team’s own documents, provided the data is allowed in that tool.</li><li>Even with a managed service, permissions and evaluation are still your job.</li><li>Product names change fast; this list is November 2026.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="Measure retrieval">
+  <div class="eyebrow">Evaluation</div>
+  <h2>Measure retrieval with a golden question set</h2>
+  <p class="sub">Write 50–200 real questions and note which chunk answers each. Then measure where that chunk ends up. Move <b>k</b>.</p>
+  <div class="split wide-left">
+    <table class="gold" id="gold" style="width:100%;border-collapse:collapse"></table>
+    <div class="stack-v">
+      <div><div class="label">k (chunks kept): <span id="gkLbl"></span></div><input type="range" id="gk" min="1" max="10" value="3"></div>
+      <div class="card"><div class="kv" id="gStats"></div></div>
+      <div class="callout" style="--c:var(--c-trust);font-size:14px">Also check the <b>answers</b>: are they <b>grounded</b> (every claim supported by a retrieved chunk) and <b>correct</b>? More in Topic 18.</div>
+    </div>
+  </div>
+  <aside class="notes"><span class="tag time">⏱ 2 min</span><p class="say"><b>🎤 Say</b> Measure retrieval with a set of real questions. If the right chunk is not retrieved, the model cannot use it.</p><ul><li><b>Recall@k</b>: how often the right chunk is in the top k. If it’s not retrieved, the model can’t use it.</li><li><b>MRR</b> (mean reciprocal rank): rewards putting the right chunk near the top.</li><li>Re-run the set every time you change chunking, embeddings, k or the re-ranker.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="Where RAG goes wrong">
+  <div class="eyebrow">Failure modes</div>
+  <h2>Where RAG goes wrong</h2>
+  <p class="sub">When a RAG system gives a bad answer, it’s usually retrieval, not the model. Flip for the fix.</p>
+  <div id="fails"></div>
+  <aside class="notes"><span class="tag time">⏱ 2 min</span><p class="say"><b>🎤 Say</b> When a RAG answer is wrong, it is usually retrieval, not the model. Permission leaks are the serious one.</p><ul><li>Permission leaks are the scary one: the bot retrieves a salary document for someone who shouldn’t see it.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="Quick check">
+  <div class="eyebrow">Quick check</div>
+  <h2>Did it click?</h2>
+  <div id="quiz"></div>
+  <aside class="notes"><span class="tag time">⏱ 1 min</span><p class="say"><b>🎤 Say</b> Quick check.</p></aside>
+</section>
+
+<section class="slide" data-title="The next question">
+  <div class="eyebrow">The question RAG can’t answer</div>
+  <h2>“What will my premium be if I add my 18-year-old son? Today’s price, please.”</h2>
+  
+  <div class="stack-v" style="max-width:900px"><div class="bubble user">What will my car premium be if I add my 18-year-old son? Today’s price, please.</div><div class="bubble ai" style="border-color:var(--bad)">₹9,999 a year! 🎉</div></div><div class="callout" style="--c:var(--warn);margin-top:16px;max-width:900px">That number came from a 2023 rate table on page 14,201. Documents can’t know today’s price, and retrieval can’t do the calculation. The real number lives in the <b>rating engine</b>, so the model needs a way to ask it. That’s <b>tools</b>.</div>
+  <aside class="notes"><span class="tag time">⏱ 2 min</span><p class="say"><b>🎤 Say</b> Now the next question: what will my premium be if I add my 18-year-old son, at today’s price? RAG finds an old rate table. Documents cannot give a live price, and that is where tools come in.</p><ul><li>Bridge into Topic 12: RAG reads documents; tools fetch live data and take actions.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="Takeaways">
+  <div class="eyebrow">Takeaways · the whole RAG arc</div>
+  <h2>What to remember</h2>
+  <div class="cols-4" style="margin:10px 0 24px">
+    <div class="card"><b>🎯 Nearest ≠ right</b><p>Filters (permissions, freshness), hybrid search and re-ranking turn similar chunks into the right chunks.</p></div>
+    <div class="card"><b>🧩 Add patterns as needed</b><p>Start with basic RAG and filters. Add hybrid, re-ranking, rewriting or agentic search when you see the problem.</p></div>
+    <div class="card"><b>🗄️ Use what you run</b><p>pgvector, MongoDB, Elasticsearch or your cloud’s search, or a managed RAG service before building your own.</p></div>
+    <div class="card"><b>📊 Measure it</b><p>A golden question set with recall@k tells you whether a change actually helped.</p></div>
+  </div>
+  <div class="row"><a class="btn primary" data-nexttopic>Next →</a></div>
+  <aside class="notes"><span class="tag time">⏱ 30 sec</span><p class="say"><b>🎤 Say</b> RAG lets AI know things. Next, let us let it do things.</p><ul><li>Bridge: “Now it can <i>know</i> things. Next, let’s let it <i>do</i> things: tools.”</li><li>The optional deep dive follows this slide. In a live session press <b>Next →</b> to skip it.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="Deep dive">
+  <div class="eyebrow">Optional · Deep dive</div>
+  <h2>Deep dive: how vector search gets fast</h2>
+  <p class="sub">For the curious, or for self-study. In a live session, skip to the next topic.</p>
+  <div class="dd-list">
+    <a data-goto="20"><b>🐌</b>Why not compare everything?</a>
+    <a data-goto="21"><b>🕸️</b>ANN search with HNSW</a>
+    <a data-goto="22"><b>🧰</b>More retrieval tricks</a>
+  </div>
+  <div class="row" style="margin-top:22px"><a class="btn primary" data-nexttopic>Skip to the next topic →</a></div>
+  <aside class="notes"><span class="tag time">⏱ 30 sec</span><p class="say"><b>🎤 Say</b> The next three slides show how a vector database searches millions of vectors in milliseconds, plus a few extra retrieval tricks. They are optional; we will skip them today.</p><ul><li>Point people here for self-study.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="Why not compare everything?">
+  <div class="eyebrow">Deep dive · The scale problem</div>
+  <h2>Why not just compare the question with every chunk?</h2>
+  <p class="sub">That’s called <b>brute-force</b> (or “flat”) search. It’s perfectly accurate, and fine for small collections. Drag to grow the collection.</p>
+  <div class="split wide-left">
+    <div class="stack-v">
+      <div class="label">Number of chunks: <span id="nLbl"></span></div><input type="range" id="nSl" min="3" max="9" step="0.1" value="5">
+      <table class="scale-tbl" id="scaleTbl"></table>
+    </div>
+    <div class="stack-v">
+      <div class="callout" id="scaleNote" style="font-size:15px"></div>
+      <p class="muted" style="font-size:13px">Rough illustration: 1,536 dimensions, one machine. Real numbers depend on hardware and settings.</p>
+    </div>
+  </div>
+  <aside class="notes"><span class="tag time">⏱ 2 min</span><p class="say"><b>🎤 Say</b> Comparing the question with every chunk is perfectly accurate and fine for small collections. At millions of chunks it becomes too slow.</p><ul><li>At a few thousand chunks, brute force is fine (and simplest). At millions, every question would scan everything: seconds per query.</li><li>Also note memory: a vector of 1,536 numbers is ~6 KB, so 100 million chunks is ~600 GB before any index.</li><li>The answer is <b>Approximate Nearest Neighbour (ANN)</b> search: next slide.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="ANN: HNSW">
+  <div class="eyebrow">Deep dive · How it gets fast</div>
+  <h2>ANN search: hop through a graph instead of checking everyone</h2>
+  <p class="sub"><b>HNSW</b>, the most common index, links each vector to its near neighbours, plus a sparse “express” layer of long links. Search starts at the top, hops greedily towards the question, then drops down for the fine search. Click <b>New question</b>.</p>
+  <div class="split wide-left hnsw">
+    <svg id="hnsw" viewBox="0 0 160 100"></svg>
+    <div class="stack-v">
+      <div class="row"><button class="btn primary" id="hNew">🎯 New question</button><button class="btn" id="hStep">▶ Hop</button><button class="btn ghost" id="hAll">⏩ Finish</button></div>
+      <div class="card"><div class="kv" id="hStats"></div></div>
+      <div class="callout" style="--c:var(--c-knowledge);font-size:14px"><b>Approximate</b> means it can occasionally miss the true nearest neighbour, in return for being thousands of times faster. Settings let you trade speed for accuracy.</div>
+    </div>
+  </div>
+  <aside class="notes"><span class="tag time">⏱ 4 min</span><p class="say"><b>🎤 Say</b> HNSW is like finding a house in a new city: take the motorway to the right district, then walk the local streets. Fast, and almost always finds the nearest results.</p><ul><li>Analogy: finding a house in a new city. Take the motorway (express layer) to the right district, then walk the local streets (bottom layer).</li><li>Other index types: <b>IVF</b> groups vectors into clusters and only searches the closest few clusters; <b>PQ</b> (product quantisation) compresses vectors to save memory. Most products pick sensible defaults for you.</li><li>Point at the stats: it checked a handful of points, not all of them.</li></ul></aside>
+</section>
+
+<section class="slide" data-title="More techniques">
+  <div class="eyebrow">Deep dive · The toolbox</div>
+  <h2>Other tricks that improve retrieval</h2>
+  <p class="sub">Click each one.</p>
+  <div id="tricks"></div>
+  <aside class="notes"><span class="tag time">⏱ 2 min</span><p class="say"><b>🎤 Say</b> A few more techniques that improve retrieval. Agentic RAG makes search a tool the model can call as often as it needs.</p><ul><li>Agentic RAG links to the next topics: search becomes a <b>tool</b> the model can call, as many times as it needs.</li></ul></aside>
+</section>
+
+<script src="../assets/course.js?v=7.0"></script>
+<script src="../assets/widgets.js?v=7.0"></script>
+<script>
+const { $, $$, cv } = W;
+const fmt = (n) => n >= 1e9 ? (n / 1e9).toFixed(n < 1e10 ? 1 : 0) + " billion" : n >= 1e6 ? (n / 1e6).toFixed(n < 1e7 ? 1 : 0) + " million" : n >= 1e3 ? Math.round(n / 1e3) + ",000" : Math.round(n) + "";
+
+/* ---- records ---- */
+const RECS = [
+  { id: "hr-0412", text: "Employees may work from home up to 2 days per week.", src: "Remote Work Policy v3", sec: "§2", upd: "2026-01-10", acc: ["all"] },
+  { id: "hr-0413", text: "Remote days must be Tuesday or Thursday unless your manager approves.", src: "Remote Work Policy v3", sec: "§2", upd: "2026-01-10", acc: ["all"] },
+  { id: "fin-0091", text: "Taxis are reimbursed for late-night travel after 22:00.", src: "Expenses Policy", sec: "§4", upd: "2025-09-01", acc: ["all"] },
+  { id: "it-0007", text: "Reset your password at id.acme.com.", src: "IT Security Handbook", sec: "§1", upd: "2026-02-15", acc: ["all"] },
+  { id: "hr-0901", text: "Salary bands for 2026 by grade (L1–L8).", src: "Compensation Bands.xlsx", sec: "Sheet 1", upd: "2026-01-02", acc: ["hr"] },
+];
+const vec = (i) => Array.from({ length: 4 }, (_, j) => (Math.sin(i * 7.1 + j * 3.3) * 0.08).toFixed(4));
+function showRec(i) {
+  $$("#recs .rec").forEach((r) => r.classList.toggle("on", +r.dataset.i === i));
+  const r = RECS[i];
+  $("#recJson").innerHTML = `{
+  <span style="color:var(--muted)">"id":</span> "${r.id}",
+  <span style="color:var(--c-knowledge)">"vector":</span> [${vec(i).join(", ")}, <span class="muted">… 1,532 more</span>],
+  <span style="color:var(--c-model)">"text":</span> "${r.text}",
+  <span style="color:var(--c-action)">"metadata":</span> {
+    "source":  "${r.src}",
+    "section": "${r.sec}",
+    "updated": "${r.upd}",
+    "access":  [${r.acc.map((a) => `"${a}"`).join(", ")}]
+  }
+}`;
+}
+$("#recs").innerHTML = RECS.map((r, i) => `<div class="rec" data-i="${i}"><span class="id">${r.id}</span><span>${r.text}<br><span class="muted" style="font-size:12px">${r.src} · ${r.sec}${r.acc[0] === "hr" ? " · 🔒 HR only" : ""}</span></span></div>`).join("");
+$("#recs").onclick = (e) => { const d = e.target.closest(".rec"); if (d) showRec(+d.dataset.i); };
+showRec(0);
+
+/* ---- scale ---- */
+function renderScale() {
+  const N = Math.pow(10, +$("#nSl").value);
+  $("#nLbl").textContent = fmt(N);
+  const bfMs = N * 1536 / 2e10 * 1000, annMs = Math.max(0.3, Math.log2(N) * 0.12), annCmp = Math.round(Math.log2(N) * 60), mem = N * 1536 * 4;
+  const ms = (x) => x < 1 ? "< 1 ms" : x < 1000 ? Math.round(x) + " ms" : (x / 1000).toFixed(x < 1e4 ? 1 : 0) + " s";
+  const gb = (b) => b < 1e9 ? Math.round(b / 1e6) + " MB" : b < 1e12 ? Math.round(b / 1e9) + " GB" : (b / 1e12).toFixed(1) + " TB";
+  $("#scaleTbl").innerHTML = `<tr><th></th><th>🐢 Brute force</th><th>⚡ ANN index</th></tr>
+    <tr><td>Vectors compared per question</td><td>${fmt(N)}</td><td>~${fmt(Math.min(N, annCmp))}</td></tr>
+    <tr><td>Time per question</td><td style="color:${bfMs > 500 ? "var(--bad)" : bfMs > 100 ? "var(--warn)" : "var(--good)"};font-weight:800">${ms(bfMs)}</td><td style="color:var(--good);font-weight:800">${ms(annMs)}</td></tr>
+    <tr><td>Accuracy</td><td>100% exact</td><td>~95–99% (tunable)</td></tr>
+    <tr><td>Memory for raw vectors</td><td colspan="2" style="text-align:center">${gb(mem)}</td></tr>`;
+  const n = $("#scaleNote");
+  if (N < 2e5) { n.style.setProperty("--c", "var(--good)"); n.innerHTML = "✅ Small collection: brute force is fast enough. Keep it simple."; }
+  else if (N < 1e7) { n.style.setProperty("--c", "var(--warn)"); n.innerHTML = "🟡 Getting slow with many users asking at once. Time for an ANN index."; }
+  else { n.style.setProperty("--c", "var(--bad)"); n.innerHTML = "❌ Seconds per question and huge memory. You need an ANN index, and maybe vector compression."; }
+}
+$("#nSl").oninput = renderScale; renderScale();
+
+/* ---- HNSW ---- */
+let hs = 11; const hr = () => ((hs = (hs * 16807) % 2147483647) / 2147483647);
+const P = []; while (P.length < 42) { const p = [8 + hr() * 144, 8 + hr() * 84]; if (P.every((q) => Math.hypot(q[0] - p[0], q[1] - p[1]) > 9)) P.push(p); }
+const D = (a, b) => Math.hypot(a[0] - b[0], a[1] - b[1]);
+const near = (i, set, k) => set.filter((j) => j !== i).sort((a, b) => D(P[i], P[a]) - D(P[i], P[b])).slice(0, k);
+const ALL = P.map((_, i) => i);
+const L0 = P.map((_, i) => new Set(near(i, ALL, 4)));
+L0.forEach((s, i) => s.forEach((j) => L0[j].add(i)));
+const TOP = [0, 5, 11, 17, 23, 31, 38];
+const L1 = Object.fromEntries(TOP.map((i) => [i, new Set(near(i, TOP, 3))]));
+TOP.forEach((i) => L1[i].forEach((j) => L1[j].add(i)));
+let hq, hpath, hstep, hchecked;
+function hPlan() {
+  hq = [10 + Math.random() * 140, 10 + Math.random() * 80];
+  hpath = []; hchecked = new Set();
+  let cur = TOP[0]; hpath.push({ n: cur, l: 1 }); hchecked.add(cur);
+  for (const layer of [1, 0]) {
+    while (true) {
+      const nb = [...(layer ? L1[cur] : L0[cur])]; nb.forEach((j) => hchecked.add(j));
+      const best = nb.reduce((b, j) => (D(P[j], hq) < D(P[b], hq) ? j : b), cur);
+      if (best === cur) break;
+      cur = best; hpath.push({ n: cur, l: layer, checked: hchecked.size });
+    }
+    if (layer) hpath.push({ n: cur, l: 0, drop: true, checked: hchecked.size });
+  }
+  hpath[0].checked = 1;
+  hstep = 0;
+}
+function hDraw() {
+  const shown = hpath.slice(0, hstep + 1), cur = shown[shown.length - 1];
+  const truth = ALL.reduce((b, j) => (D(P[j], hq) < D(P[b], hq) ? j : b), 0);
+  const done = hstep >= hpath.length - 1;
+  let s = "";
+  L0.forEach((set, i) => set.forEach((j) => { if (j > i) s += `<line x1="${P[i][0]}" y1="${P[i][1]}" x2="${P[j][0]}" y2="${P[j][1]}" stroke="var(--line)" stroke-width=".5"/>`; }));
+  TOP.forEach((i) => L1[i].forEach((j) => { if (j > i) s += `<line x1="${P[i][0]}" y1="${P[i][1]}" x2="${P[j][0]}" y2="${P[j][1]}" stroke="var(--c-autonomy)" stroke-width=".9" stroke-dasharray="3 1.5" opacity=".7"/>`; }));
+  for (let k = 1; k < shown.length; k++) { const a = P[shown[k - 1].n], b = P[shown[k].n]; s += `<line x1="${a[0]}" y1="${a[1]}" x2="${b[0]}" y2="${b[1]}" stroke="var(--warn)" stroke-width="1.6"/>`; }
+  P.forEach((p, i) => {
+    const top = TOP.includes(i), onPath = shown.some((x) => x.n === i);
+    s += `<circle cx="${p[0]}" cy="${p[1]}" r="${top ? 2.4 : 1.7}" fill="${onPath ? "var(--warn)" : top ? "var(--c-autonomy)" : "var(--c-knowledge)"}" ${done && i === truth ? 'stroke="var(--good)" stroke-width="1"' : ""}/>`;
+  });
+  s += `<circle cx="${P[cur.n][0]}" cy="${P[cur.n][1]}" r="4" fill="none" stroke="var(--warn)" stroke-width="1"/>`;
+  s += `<g><path d="M ${hq[0]} ${hq[1] - 4} l 4 4 l -4 4 l -4 -4 z" fill="var(--text)"/><text x="${hq[0] + 6}" y="${hq[1] + 1.5}" font-size="4" font-weight="800" fill="var(--text)">question</text></g>`;
+  s += `<text x="3" y="97" font-size="3.6" fill="var(--c-autonomy)" font-weight="700">- - express layer</text><text x="40" y="97" font-size="3.6" fill="var(--muted)" font-weight="700">— local neighbours</text><text x="88" y="97" font-size="3.6" fill="var(--warn)" font-weight="700">— search path</text>`;
+  $("#hnsw").innerHTML = s;
+  $("#hStats").innerHTML = `<b>Layer</b><span>${cur.l ? "🛣️ express (top)" : "🏘️ local (bottom)"}</span><b>Hops</b><span>${hstep}</span>
+    <b>Vectors checked</b><span>${cur.checked} of ${P.length}</span>
+    <b>Status</b><span>${done ? (cur.n === truth ? "✅ found the true nearest neighbour" : "🟡 found a very close one (approximate)") : cur.drop ? "⬇️ dropped to the local layer" : "hopping closer…"}</span>`;
+  $("#hStep").disabled = $("#hAll").disabled = done;
+}
+$("#hNew").onclick = () => { hPlan(); hDraw(); };
+$("#hStep").onclick = () => { hstep = Math.min(hpath.length - 1, hstep + 1); hDraw(); };
+$("#hAll").onclick = () => { hstep = hpath.length - 1; hDraw(); };
+hPlan(); hDraw();
+
+/* ---- filters ---- */
+const FR = [
+  { t: "Salary bands for 2026 by grade, incl. bonus targets per grade.", s: 0.91, src: "Compensation Bands.xlsx", acc: "hr", cur: true },
+  { t: "Bonus = target % × company multiplier × individual rating (2023 rules).", s: 0.89, src: "Bonus Policy 2023", acc: "all", cur: false },
+  { t: "Annual bonus = target % × company multiplier (0–1.5) × individual multiplier (0–1.3).", s: 0.88, src: "Bonus Policy 2026 §3", acc: "all", cur: true },
+  { t: "Bonuses are paid with the March payroll.", s: 0.81, src: "Bonus Policy 2026 §5", acc: "all", cur: true },
+  { t: "Bonus targets by grade: L1–L3 5%, L4–L6 10%, L7–L8 15%.", s: 0.79, src: "Bonus Policy 2026 §2", acc: "all", cur: true },
+  { t: "Executive bonus pool decisions, board minutes Q4.", s: 0.76, src: "Board Minutes Q4", acc: "exec", cur: true },
+  { t: "Referral bonus: €1,000 per successful hire.", s: 0.64, src: "Referral Programme", acc: "all", cur: true },
+];
+const ff = { acc: true, cur: true };
+function renderF() {
+  const k = +$("#fk").value; $("#fkLbl").textContent = k;
+  let rank = 0; const kept = [];
+  $("#fRecs").innerHTML = FR.map((r, i) => {
+    const why = ff.acc && r.acc !== "all" ? `🔒 filtered: ${r.acc.toUpperCase()} only` : ff.cur && !r.cur ? "🕰️ filtered: old version" : "";
+    let out = !!why; if (!out) { rank++; if (rank > k) out = true; else kept.push(i); }
+    return `<div class="rec ${out ? "out" : ""}"><span class="id">${r.s.toFixed(2)}</span><span>${r.t}<br><span class="muted" style="font-size:12px">${r.src}${r.acc !== "all" ? ` · 🔒 ${r.acc.toUpperCase()}` : ""}</span>${why ? `<div class="why">${why}</div>` : !out ? `<div class="why" style="color:var(--good)">✓ kept (#${rank})</div>` : `<div class="why" style="color:var(--muted)">beyond top-${k}</div>`}</span></div>`;
+  }).join("");
+  const f = []; if (ff.acc) f.push(`access: { in: ["all"] }`); if (ff.cur) f.push(`current: true`);
+  $("#fCode").textContent = `db.query(\n  vector = embed("How is the annual bonus calculated?"),\n  top_k  = ${k},${f.length ? `\n  filter = { ${f.join(", ")} },` : ""}\n)`;
+  const leak = kept.some((i) => FR[i].acc !== "all"), stale = kept.some((i) => !FR[i].cur), good = kept.includes(2);
+  const n = $("#fNote");
+  if (leak) { n.style.setProperty("--c", "var(--bad)"); n.innerHTML = "❌ <b>Permission leak.</b> Restricted salary or board data would go into the prompt and could be quoted to this employee."; }
+  else if (stale) { n.style.setProperty("--c", "var(--warn)"); n.innerHTML = "🟡 The outdated 2023 rule is in the context. The model may mix old and new rules."; }
+  else if (!good) { n.style.setProperty("--c", "var(--warn)"); n.innerHTML = "🟡 The key formula chunk didn’t make the top-k."; }
+  else { n.style.setProperty("--c", "var(--good)"); n.innerHTML = "✅ Only current, permitted chunks, including the formula."; }
+}
+W.switch($("#fAcc"), false, (v) => { ff.acc = v; renderF(); });
+W.switch($("#fNew"), false, (v) => { ff.cur = v; renderF(); });
+ff.acc = ff.cur = false;
+$("#fk").oninput = renderF; renderF();
+
+/* ---- hybrid ---- */
+const HY = [
+  { q: "VPN client shows error E-4471", ans: "E-4471",
+    kw: ["KB-311: Error E-4471, certificate expired: reinstall the VPN profile", "KB-120: VPN client install guide", "KB-402: List of all error codes"],
+    vec: ["KB-312: Error E-4417, server unreachable: check Wi-Fi", "KB-311: Error E-4471, certificate expired: reinstall the VPN profile", "KB-300: General VPN troubleshooting", "KB-120: VPN client install guide"] },
+  { q: "My laptop won’t let me in", ans: "locked",
+    kw: ["KB-510: Laptop bag and accessories policy", "KB-511: Laptop refresh every 4 years", "KB-007: Locked out of your laptop? Accounts lock after 5 failed attempts: unlock at id.acme.com"],
+    vec: ["KB-007: Locked out of your laptop? Accounts lock after 5 failed attempts: unlock at id.acme.com", "KB-006: Reset your password", "KB-008: Set up multi-factor authentication"] },
+  { q: "Reimbursement for Uber after the late shift", ans: "taxi",
+    kw: ["FIN-12: Uber Business account setup for managers", "FIN-09: Taxis and ride-hailing are reimbursed for late-night travel after 22:00", "FIN-04: Late shift allowance rates"],
+    vec: ["FIN-09: Taxis and ride-hailing are reimbursed for late-night travel after 22:00", "FIN-04: Late shift allowance rates", "FIN-20: Reimbursement timelines"] },
+];
+const isAns = (h, t) => (h.ans === "E-4471" ? t.startsWith("KB-311") : h.ans === "locked" ? t.startsWith("KB-007") : t.startsWith("FIN-09"));
+function rrf(lists) {
+  const sc = {}; lists.forEach((l) => l.forEach((t, r) => (sc[t] = (sc[t] || 0) + 1 / (60 + r + 1))));
+  return Object.entries(sc).sort((a, b) => b[1] - a[1]).map(([t, s]) => [t, s]);
+}
+function renderHy(i) {
+  const h = HY[i];
+  $$("#hyQ .btn").forEach((b) => b.classList.toggle("primary", +b.dataset.i === i));
+  const col = (title, c, items) => `<div><div class="label" style="color:${cv(c)}">${title}</div><div class="rlist">${items.slice(0, 4).map(([t, s], r) => `<div class="${isAns(h, t) ? "good" : r === 0 ? "bad" : ""}"><span class="rk">#${r + 1}</span>${isAns(h, t) ? "✅ " : ""}${t}${s ? `<span class="sc">${s.toFixed(4)}</span>` : ""}</div>`).join("")}</div></div>`;
+  $("#hyCols").innerHTML = col("🔤 Keyword (BM25)", "action", h.kw.map((t) => [t])) + col("📍 Vector (meaning)", "knowledge", h.vec.map((t) => [t])) + col("🤝 Hybrid (RRF)", "good", rrf([h.kw, h.vec]));
+}
+$("#hyQ").innerHTML = HY.map((h, i) => `<button class="btn" data-i="${i}">${h.q}</button>`).join("");
+$("#hyQ").onclick = (e) => { const b = e.target.closest("button"); if (b) renderHy(+b.dataset.i); };
+renderHy(0);
+
+/* ---- re-ranking ---- */
+const RR = [
+  ["Pet insurance: 20% employee discount.", 0.86, 0.22],
+  ["Dog-walking club meets Wednesdays at lunch.", 0.84, 0.31],
+  ["Dogs are welcome in the Berlin office on Fridays; other offices don’t allow pets.", 0.81, 0.96],
+  ["Guide and assistance dogs are always allowed in all offices.", 0.79, 0.88],
+  ["Office plants are watered by facilities on Mondays.", 0.71, 0.04],
+  ["No food deliveries to desks after 18:00.", 0.66, 0.02],
+];
+const RH = 48;
+let reranked = false;
+function renderRR() {
+  const order = RR.map((_, i) => i).sort((a, b) => (reranked ? RR[b][2] - RR[a][2] : RR[b][1] - RR[a][1]));
+  const box = $("#rr"); box.style.height = RR.length * RH + "px";
+  if (!box.children.length) box.innerHTML = RR.map(([t], i) => `<div class="item" data-i="${i}"><span class="sc"></span><span class="rk"></span> ${t}</div>`).join("");
+  order.forEach((i, pos) => {
+    const el = box.querySelector(`[data-i="${i}"]`);
+    el.style.top = pos * RH + "px";
+    el.classList.toggle("best", reranked && pos < 2);
+    el.querySelector(".sc").textContent = (reranked ? RR[i][2] : RR[i][1]).toFixed(2);
+    el.querySelector(".sc").style.color = reranked ? (RR[i][2] > 0.8 ? "var(--good)" : "var(--muted)") : "var(--c-knowledge)";
+    el.querySelector(".rk").textContent = `#${pos + 1}`;
+  });
+  const n = $("#rrNote");
+  n.style.setProperty("--c", reranked ? "var(--good)" : "var(--warn)");
+  n.innerHTML = reranked ? "✅ <b>After re-ranking</b>: the two chunks that actually answer the question are on top. The pet-insurance and dog-walking chunks dropped: they’re about dogs, not about bringing one to work."
+    : "🟡 <b>Vector search order</b>: everything about dogs and pets scores high. The real answer is only #3 and #4. With top-2, the bot would talk about insurance.";
+  $("#rrGo").disabled = reranked;
+}
+$("#rrGo").onclick = () => { reranked = true; renderRR(); };
+$("#rrReset").onclick = () => { reranked = false; renderRR(); };
+renderRR();
+
+/* ---- tricks ---- */
+W.clickInfo($("#tricks"), [
+  { icon: "✏️", title: "Query rewriting", c: "model", html: "<p>Users type “and for contractors?”. The model first rewrites it into a complete question (“What is the remote-work policy for contractors?”) using the chat history, then searches.</p>" },
+  { icon: "🔀", title: "Multi-query", c: "context", html: "<p>Generate 3–5 differently worded versions of the question, search with each, merge the results. Catches chunks that one wording would miss.</p>" },
+  { icon: "🧪", title: "HyDE", c: "knowledge", html: "<p><b>Hypothetical Document Embeddings</b>: ask the model to write a fake answer, embed <i>that</i>, and search with it. Answers look more like documents than questions do.</p>" },
+  { icon: "🏷️", title: "Contextual chunks", c: "action", html: "<p>Before embedding, prefix each chunk with where it comes from: “Bonus Policy 2026, §3 Calculation: …”. A lonely chunk like “It is paid in March” becomes findable.</p>" },
+  { icon: "🤖", title: "Agentic RAG", c: "autonomy", html: "<p>Give the model a <code>search</code> <b>tool</b> and let it decide when and what to search, read the results, and search again if needed. Great for multi-part questions. Covered in Topics 12–15.</p>" },
+  { icon: "💾", title: "Caching", c: "trust", html: "<p>Cache embeddings of frequent questions and the answers to common ones. Cheaper and faster, but remember to invalidate when documents change.</p>" },
+], { cols: 3, side: true });
+
+/* ---- end to end ---- */
+W.stepper({
+  ctrl: $("#e2eCtrl"), log: $("#e2eLog"), interval: 2800,
+  steps: [
+    { who: "Question", c: "accent", html: "👤 Priya (Sales, L5): “How is the annual bonus calculated?”" },
+    { who: "Rewrite", c: "model", html: "Already a complete question. Kept as is." },
+    { who: "Embed", c: "knowledge", html: "Embedding model → <code>[0.021, −0.113, 0.087, … 1,536 numbers]</code> in ~20 ms." },
+    { who: "Search: vector + keyword", c: "knowledge", html: "HNSW index returns top 50 by cosine; BM25 returns top 50 by keywords. Filter applied inside the query: <code>access ∈ {all, sales}</code>, <code>current = true</code>." },
+    { who: "Fuse", c: "knowledge", html: "Reciprocal Rank Fusion merges both lists → 60 unique candidates." },
+    { who: "Re-rank", c: "knowledge", html: "Cross-encoder scores all 60 against the question → keep the top 4 (Bonus Policy 2026 §2, §3, §5, FAQ #12)." },
+    { who: "Augment", c: "context", html: "Build the prompt: instructions (“only these sources, cite [n], say if missing”) + 4 sources with metadata + the question. ~1,800 tokens." },
+    { who: "Generate", c: "model", html: "“Your bonus = <b>10% target</b> (L5) × <b>company multiplier</b> (0–1.5) × <b>your individual multiplier</b> (0–1.3), paid with the March payroll. [1][2][3]”" },
+    { who: "Log and evaluate", c: "trust", html: "Trace saved: retrieved IDs, scores, prompt, answer. Spot-checked weekly against the golden set (groundedness, recall@5)." },
+  ],
+});
+
+/* ---- choosing ---- */
+/* ---- golden set ---- */
+const GOLD = [
+  ["How many WFH days do I get?", 1], ["Which days can I work remotely?", 2], ["Can I expense a late taxi?", 1], ["How do I unlock my account?", 4],
+  ["When is the bonus paid?", 3], ["Is there a referral bonus?", 1], ["Can I bring my dog to work?", 7], ["What is the VPN error E-4471?", null],
+];
+function renderGold() {
+  const k = +$("#gk").value; $("#gkLbl").textContent = k;
+  $("#gold").innerHTML = `<tr><th>Question</th><th style="text-align:center">Rank of right chunk</th><th style="text-align:center">In top ${k}?</th></tr>` +
+    GOLD.map(([q, r]) => `<tr><td>${q}</td><td class="c">${r ?? "not found"}</td><td class="c" style="color:${r && r <= k ? "var(--good)" : "var(--bad)"}">${r && r <= k ? "✓" : "✗"}</td></tr>`).join("");
+  const hits = GOLD.filter(([, r]) => r && r <= k).length;
+  const mrr = GOLD.reduce((s, [, r]) => s + (r && r <= k ? 1 / r : 0), 0) / GOLD.length;
+  $("#gStats").innerHTML = `<b>Recall@${k}</b><span style="font-size:20px;font-weight:800;color:${hits / GOLD.length > 0.8 ? "var(--good)" : "var(--warn)"}">${Math.round(hits / GOLD.length * 100)}%</span>
+    <b>MRR@${k}</b><span style="font-size:20px;font-weight:800">${mrr.toFixed(2)}</span>
+    <b>To fix</b><span>${GOLD.filter(([, r]) => !r || r > k).map(([q]) => q).join("; ") || "nothing 🎉"}</span>`;
+}
+$("#gk").oninput = renderGold; renderGold();
+
+W.flips($("#fails"), [
+  { front: "✂️ Bad chunking", back: "The answer was split across chunks and only half was retrieved. <b>Fix:</b> chunk by structure, add overlap, small-to-big." },
+  { front: "🎯 Similar but wrong", back: "It found something about the topic but not the answer. <b>Fix:</b> hybrid search and re-ranking." },
+  { front: "🕰️ Stale index", back: "The policy changed but the index still holds the old version. <b>Fix:</b> re-index on change, filter on <code>current</code>, show dates." },
+  { front: "🔐 Permission leaks", back: "It retrieved the salary spreadsheet for an intern. <b>Fix:</b> filter by the user’s access rights <i>inside the query</i>." },
+  { front: "🙈 No citations", back: "Users can’t verify answers, so trust drops. <b>Fix:</b> store source and section as metadata; require [n] citations." },
+  { front: "🤷 Answers anyway", back: "Nothing relevant was found, but it answered from memory. <b>Fix:</b> score thresholds plus “say if it isn’t in the sources”." },
+]);
+
+W.quiz($("#quiz"), [
+  { q: "Besides the vector, what does a vector database record usually hold?", o: ["Nothing else", "The chunk text and metadata (source, date, access…)", "The whole original document", "The model weights"], a: 1, e: "Text for the model to read, metadata for citations, filters and freshness." },
+  { q: "A chat user types “and for my wife’s car?” and gets nothing useful. Which pattern helps most?", o: ["GraphRAG", "Query rewriting", "Small-to-big", "Re-ranking"], a: 1, e: "Rewrite the follow-up into a full question using the chat history, then search." },
+  { q: "Users search for exact error codes and get the wrong article. Best fix?", o: ["Bigger chunks", "Hybrid search: add keyword (BM25) matching", "Higher temperature", "Remove metadata"], a: 1, e: "Embeddings blur exact strings; keyword search catches them." },
+  { q: "Where should the “HR only” rule be enforced?", o: ["In the prompt: “don’t reveal HR data”", "As a metadata filter inside the database query", "By the user", "Nowhere, the model knows"], a: 1, e: "If restricted chunks never reach the prompt, they can’t leak." },
+  { q: "What does a re-ranker do?", o: ["Re-embeds all documents", "Reads the question with each shortlisted chunk and re-orders them more accurately", "Sorts by date", "Translates the query"], a: 1, e: "Fast retrieval first, careful re-ranking of the shortlist second." },
+  { q: "Your company already runs PostgreSQL and has two million chunks. A sensible first choice?", o: ["Build a custom vector engine", "pgvector in the existing database", "A laptop library such as Chroma", "No database: paste everything into the prompt"], a: 1, e: "Start with what you already run. Vectors sit next to your data, and filters are plain SQL." },
+]);
+
+/* ---- v5: slide helper: → steps through states before leaving ---- */
+function stepSlide(title, max, go) {
+  let at = 0;
+  const set = (i) => { at = i; go(i); };
+  document.addEventListener("slide:enter", (e) => { if (e.detail.slide.dataset.title === title) set(e.detail.back ? max : 0); });
+  document.addEventListener("slide:advance", (e) => { if (e.detail.slide.dataset.title === title && at < max) { e.preventDefault(); set(at + 1); } });
+  return set;
+}
+
+/* ---- v5: nine RAG patterns ---- */
+(() => {
+  const N = (i, t, c) => ({ i, t, c });
+  const Q = N("❓", "Question", "accent"), M = N("🤖", "Model writes the answer", "model"), A = N("✅", "Answer + sources", "good");
+  const PAT = [
+    { g: "Find better chunks", ic: "📄", name: "Basic RAG", flow: [Q, N("🔎", "Meaning search", "knowledge"), N("📄", "Top 5 chunks", "context"), M, A],
+      fix: "The model has never seen your documents.", when: "Small, clean document sets and simple questions. Always the starting point.", eg: "“How many days can I work from home?”" },
+    { ic: "🔤", name: "Hybrid search", flow: [Q, { par: [N("🔤", "Keyword search", "knowledge"), N("🧭", "Meaning search", "knowledge")] }, N("🔀", "Merge the two lists", "context"), M, A],
+      fix: "Meaning search blurs exact codes, IDs and names.", when: "Questions mention policy numbers, error codes, product or place names.", eg: "“Claim history for POL-88812” stops returning POL-88821." },
+    { ic: "🎯", name: "Re-ranking", flow: [Q, N("🔎", "Search: top 50", "knowledge"), N("🎯", "Re-ranker keeps the best 5", "trust"), M, A],
+      fix: "The right chunk is found, but buried at number 14.", when: "Large collections where many chunks look relevant. Adds a little cost and delay.", eg: "“Can I bring my dog to the office?” lifts the pet policy above the parking FAQ." },
+    { ic: "✏️", name: "Query rewriting", flow: [N("💬", "“and for contractors?”", "accent"), N("✏️", "Rewrite as a full question", "model"), N("🔎", "Search", "knowledge"), M, A],
+      fix: "Short follow-ups and vague wording miss the right chunks.", when: "Chat assistants. Variants: <b>multi-query</b> (search three to five rewordings) and <b>HyDE</b> (search with a draft answer).", eg: "“and for contractors?” becomes “What is the remote-work policy for contractors?”" },
+    { ic: "🪆", name: "Small-to-big", flow: [Q, N("🔎", "Find a small, precise chunk", "knowledge"), N("📖", "Fetch its whole section", "context"), M, A],
+      fix: "Small chunks match well but leave out what surrounds them.", when: "Long structured documents: policy wordings, contracts, manuals.", eg: "The flood clause is found, and the exclusions two paragraphs later come with it." },
+    { ic: "🔒", name: "Permission-aware", flow: [Q, N("👤", "Who is asking? role, region", "trust"), N("🔒", "Filter: allowed chunks only", "trust"), N("🔎", "Search", "knowledge"), M, A],
+      fix: "Search returns documents the user must not see.", when: "Always, whenever documents have different audiences. Not optional.", eg: "A branch agent never sees head-office salary bands, even when they match best." },
+    { g: "Think while searching", ic: "🤖", name: "Agentic RAG", flow: [Q, N("🤖", "Model plans", "model"), N("🔎", "Calls the search tool", "action"), N("📄", "Reads the results", "context"), A], loop: [3, 1, "needs more? search again"],
+      fix: "One search can’t answer a question with several parts.", when: "Multi-part and research questions. Slower and costlier; the model decides how many searches. More in Topics 12 and 15.", eg: "“Compare my renewal with last year’s and check flood is still covered” runs three searches." },
+    { ic: "🧐", name: "Corrective RAG", flow: [Q, N("🔎", "Search", "knowledge"), N("🧐", "Grade: does this answer it?", "trust"), M, A], loop: [2, 1, "no: reword and search again"],
+      fix: "Retrieval found something, but not the answer, and the model answers anyway.", when: "When a wrong answer is costly. Related: <b>Self-RAG</b>, where the model checks its answer against the sources.", eg: "Nothing on “cyber cover for home businesses”? It retries with new words, then says “not in our documents”." },
+    { ic: "🕸️", name: "GraphRAG", flow: [Q, N("🕸️", "Find the people and things", "knowledge"), N("🔗", "Follow links: customer → policies → claims", "autonomy"), N("📄", "Collect the facts", "context"), M, A],
+      fix: "The answer is spread across many linked records and documents.", when: "Questions about relationships: who, which, how many, across records. Building the graph is real work.", eg: "“Which brokers had more than three hail claims in Pune this year?”" },
+  ];
+  const list = $("#patList"), flow = $("#patFlow");
+  list.innerHTML = PAT.map((p, i) => `${p.g ? `<div class="grp">${p.g}</div>` : ""}<button data-i="${i}">${p.ic} ${p.name}</button>`).join("");
+  const node = (n) => `<div class="pnode" style="--c:${cv(n.c)}"><span class="i">${n.i}</span>${n.t}</div>`;
+  let timers = [];
+  const later = (fn, ms) => timers.push(setTimeout(fn, ms));
+  function show(i) {
+    timers.forEach(clearTimeout); timers = [];
+    const p = PAT[i];
+    W.$$("button", list).forEach((b) => b.classList.toggle("on", +b.dataset.i === i));
+    $("#patName").textContent = p.ic + " " + p.name;
+    flow.innerHTML = p.flow.map((n, k) => (k ? '<div class="pcon"><i></i></div>' : "") + (n.par ? `<div class="ppar" data-k="${k}">${n.par.map(node).join("")}</div>` : node(n).replace('class="pnode"', `class="pnode" data-k="${k}"`))).join("");
+    $("#patInfo").innerHTML = `<b>🩹 Fixes</b><span>${p.fix}</span><b>✅ Use it when</b><span>${p.when}</span><b>💬 Example</b><span class="eg">${p.eg}</span>`;
+    const steps = flow.querySelectorAll("[data-k]"), cons = flow.querySelectorAll(".pcon");
+    const lit = (k, on) => { const el = steps[k]; (el.classList.contains("ppar") ? el.querySelectorAll(".pnode") : [el]).forEach((x) => x.classList.toggle("lit", on)); if (k) cons[k - 1].classList.toggle("lit", on); };
+    let seq = p.flow.map((_, k) => k);
+    let loopEl = null;
+    if (p.loop) {
+      const [from, to, label] = p.loop;
+      loopEl = document.createElement("div"); loopEl.className = "ploop"; loopEl.innerHTML = `<span>↺ ${label}</span>`; flow.appendChild(loopEl);
+      const a = steps[to], b = steps[from];
+      loopEl.style.left = a.offsetLeft + a.offsetWidth / 2 + "px"; loopEl.style.width = b.offsetLeft + b.offsetWidth / 2 - (a.offsetLeft + a.offsetWidth / 2) + "px";
+      const back = []; for (let k = to; k <= from; k++) back.push(k);
+      seq = [...seq.slice(0, from + 1), "loop", ...back, ...seq.slice(from + 1)];
+    }
+    let t = 250;
+    seq.forEach((k) => {
+      if (k === "loop") {
+        const [from, to] = p.loop;
+        later(() => { loopEl.classList.add("lit"); for (let j = to; j <= from; j++) lit(j, false); lit(to - 1, true); }, t); t += 700;
+      } else { later(() => lit(k, true), t); t += 480; }
+    });
+  }
+  const set = stepSlide("Nine RAG patterns", PAT.length - 1, show);
+  W.$$("button", list).forEach((b) => (b.onclick = () => set(+b.dataset.i)));
+  show(0);
+})();
+
+/* ---- v5: which pattern? ---- */
+W.classify($("#whichPat"), [
+  { text: "Agents search for policy POL-88812 and get POL-88821.", a: 0, why: "Exact codes need keyword matching alongside meaning: hybrid search." },
+  { text: "A branch agent’s search shows head-office salary bands.", a: 1, why: "Filter by the user’s access inside the database query. This is a security incident." },
+  { text: "In a chat, the customer asks “and what about my wife’s car?”", a: 2, why: "Rewrite the follow-up into a full question using the chat history, then search." },
+  { text: "The right clause is found, but the answer misses its exceptions two paragraphs later.", a: 3, why: "Search with small chunks, then hand the model the whole section." },
+  { text: "“Compare my renewal quote with last year’s and check flood is still covered.”", a: 4, why: "Several lookups in a row: let the model call search as a tool, as often as it needs." },
+  { text: "“Which brokers had more than three hail claims from customers in Pune?”", a: 5, why: "The answer follows links between brokers, customers and claims: GraphRAG." },
+], [{ label: "Hybrid", c: "knowledge" }, { label: "Permissions", c: "trust" }, { label: "Rewrite", c: "model" }, { label: "Small-to-big", c: "context" }, { label: "Agentic", c: "action" }, { label: "GraphRAG", c: "autonomy" }], { cols: 2 });
+
+/* ---- v5: start simple ladder ---- */
+(() => {
+  const MET = [[0, 0, 0], [40, 15, 15], [60, 25, 25], [76, 40, 45], [90, 70, 80]];
+  const L = [["Answer quality", "var(--good)"], ["Cost and delay", "var(--warn)"], ["Effort to build and run", "var(--bad)"]];
+  $("#ladMeters").innerHTML = L.map(([l, c]) => `<div class="m"><div class="l">${l}</div><div class="t"><i style="width:0;background:${c}"></i></div></div>`).join("");
+  stepSlide("Start simple", 4, (i) => {
+    W.$$(".rung", $("#ladder")).forEach((r) => { r.classList.toggle("on", +r.dataset.s <= i); r.classList.toggle("cur", +r.dataset.s === i); });
+    W.$$("#ladMeters .t i").forEach((b, k) => (b.style.width = MET[i][k] + "%"));
+  })(0);
+})();
+
+/* ---- v5: which vector database? ---- */
+(() => {
+  const QS = [
+    ["has", "What do you already run?", ["PostgreSQL", "MongoDB", "Elasticsearch / OpenSearch", "Nothing suitable"], 3],
+    ["where", "Where must it run?", ["AWS", "Azure", "Google Cloud", "On-premises", "Anywhere"], 4],
+    ["size", "How many chunks?", ["Up to a few million", "Hundreds of millions"], 0],
+    ["stage", "What are you building?", ["A prototype", "A production system"], 1],
+  ];
+  const st = Object.fromEntries(QS.map(([k, , , d]) => [k, d]));
+  $("#vq").innerHTML = QS.map(([k, q, o]) => `<div class="qq"><b>${q}</b><div class="seg" data-k="${k}">${o.map((x, j) => `<button data-j="${j}">${x}</button>`).join("")}</div></div>`).join("");
+  function rec({ has, where, size, stage }) {
+    if (stage === 0) return ["🧪 Chroma or LanceDB", "Runs inside your notebook or app, nothing to set up. Fine for a demo with a few thousand chunks.", "Move to a production option before real users arrive, and keep the same embedding model."];
+    if (has === 0) return size === 0
+      ? ["🐘 pgvector in PostgreSQL", "Vectors sit next to your existing data, so filters and permissions are ordinary SQL. One less system to run.", "Every cloud’s managed PostgreSQL supports it: Aurora, Azure Database for PostgreSQL, AlloyDB."]
+      : ["🐘 pgvector, then a dedicated database", "pgvector stretches a long way, but at hundreds of millions of chunks a dedicated engine is easier to tune.", "Qdrant, or Milvus (managed as Zilliz Cloud)."];
+    if (has === 1) return ["🍃 MongoDB Atlas Vector Search", "Vectors live in the same documents as your data, with filters and hybrid search built in.", "Nothing new to buy or run if you are already on Atlas."];
+    if (has === 2) return ["🔎 Elasticsearch or OpenSearch", "You already run search. Add a vector field and get keyword, meaning and hybrid search in one place.", "The strongest choice when exact keywords matter: codes, names, IDs."];
+    if (where === 0) return ["☁️ Amazon OpenSearch Service", "Managed search with vectors and hybrid search, inside your AWS account.", "Aurora PostgreSQL with pgvector; or Bedrock Knowledge Bases to skip building."];
+    if (where === 1) return ["☁️ Azure AI Search", "Hybrid search, semantic re-ranking and permission filters in one managed service, inside your Azure tenant.", "Azure Cosmos DB or Azure Database for PostgreSQL also store vectors."];
+    if (where === 2) return ["☁️ Vertex AI Vector Search", "Google’s managed vector search, next to Gemini and your data in Google Cloud.", "AlloyDB with pgvector; or Vertex AI RAG Engine to skip building."];
+    if (where === 3) return size === 0
+      ? ["📦 Qdrant or Weaviate, self-hosted", "Open source and run on your own servers, so the data never leaves.", "Milvus if you expect hundreds of millions of chunks."]
+      : ["📦 Milvus, self-hosted", "Open source and built for very large collections, including GPU search.", "Qdrant also scales well and is simpler to run."];
+    return size === 0
+      ? ["☁️ Pinecone or Qdrant Cloud", "Fully managed: no servers, pay as you go, ready in minutes.", "Weaviate Cloud. Check the region keeps data where it must be."]
+      : ["☁️ Pinecone or Zilliz Cloud", "Managed services built for very large collections.", "Agree costs early: at this size, storage is most of the bill."];
+  }
+  function upd(pop) {
+    W.$$("#vq .seg").forEach((s) => W.$$("button", s).forEach((b) => b.classList.toggle("on", +b.dataset.j === st[s.dataset.k])));
+    const [pick, why, also] = rec(st), box = $("#vrec");
+    box.innerHTML = `<div class="k">Start with</div><div class="pick">${pick}</div><p><b>Why:</b> ${why}</p><p class="muted"><b>Also consider:</b> ${also}</p>`;
+    if (pop) { box.classList.remove("pop"); void box.offsetWidth; box.classList.add("pop"); }
+  }
+  W.$$("#vq .seg").forEach((s) => s.addEventListener("click", (e) => { const b = e.target.closest("button"); if (!b) return; st[s.dataset.k] = +b.dataset.j; upd(true); }));
+  upd(false);
+})();
+
+/* ---- v5: build or buy ---- */
+stepSlide("Build or buy?", 3, (i) => {
+  W.$$("#tiers .tier").forEach((t) => t.classList.toggle("on", +t.dataset.s <= i));
+  $("#buyNote").classList.toggle("on", i === 3);
+})(0);
+
+/* ===== v3 story ===== */
+</script>
+<script>W.seq(document.getElementById("seqHybrid"), {"actors": [{"id": "app", "name": "Your app", "icon": "🖥️", "c": "autonomy"}, {"id": "vec", "name": "Vector index", "icon": "🧭", "c": "knowledge"}, {"id": "kw", "name": "Keyword index", "icon": "🔤", "c": "context"}, {"id": "rr", "name": "Re-ranker", "icon": "⚖️", "c": "trust"}, {"id": "model", "name": "Model", "icon": "🧠", "c": "model"}], "steps": [{"from": "app", "to": "vec", "label": "Meaning search, top 50", "note": "Finds chunks about claim history in general. POL-88821 looks almost the same as POL-88812 to an embedding."}, {"from": "app", "to": "kw", "label": "Keyword search, top 50", "note": "Run at the same time. BM25 matches the exact string POL-88812.", "code": "{ \"query\": \"POL-88812 claim history\", \"top_k\": 50 }"}, {"from": "vec", "to": "app", "label": "50 results by similarity", "ret": true}, {"from": "kw", "to": "app", "label": "50 results by exact match", "ret": true}, {"from": "app", "to": "app", "label": "Merge (reciprocal rank fusion)", "note": "Combine the two lists. A chunk ranked high in both lists rises to the top.", "code": "score(doc) = 1/(60 + rank_vector) + 1/(60 + rank_keyword)"}, {"from": "app", "to": "rr", "label": "Question + 30 candidates", "note": "A cross-encoder reads the question and each chunk together. Slower, so it only sees the shortlist."}, {"from": "rr", "to": "app", "label": "Top 5, re-scored", "code": "[ { \"id\": \"claims-POL-88812-2024\", \"relevance\": 0.96 },\n  { \"id\": \"claims-POL-88812-2023\", \"relevance\": 0.93 },\n  { \"id\": \"claims-POL-88821-2024\", \"relevance\": 0.12 }  // the look-alike drops ]", "ret": true}, {"from": "app", "to": "model", "label": "Augmented prompt (5 chunks)"}, {"from": "model", "to": "app", "label": "Answer about the right policy", "ret": true}], "frames": []});</script>
+<script src="../assets/deck.js?v=7.0"></script>
+</body>
+</html>

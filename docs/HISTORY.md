@@ -153,3 +153,8 @@ The user asked for relatable or funny references only, no Day labels (sessions o
 - v6 copied from v5. New Topic 1 slide 1 “Before we start” and a “Completion criteria” button on the course page open the popup (`v6/assets/criteria.js`).
 - Text made crisper (font smoothing `auto`, code line numbers brighter). The user asked for speed, so the fuller contrast pass followed straight after: faint unrevealed states raised to about 50%, layer colours adjusted for each theme, small text raised to 12–13px (see `v6/CLAUDE.md`).
 
+## Version 7: deeper prompts and context, Session 1 reordered (25 Nov 2026)
+- Feedback: Anatomy of a prompt and Context engineering felt light. Asked for more prompt examples, whether XML tags are good practice (yes: add it), and prompt engineering best practices. Plan approved after two changes: drop the planned “lost in the middle” slide, and make Choosing a model optional.
+- v7 copied from v6. Session 1 order is now: Topic 6 Anatomy of a prompt, Topic 7 Context engineering, optional Topic 8 Choosing a model. Prev/Next skip the optional topic from core topics.
+- Topic 6 adds XML tags (why and how, plus a full tagged prompt with the API JSON), a prompt library, prompt patterns, ten best practices, myths and a quiz. Topic 7 adds long chats going stale, standing context, what Copilot Chat puts on the desk, a fix-the-context exercise, a checklist and an optional caching deep dive.
+
