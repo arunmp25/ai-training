@@ -1,0 +1,9 @@
+/* Participant release: no presenter notes or timings; locked sessions. */
+.notes, .notes-panel, .bar [data-act="notes"], .bar [data-act="time"], #timeBtn, .time-only, .tag.time { display: none !important; }
+.rel-locked { opacity: .5; cursor: not-allowed; }
+.rel-day-locked .topic, .rel-day-locked .tcard { opacity: .5; filter: grayscale(.7); cursor: not-allowed; pointer-events: none; }
+.rel-day-locked h3, .rel-day-locked .theme { opacity: .75; }
+.rel-soon { display: inline-block; margin: 6px 0 12px; padding: 4px 10px; border-radius: 6px; background: var(--card2); border: 1px solid var(--line);
+            font-weight: 800; font-size: 13px; letter-spacing: .06em; color: var(--text); text-transform: uppercase; }
+.rel-banner { margin: -10px 0 30px; padding: 12px 16px; border-left: 4px solid var(--brand); background: var(--card); border-radius: 6px; font-size: 16px; }
+.topic.rel-locked, .tcard.rel-locked { opacity: .5; filter: grayscale(.7); pointer-events: none; }

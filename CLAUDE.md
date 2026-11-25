@@ -31,6 +31,10 @@ v7/                   LATEST. Copy of v6: Session 1 reordered (prompts Topic 6, 
   assets/widgets.css  Widget styles.
   assets/story.css    Behind the scenes drawer, JSON colours, sequence diagrams, speaker notes, v4 code walkthroughs.
   topics/*.html       One file per topic (17 in v3, 20 in v4).
+Dockerfile            Participant image (`docker build .`): newest vN folder served by nginx, no speaker notes or timings.
+release.conf          What the image includes: VERSION, SESSIONS (1 / 1,2 / all) or TOPICS (1-5), M365_SESSION (default 2).
+docker/               Build logic for the image (prepare.mjs, release scripts, nginx config). See docker/README.md.
+Quiz/                 Session 1 quiz for Microsoft Forms import, plus answer key.
 M365/                 Copilot Chat quick wins: presenter page (index.html), fictional sample files (samples/), and their zip for attendees.
 AI-Training-v3.zip    Standalone package of v3.
 AI-Training-v4.zip    Standalone package of v4.

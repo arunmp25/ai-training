@@ -1,0 +1,11 @@
+.git
+.github
+.claude
+*.zip
+!M365/M365-quick-wins-files.zip
+**/.DS_Store
+Quiz
+docs
+v1
+v2
+v3
